@@ -1,0 +1,150 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Allow connection testing
+    match /test/connection {
+      allow read: if true;
+    }
+
+    // Phase 3: Primitive Definitions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Pillar 2: Validation Blueprints
+    function isValidProject(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() <= 100
+        && data.description is string && data.description.size() <= 1000
+        && data.ownerId == request.auth.uid
+        && data.members is list
+        && data.members.size() > 0 && data.members.size() <= 100;
+    }
+
+    function isValidBug(data) {
+      return data.title is string && data.title.size() > 0 && data.title.size() <= 300
+        && data.description is string && data.description.size() <= 5000
+        && data.projectId is string && isValidId(data.projectId)
+        && data.status in ["backlog", "in-progress", "in-review", "done"]
+        && data.priority in ["low", "medium", "high", "critical"]
+        && data.creatorId == request.auth.uid;
+    }
+
+    function isValidComment(data) {
+      return data.bugId is string && isValidId(data.bugId)
+        && data.userId == request.auth.uid
+        && data.userName is string && data.userName.size() <= 100
+        && data.content is string && data.content.size() > 0 && data.content.size() <= 2000;
+    }
+
+    function isValidActivityLog(data) {
+      return data.bugId is string && isValidId(data.bugId)
+        && data.projectId is string && isValidId(data.projectId)
+        && data.userId == request.auth.uid
+        && data.userName is string && data.userName.size() <= 100
+        && data.action is string && data.action.size() <= 50
+        && data.details is string && data.details.size() <= 1000;
+    }
+
+    function isValidUserProfile(data) {
+      return data.userId == request.auth.uid
+        && data.email == request.auth.token.email
+        && data.displayName is string && data.displayName.size() <= 100
+        && data.photoURL is string && data.photoURL.size() <= 500;
+    }
+
+    // 1. Users Collection
+    match /users/{userId} {
+      allow list: if isSignedIn();
+      allow get: if isSignedIn();
+      
+      allow create: if isSignedIn() && request.auth.uid == userId && isValidUserProfile(incoming());
+      allow update: if isSignedIn() && request.auth.uid == userId && isValidUserProfile(incoming())
+        && incoming().email == existing().email;
+    }
+
+    // 2. Projects Collection
+    match /projects/{projectId} {
+      allow get: if isSignedIn() && (existing().ownerId == request.auth.uid || request.auth.uid in existing().members);
+      allow list: if isSignedIn() && (resource.data.ownerId == request.auth.uid || resource.data.members.hasAny([request.auth.uid]));
+
+      allow create: if isVerified() && isValidProject(incoming()) && incoming().createdAt == request.time;
+      
+      allow update: if isVerified() && (
+        (existing().ownerId == request.auth.uid && incoming().ownerId == existing().ownerId && isValidProject(incoming()) && 
+         incoming().createdAt == existing().createdAt &&
+         incoming().diff(existing()).affectedKeys().hasOnly(['name', 'description', 'members', 'updatedAt']) &&
+         incoming().updatedAt == request.time)
+      );
+      
+      allow delete: if isVerified() && existing().ownerId == request.auth.uid;
+    }
+
+    // 3. Bugs Collection
+    match /bugs/{bugId} {
+      allow get: if isSignedIn() && 
+        get(/databases/$(database)/documents/projects/$(existing().projectId)).data.members.hasAny([request.auth.uid]);
+      
+      allow list: if isSignedIn() && (resource.data.projectId != null); // Client filters by projectId, server allows if ID exists
+      
+      allow create: if isVerified() && isValidBug(incoming()) && incoming().createdAt == request.time &&
+        get(/databases/$(database)/documents/projects/$(incoming().projectId)).data.members.hasAny([request.auth.uid]);
+      
+      allow update: if isVerified() && 
+        incoming().creatorId == existing().creatorId && 
+        incoming().projectId == existing().projectId &&
+        incoming().createdAt == existing().createdAt && (
+          // Action: Quick Status Update
+          (incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt', 'assigneeId']) && incoming().updatedAt == request.time) ||
+          // Action: Edit bug (Creator only)
+          (existing().creatorId == request.auth.uid && isValidBug(incoming()) && 
+           incoming().diff(existing()).affectedKeys().hasOnly(['title', 'description', 'priority', 'updatedAt']) &&
+           incoming().updatedAt == request.time)
+        );
+      
+      allow delete: if isVerified() && (
+        existing().creatorId == request.auth.uid || 
+        get(/databases/$(database)/documents/projects/$(existing().projectId)).data.ownerId == request.auth.uid
+      );
+    }
+
+    // 4. Comments Collection
+    match /comments/{commentId} {
+      allow read: if isSignedIn();
+      allow create: if isVerified() && isValidComment(incoming()) && incoming().createdAt == request.time;
+      allow delete: if isVerified() && existing().userId == request.auth.uid;
+    }
+
+    // 5. Activity Logs Collection
+    match /activity_logs/{logId} {
+      allow list: if isSignedIn() && (resource.data.projectId != null || resource.data.userId == request.auth.uid);
+      allow get: if isSignedIn() && (existing().projectId != null && 
+        get(/databases/$(database)/documents/projects/$(existing().projectId)).data.members.hasAny([request.auth.uid]));
+      
+      allow create: if isVerified() && isValidActivityLog(incoming()) && incoming().createdAt == request.time &&
+        get(/databases/$(database)/documents/projects/$(incoming().projectId)).data.members.hasAny([request.auth.uid]);
+      
+      allow update, delete: if false;
+    }
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "entities": {
+    "Project": {
+      "title": "Project",
+      "description": "Dự án phần mềm chứa các bug.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "ownerId": { "type": "string" },
+        "members": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["name", "ownerId", "createdAt"]
+    },
+    "Bug": {
+      "title": "Bug",
+      "description": "Thông tin về một lỗi phần mềm cần xử lý.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "projectId": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "status": { 
+          "type": "string", 
+          "enum": ["backlog", "in-progress", "in-review", "done"] 
+        },
+        "priority": { 
+          "type": "string", 
+          "enum": ["low", "medium", "high", "critical"] 
+        },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "creatorId": { "type": "string" },
+        "assigneeId": { "type": "string" }
+      },
+      "required": ["title", "status", "priority", "createdAt", "projectId"]
+    },
+    "Comment": {
+      "title": "Comment",
+      "description": "Bình luận trong lỗi.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "bugId": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "content": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["bugId", "userId", "content", "createdAt"]
+    },
+    "ActivityLog": {
+      "title": "ActivityLog",
+      "description": "Lịch sử thay đổi trạng thái lỗi.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "bugId": { "type": "string" },
+        "projectId": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "action": { "type": "string" },
+        "details": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["bugId", "projectId", "userId", "action", "createdAt"]
+    },
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Thông tin người dùng.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "displayName": { "type": "string" },
+        "email": { "type": "string" },
+        "photoURL": { "type": "string" }
+      },
+      "required": ["userId", "email"]
+    }
+  },
+  "firestore": {
+    "/projects": { "schema": "Project", "description": "Danh sách các dự án." },
+    "/bugs": { "schema": "Bug", "description": "Danh sách các lỗi." },
+    "/comments": { "schema": "Comment", "description": "Danh sách các bình luận." },
+    "/activity_logs": { "schema": "ActivityLog", "description": "Lịch sử hoạt động." },
+    "/users": { "schema": "UserProfile", "description": "Danh sách người dùng." }
+  }
+}

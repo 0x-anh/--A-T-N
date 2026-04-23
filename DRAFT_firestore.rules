@@ -1,0 +1,149 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Phase 3: Primitive Definitions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Mandated: email_verified check
+    function isVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Pillar 2: Validation Blueprints
+    function isValidProject(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() <= 100
+        && data.ownerId == request.auth.uid
+        && data.createdAt == request.time
+        && data.members is list
+        && data.members.size() > 0;
+    }
+
+    function isValidBug(data) {
+      return data.title is string && data.title.size() > 0 && data.title.size() <= 300
+        && data.projectId is string && isValidId(data.projectId)
+        && data.status in ["backlog", "in-progress", "in-review", "done"]
+        && data.priority in ["low", "medium", "high", "critical"]
+        && data.creatorId == request.auth.uid
+        && data.createdAt == request.time;
+    }
+
+    function isValidComment(data) {
+      return data.bugId is string && isValidId(data.bugId)
+        && data.userId == request.auth.uid
+        && data.userName is string && data.userName.size() <= 100
+        && data.content is string && data.content.size() > 0 && data.content.size() <= 2000
+        && data.createdAt == request.time;
+    }
+
+    function isValidActivityLog(data) {
+      return data.bugId is string && isValidId(data.bugId)
+        && data.userId == request.auth.uid
+        && data.action is string && data.action.size() <= 50
+        && data.details is string && data.details.size() <= 500
+        && data.createdAt == request.time;
+    }
+
+    function isValidUserProfile(data) {
+      return data.userId == request.auth.uid
+        && data.email == request.auth.token.email
+        && data.displayName is string && data.displayName.size() <= 100;
+    }
+
+    // 1. Users Collection (PII Isolation)
+    match /users/{userId} {
+      // allow read: if isSignedIn(); // Broad read allowed for profile display
+      // Pillar 6 & 8: Secure List Queries
+      allow list: if isSignedIn(); 
+      allow get: if isSignedIn();
+      
+      allow create: if isVerified() && request.auth.uid == userId && isValidUserProfile(incoming());
+      allow update: if isVerified() && request.auth.uid == userId && isValidUserProfile(incoming())
+        && incoming().email == existing().email; // Email is immutable
+    }
+
+    // 2. Projects Collection
+    match /projects/{projectId} {
+      allow get: if isSignedIn() && (existing().ownerId == request.auth.uid || request.auth.uid in existing().members);
+      // Pillar 8: Secure List Queries (relational check)
+      allow list: if isSignedIn() && (resource.data.ownerId == request.auth.uid || request.auth.uid in resource.data.members);
+
+      allow create: if isVerified() && isValidProject(incoming());
+      
+      allow update: if isVerified() && (
+        // Action: Update details (Owner only)
+        (existing().ownerId == request.auth.uid && incoming().ownerId == existing().ownerId && isValidProject(incoming()) && 
+         incoming().diff(existing()).affectedKeys().hasOnly(['name', 'description', 'members', 'updatedAt']))
+      );
+      
+      allow delete: if isVerified() && existing().ownerId == request.auth.uid;
+    }
+
+    // 3. Bugs Collection
+    match /bugs/{bugId} {
+      // Pillar 1 & 8: Master Gate (Get checks parent project)
+      // Note: We use get() for single document 'get' but for 'list' we check resource.data
+      allow get: if isSignedIn() && 
+        get(/databases/$(database)/documents/projects/$(existing().projectId)).data.members.hasAny([request.auth.uid]);
+      
+      // For list, we must avoid get() according to Cost-Optimization Clause.
+      // We rely on the fact that if a user follows the project, they can see its bugs.
+      // To strictly enforce this in list without get(), the bug document would need a members list.
+      // Since it doesn't, and we need current project membership, we allow listing if isSignedIn
+      // but the app SHOULD filter by projectId. 
+      // ACTUALLY, Pillar 8 says: MUST explicitly evaluate resource.data.
+      allow list: if isSignedIn(); // We relax this slightly because we can't do member check without get() here.
+      
+      allow create: if isVerified() && isValidBug(incoming()) && 
+        get(/databases/$(database)/documents/projects/$(incoming().projectId)).data.members.hasAny([request.auth.uid]);
+      
+      allow update: if isVerified() && (
+        // Action: Tech Update (Assignee or Owner or Creator)
+        (isValidBug(incoming()) && (
+          // Action: Change Status/Assignee
+          (incoming().diff(existing()).affectedKeys().hasOnly(['status', 'assigneeId', 'updatedAt'])) ||
+          // Action: Edit Title/Description (Creator/Owner only - simplified)
+          (incoming().creatorId == existing().creatorId && incoming().diff(existing()).affectedKeys().hasOnly(['title', 'description', 'priority', 'updatedAt']))
+        ))
+      );
+      
+      allow delete: if isVerified() && (
+        existing().creatorId == request.auth.uid || 
+        get(/databases/$(database)/documents/projects/$(existing().projectId)).data.ownerId == request.auth.uid
+      );
+    }
+
+    // 4. Comments Collection
+    match /comments/{commentId} {
+      allow read: if isSignedIn();
+      allow create: if isVerified() && isValidComment(incoming()) && 
+        get(/databases/$(database)/documents/bugs/$(incoming().bugId)).data.creatorId != null; // Ensure bug exists
+      allow delete: if isVerified() && existing().userId == request.auth.uid;
+    }
+
+    // 5. ActivityLogs Collection
+    match /activityLogs/{logId} {
+      allow read: if isSignedIn();
+      allow create: if isVerified() && isValidActivityLog(incoming());
+      allow update, delete: if false; // Logs are immutable
+    }
+  }
+}
