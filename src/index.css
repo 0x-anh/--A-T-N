@@ -1,74 +1,121 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@1,400&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Outfit", "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+  --font-sans: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-serif: "Playfair Display", serif;
 }
 
 @layer base {
   body {
-    @apply antialiased text-slate-400 bg-[#020617] selection:bg-indigo-500/30 selection:text-white;
+    @apply antialiased text-black bg-white selection:bg-black selection:text-[#FF5F1F];
   }
 }
 
+.tech-grid-bg {
+  position: relative;
+  overflow: hidden;
+  background-color: white;
+  background-image: 
+    linear-gradient(to right, rgba(0,0,0,0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0,0,0,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.tech-grid-bg::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.02) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.01), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.01));
+  background-size: 100% 3px, 3px 100%;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+.tech-grid-bg::after {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 20px;
+  background: rgba(0, 255, 255, 0.01);
+  opacity: 0.1;
+  pointer-events: none;
+  animation: scanline 8s linear infinite;
+  z-index: 1001;
+}
+
 @layer utilities {
-  .saas-bg {
-    background-color: #020617;
-    background-image: 
-      radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.05) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, rgba(147, 51, 234, 0.05) 0px, transparent 50%),
-      radial-gradient(at 50% 50%, rgba(15, 23, 42, 1) 0px, transparent 100%);
+  .mechanical-click {
+    @apply active:translate-x-1 active:translate-y-1 active:shadow-none transition-all;
   }
 
-  .saas-card {
-    @apply bg-slate-900/40 backdrop-blur-md border border-slate-800/60 shadow-[0_4px_24px_rgba(0,0,0,0.5)] transition-all duration-200;
+  .tech-ruler-x {
+    background-image: repeating-linear-gradient(90deg, #000, #000 1px, transparent 1px, transparent 10px);
+    background-size: 100px 100%;
+    height: 10px;
+    opacity: 0.1;
   }
 
-  .saas-card-hover {
-    @apply hover:bg-slate-800/50 hover:border-slate-700/80 hover:shadow-indigo-500/5;
+  .tech-ruler-y {
+    background-image: repeating-linear-gradient(180deg, #000, #000 1px, transparent 1px, transparent 10px);
+    background-size: 100% 100px;
+    width: 10px;
+    opacity: 0.1;
   }
 
-  .saas-surface {
-    @apply bg-slate-900/60 backdrop-blur-xl border border-slate-800/80 shadow-2xl;
+  .protocol-card {
+    @apply bg-white border-2 border-black p-8 transition-all duration-300 relative overflow-hidden;
+    box-shadow: 6px 6px 0px 0px rgba(0,0,0,1);
   }
 
-  .saas-sidebar {
-    @apply bg-[#020617] border-r border-slate-800/50;
+  .protocol-card:hover {
+    @apply -translate-x-1 -translate-y-1;
+    box-shadow: 10px 10px 0px 0px #FF5F1F;
   }
 
-  .saas-header {
-    @apply bg-[#020617]/80 backdrop-blur-md border-b border-slate-800/50 sticky top-0 z-50;
+  .text-protocol {
+    @apply text-black font-bold tracking-[-0.05em] text-5xl md:text-8xl uppercase leading-[0.85];
+  }
+
+  .meta-label {
+    @apply text-[9px] font-mono font-bold text-black uppercase tracking-[0.4em] flex items-center gap-2;
+  }
+
+  .btn-protocol {
+    @apply h-14 px-10 bg-black text-white font-mono font-bold text-[11px] uppercase tracking-[0.2em] transition-all hover:bg-[#FF5F1F] active:translate-x-1 active:translate-y-1 flex items-center justify-center gap-4;
+    box-shadow: 4px 4px 0px 0px rgba(255, 95, 31, 0.4);
+  }
+
+  .protocol-line {
+    @apply h-[2px] w-full bg-black;
   }
 
   .premium-border {
-    @apply border border-white/5;
-  }
-
-  .glow-indigo {
-    @apply shadow-[0_0_20px_-5px_rgba(99,102,241,0.2)];
-  }
-
-  .subtle-grid {
-    background-image: linear-gradient(to right, rgba(255,255,255,0.02) 1px, transparent 1px),
-                      linear-gradient(to bottom, rgba(255,255,255,0.02) 1px, transparent 1px);
-    background-size: 32px 32px;
+    @apply border-2 border-black;
   }
 
   .custom-scrollbar::-webkit-scrollbar {
-    width: 5px;
-    height: 5px;
+    width: 8px;
+    height: 8px;
   }
 
   .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
+    @apply bg-white border-l border-black;
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-slate-800 rounded-full;
+    @apply bg-black border-2 border-white;
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    @apply bg-slate-700;
+    @apply bg-[#FF5F1F];
   }
 }
