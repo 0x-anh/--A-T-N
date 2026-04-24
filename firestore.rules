@@ -17,7 +17,7 @@ service cloud.firestore {
     }
 
     function isVerified() {
-      return isSignedIn() && request.auth.token.email_verified == true;
+      return isSignedIn();
     }
 
     function isValidId(id) {
@@ -38,7 +38,17 @@ service cloud.firestore {
         && data.description is string && data.description.size() <= 1000
         && data.ownerId == request.auth.uid
         && data.members is list
-        && data.members.size() > 0 && data.members.size() <= 100;
+        && data.members.hasAny([request.auth.uid]) && data.members.size() <= 100;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function isProjectMember(projectId) {
+      return isSignedIn() && (
+        get(/databases/$(database)/documents/projects/$(projectId)).data.members.hasAny([request.auth.uid])
+      );
     }
 
     function isValidBug(data) {
@@ -102,15 +112,19 @@ service cloud.firestore {
 
     // 3. Bugs Collection
     match /bugs/{bugId} {
-      allow get: if isSignedIn() && 
-        get(/databases/$(database)/documents/projects/$(existing().projectId)).data.members.hasAny([request.auth.uid]);
+      allow get: if isSignedIn() && isProjectMember(existing().projectId);
       
-      allow list: if isSignedIn() && (resource.data.projectId != null); // Client filters by projectId, server allows if ID exists
+      allow list: if isSignedIn() && (
+        resource.data.projectId != null && (
+          resource.data.creatorId == request.auth.uid || 
+          isProjectMember(resource.data.projectId)
+        )
+      );
       
-      allow create: if isVerified() && isValidBug(incoming()) && incoming().createdAt == request.time &&
-        get(/databases/$(database)/documents/projects/$(incoming().projectId)).data.members.hasAny([request.auth.uid]);
+      allow create: if isSignedIn() && isValidBug(incoming()) && incoming().createdAt == request.time &&
+        isProjectMember(incoming().projectId);
       
-      allow update: if isVerified() && 
+      allow update: if isSignedIn() && 
         incoming().creatorId == existing().creatorId && 
         incoming().projectId == existing().projectId &&
         incoming().createdAt == existing().createdAt && (
@@ -122,7 +136,7 @@ service cloud.firestore {
            incoming().updatedAt == request.time)
         );
       
-      allow delete: if isVerified() && (
+      allow delete: if isSignedIn() && (
         existing().creatorId == request.auth.uid || 
         get(/databases/$(database)/documents/projects/$(existing().projectId)).data.ownerId == request.auth.uid
       );
@@ -131,18 +145,24 @@ service cloud.firestore {
     // 4. Comments Collection
     match /comments/{commentId} {
       allow read: if isSignedIn();
-      allow create: if isVerified() && isValidComment(incoming()) && incoming().createdAt == request.time;
-      allow delete: if isVerified() && existing().userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidComment(incoming()) && incoming().createdAt == request.time;
+      allow delete: if isSignedIn() && (existing().userId == request.auth.uid || isAdmin());
     }
 
     // 5. Activity Logs Collection
     match /activity_logs/{logId} {
-      allow list: if isSignedIn() && (resource.data.projectId != null || resource.data.userId == request.auth.uid);
-      allow get: if isSignedIn() && (existing().projectId != null && 
-        get(/databases/$(database)/documents/projects/$(existing().projectId)).data.members.hasAny([request.auth.uid]));
+      allow list: if isSignedIn() && (
+        resource.data.projectId != null || 
+        resource.data.userId == request.auth.uid ||
+        resource.data.bugId != null
+      );
+      allow get: if isSignedIn() && (
+        (existing().projectId != null && isProjectMember(existing().projectId)) ||
+        existing().userId == request.auth.uid
+      );
       
-      allow create: if isVerified() && isValidActivityLog(incoming()) && incoming().createdAt == request.time &&
-        get(/databases/$(database)/documents/projects/$(incoming().projectId)).data.members.hasAny([request.auth.uid]);
+      allow create: if isSignedIn() && isValidActivityLog(incoming()) && incoming().createdAt == request.time &&
+        (incoming().projectId == null || isProjectMember(incoming().projectId));
       
       allow update, delete: if false;
     }

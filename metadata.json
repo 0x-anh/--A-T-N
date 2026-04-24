@@ -1,6 +1,5 @@
 {
-  "name": "Linearis.Protocol v3.0",
-  "description": "Mission-critical project management for high-performance engineering teams. Industrial 'Technical Brutalism' aesthetic with real-time sync, protocol logging, and streamlined task matrix nodes.",
-  "requestFramePermissions": [],
-  "majorCapabilities": []
+  "name": "TQ_ULTIMA_v4.0",
+  "description": "Hệ thống vận hành tối thượng - Giao diện điều khiển công nghiệp với hiệu ứng Atmospheric CRT v4.0.",
+  "requestFramePermissions": []
 }

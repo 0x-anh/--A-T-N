@@ -1,3 +1,5 @@
+import { AlertCircle, AlertTriangle, ChevronUp, Zap } from 'lucide-react';
+
 export type BugStatus = 'backlog' | 'in-progress' | 'in-review' | 'done';
 export type BugPriority = 'low' | 'medium' | 'high' | 'critical';
 
@@ -43,20 +45,21 @@ export interface Bug {
   status: BugStatus;
   priority: BugPriority;
   createdAt: any;
+  updatedAt?: any;
   creatorId: string;
   assigneeId?: string;
 }
 
 export const STATUS_COLUMNS: { id: BugStatus, label: string }[] = [
-  { id: 'backlog', label: 'Mới' },
-  { id: 'in-progress', label: 'Đang xử lý' },
-  { id: 'in-review', label: 'Chờ duyệt' },
+  { id: 'backlog', label: 'Chờ xử lý' },
+  { id: 'in-progress', label: 'Đang thực hiện' },
+  { id: 'in-review', label: 'Đang kiểm duyệt' },
   { id: 'done', label: 'Hoàn thành' }
 ];
 
-export const PRIORITY_CONFIG: Record<BugPriority, { label: string, color: string }> = {
-  low: { label: 'Thấp', color: 'bg-slate-100 text-slate-600' },
-  medium: { label: 'Vừa', color: 'bg-blue-50 text-blue-600' },
-  high: { label: 'Cao', color: 'bg-orange-50 text-orange-600' },
-  critical: { label: 'Nghiêm trọng', color: 'bg-red-50 text-red-600' }
+export const PRIORITY_CONFIG: Record<BugPriority, { label: string, color: string, icon: any }> = {
+  low: { label: 'Thấp', color: 'text-slate-400', icon: Zap },
+  medium: { label: 'Trung bình', color: 'text-blue-400', icon: ChevronUp },
+  high: { label: 'Cao', color: 'text-orange-400', icon: AlertTriangle },
+  critical: { label: 'Khẩn cấp', color: 'text-red-400', icon: AlertCircle }
 };
