@@ -27,7 +27,7 @@ import { Toaster, toast } from 'sonner';
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'board' | 'metrics' | 'logs' | 'members' | 'settings' | 'terminal'>('board');
+  const [activeTab, setActiveTab] = useState<'board' | 'metrics' | 'logs' | 'members' | 'settings' | 'terminal' | 'dashboard'>('dashboard');
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [showProjectModal, setShowProjectModal] = useState(false);
@@ -42,6 +42,12 @@ export default function App() {
   const [showNetworkStats, setShowNetworkStats] = useState(false);
   const [terminalLogs, setTerminalLogs] = useState<string[]>([]);
   const [jitter, setJitter] = useState(false);
+  const [platformStats, setPlatformStats] = useState({
+    bandwidth: "1.2 GB/s",
+    latency: "24ms",
+    activeNodes: 12,
+    serverLoad: 42
+  });
 
   useEffect(() => {
     const triggerJitter = () => {
@@ -52,6 +58,24 @@ export default function App() {
     };
     const timer = setTimeout(triggerJitter, 5000);
     return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    // Listen for public platform stats
+    const unsubscribe = onSnapshot(doc(db, 'metrics', 'global'), (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        setPlatformStats({
+          bandwidth: data.bandwidth || "1.2 GB/s",
+          latency: data.latency || "24ms",
+          activeNodes: data.activeNodes || 12,
+          serverLoad: data.serverLoad || 42
+        });
+      }
+    }, (error) => {
+      console.warn("Public metrics listener error:", error);
+    });
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -139,6 +163,21 @@ export default function App() {
     });
     return () => unsubscribe();
   }, [user, selectedProject]);
+
+  useEffect(() => {
+    // Initialize terminal logs with some default entries
+    setTerminalLogs([
+      `[${new Date().toLocaleTimeString()}] CORE_BOOT::COMPLETED`,
+      `[${new Date().toLocaleTimeString()}] UPLINK_ESTABLISHED::SIGNAL_STRENGTH_94%`,
+      `[${new Date().toLocaleTimeString()}] ENCRYPTION_LAYER_CONNECTED::AES_256`,
+      `[${new Date().toLocaleTimeString()}] FIREBASE_SYNC_READY`,
+      `[${new Date().toLocaleTimeString()}] SYSTEM_NOMINAL::v3.5.0.1`
+    ]);
+  }, []);
+
+  const addTerminalLog = (msg: string) => {
+    setTerminalLogs(prev => [`[${new Date().toLocaleTimeString()}] ${msg}`, ...prev.slice(0, 49)]);
+  };
 
   const handleLogin = async (startTab?: typeof activeTab) => {
     const provider = new GoogleAuthProvider();
@@ -426,7 +465,7 @@ export default function App() {
                        {[
                          { label: 'HẠ TẦNG', action: () => setShowNetworkStats(true) },
                          { label: 'HƯỚNG DẪN', action: () => setShowGuide(true) },
-                         { label: 'BẢO MẬT', action: () => toast.info("Hệ thống tường lửa đang ở mức tối đa.") }
+                         { label: 'BẢO MẬT', action: () => toast.success("HỆ THỐNG AN TOÀN: ĐANG THEO DÕI THỜI GIAN THỰC") }
                        ].map(item => (
                          <button 
                            key={item.label} 
@@ -800,15 +839,15 @@ export default function App() {
                          <div className="grid grid-cols-2 gap-4">
                            <div className="p-4 bg-white/[0.02] border border-white/5 rounded-2xl">
                              <div className="text-[8px] font-mono text-white/20 uppercase mb-1">Băng thông</div>
-                             <div className="text-lg font-mono font-bold text-white">1.2 GB/s</div>
+                             <div className="text-lg font-mono font-bold text-white transition-all duration-500">{platformStats.bandwidth}</div>
                            </div>
                            <div className="p-4 bg-white/[0.02] border border-white/5 rounded-2xl">
                              <div className="text-[8px] font-mono text-white/20 uppercase mb-1">Độ trễ</div>
-                             <div className="text-lg font-mono font-bold text-emerald-500">24ms</div>
+                             <div className="text-lg font-mono font-bold text-emerald-500 transition-all duration-500">{platformStats.latency}</div>
                            </div>
                            <div className="p-4 bg-white/[0.02] border border-white/5 rounded-2xl">
                              <div className="text-[8px] font-mono text-white/20 uppercase mb-1">Nút mạng</div>
-                             <div className="text-lg font-mono font-bold text-white">ACTIVE: 12</div>
+                             <div className="text-lg font-mono font-bold text-white transition-all duration-500">ACTIVE: {platformStats.activeNodes}</div>
                            </div>
                            <div className="p-4 bg-white/[0.02] border border-white/5 rounded-2xl">
                              <div className="text-[8px] font-mono text-white/20 uppercase mb-1">Mã hóa</div>
@@ -819,10 +858,15 @@ export default function App() {
                          <div className="space-y-3">
                            <div className="flex items-center justify-between text-[10px] font-mono text-white/40 uppercase">
                              <span>Tải trọng máy chủ</span>
-                             <span className="text-emerald-500">42%</span>
+                             <span className="text-emerald-500">{platformStats.serverLoad}%</span>
                            </div>
                            <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                             <div className="h-full bg-emerald-500 w-[42%] rounded-full animate-pulse" />
+                             <motion.div 
+                               initial={false}
+                               animate={{ width: `${platformStats.serverLoad}%` }}
+                               transition={{ duration: 1, ease: "easeOut" }}
+                               className="h-full bg-emerald-500 rounded-full animate-pulse" 
+                             />
                            </div>
                          </div>
 
@@ -857,44 +901,82 @@ export default function App() {
                      </p>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px bg-white/5 border border-white/5 overflow-hidden rounded-[32px]">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 px-2">
                      {[
-                       { label: 'THIẾT LẬP', title: 'FAST_SYNC', desc: 'Đồng bộ hóa 24ms liên khu vực.', icon: <Zap />, node: '001', color: '#FACC15' },
-                       { label: 'AN NINH', title: 'SSL_ELITE', desc: 'Mã hóa lượng tử đa lớp.', icon: <ShieldAlert />, node: '002', color: '#818CF8' },
-                       { label: 'QUẢN TRỊ', title: 'TASK_GRID', desc: 'Ma trận tác vụ đa tầng.', icon: <LayoutGrid />, node: '003', color: '#10B981' },
-                       { label: 'GIAO THỨC', title: 'API_OPEN', desc: 'Kết nối node không giới hạn.', icon: <Code2 />, node: '004', color: '#F43F5E' }
+                       { label: 'QUY TRÌNH', title: 'FAST_SYNC', desc: `Đồng bộ hóa ${platformStats.latency} liên khu vực thông qua giao thức đa tầng.`, icon: <Zap />, node: '001', color: '#FACC15' },
+                       { label: 'BẢO MẬT', title: 'SSL_ELITE', desc: 'Mã hóa lượng tử cấp quân đội với lớp bảo vệ kép AES-256.', icon: <ShieldAlert />, node: '002', color: '#818CF8' },
+                       { label: 'HỆ THỐNG', title: 'TASK_GRID', desc: `Phân phối tác vụ thông minh dựa trên ${platformStats.activeNodes} Nodes xử lý.`, icon: <LayoutGrid />, node: '003', color: '#10B981' },
+                       { label: 'KẾT NỐI', title: 'API_OPEN', desc: `Băng thông ${platformStats.bandwidth} cho hệ sinh thái mở.`, icon: <Code2 />, node: '004', color: '#F43F5E' }
                      ].map((item, i) => (
                        <motion.div 
                          key={i} 
-                         whileHover={{ backgroundColor: 'rgba(255,255,255,0.02)' }}
-                         className="bg-slate-950 p-12 flex flex-col gap-12 relative group min-h-[400px]"
+                         initial={{ opacity: 0, y: 30 }}
+                         whileInView={{ opacity: 1, y: 0 }}
+                         viewport={{ once: true }}
+                         transition={{ delay: i * 0.1, duration: 0.8 }}
+                         whileHover={{ y: -10, scale: 1.02 }}
+                         className="relative group h-[420px]"
                        >
-                          <div className="flex justify-between items-start">
-                             <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white/40 group-hover:scale-110 group-hover:border-white/20 transition-all duration-500">
-                                {React.cloneElement(item.icon as React.ReactElement, { size: 20 })}
-                             </div>
-                             <span className="text-[10px] font-mono font-bold text-white/10 uppercase tracking-widest">NODE_{item.node}</span>
+                          {/* Card Background with Glow */}
+                          <div className="absolute inset-0 bg-white/[0.02] border border-white/5 rounded-[48px] overflow-hidden transition-all duration-500 group-hover:border-white/10 group-hover:bg-white/[0.04]">
+                             <div 
+                               className="absolute -top-24 -right-24 w-48 h-48 rounded-full blur-[80px] opacity-0 group-hover:opacity-20 transition-opacity duration-700"
+                               style={{ backgroundColor: item.color }}
+                             />
                           </div>
 
-                          <div className="space-y-4">
-                             <div className="flex flex-col">
-                                <span className="text-[9px] font-mono font-bold uppercase tracking-[0.4em] mb-2" style={{ color: item.color }}>{item.label}</span>
-                                <h4 className="text-3xl font-display font-black text-white tracking-tight group-hover:translate-x-1 transition-transform">{item.title}</h4>
-                             </div>
-                             <p className="text-xs font-mono text-white/30 uppercase leading-relaxed tracking-tight">{item.desc}</p>
-                          </div>
+                          <div className="relative h-full p-10 flex flex-col justify-between z-10">
+                             <div>
+                                <div className="flex justify-between items-start mb-10">
+                                   <div 
+                                     className="w-16 h-16 rounded-2xl flex items-center justify-center relative overflow-hidden"
+                                     style={{ backgroundColor: `${item.color}10`, border: `1px solid ${item.color}30` }}
+                                   >
+                                      <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
+                                      {React.cloneElement(item.icon as React.ReactElement, { size: 28, style: { color: item.color } })}
+                                   </div>
+                                   <div className="flex flex-col items-end">
+                                      <span className="text-[9px] font-mono font-black text-white/10 uppercase tracking-widest">VER_2.4.0</span>
+                                      <span className="text-[10px] font-mono font-black text-white/30 uppercase tracking-[0.2em]">NODE_{item.node}</span>
+                                   </div>
+                                </div>
 
-                          <div className="mt-auto pt-12 border-t border-white/5 flex items-center justify-between">
-                             <div className="flex gap-1">
-                                {[...Array(3)].map((_, j) => (
-                                   <div key={j} className="w-3 h-1 bg-white/10 rounded-full" />
-                                ))}
+                                <div className="space-y-4">
+                                   <div className="flex flex-col">
+                                      <div className="flex items-center gap-2 mb-2">
+                                         <div className="w-1 h-1 rounded-full" style={{ backgroundColor: item.color }} />
+                                         <span className="text-[10px] font-mono font-black uppercase tracking-[0.4em] opacity-40">{item.label}</span>
+                                      </div>
+                                      <h4 className="text-3xl font-display font-black text-white tracking-tighter leading-none uppercase group-hover:tracking-normal transition-all duration-500">
+                                         {item.title.split('_')[0]}<span className="text-white/20">_</span>{item.title.split('_')[1]}
+                                      </h4>
+                                   </div>
+                                   <p className="text-[11px] font-mono text-white/30 uppercase leading-relaxed font-semibold italic">
+                                      {item.desc}
+                                   </p>
+                                </div>
                              </div>
-                             <div className="text-[8px] font-mono text-white/10 uppercase">STATUS::NOMINAL</div>
-                          </div>
 
-                          {/* Hover Accent */}
-                          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                             <div className="space-y-6">
+                                <div className="h-px bg-gradient-to-r from-white/10 via-white/5 to-transparent" />
+                                <div className="flex items-center justify-between">
+                                   <div className="flex items-center gap-3">
+                                      <div className="flex gap-1">
+                                         {[...Array(3)].map((_, j) => (
+                                            <motion.div 
+                                              key={j}
+                                              animate={{ opacity: [0.2, 1, 0.2] }}
+                                              transition={{ duration: 2, repeat: Infinity, delay: j * 0.3 }}
+                                              className="w-1 h-1 rounded-full bg-emerald-500" 
+                                            />
+                                         ))}
+                                      </div>
+                                      <span className="text-[9px] font-mono font-black text-emerald-500/60 uppercase tracking-[0.2em]">STABLE_CORE</span>
+                                   </div>
+                                   <div className="text-[8px] font-mono text-white/5 uppercase font-bold tracking-widest">0xEF_SYS_OK</div>
+                                </div>
+                             </div>
+                          </div>
                        </motion.div>
                      ))}
                   </div>
@@ -924,7 +1006,7 @@ export default function App() {
                 <div className="absolute inset-0 cyber-grid" />
             </div>
 
-            <header className="h-16 px-6 flex items-center justify-between shrink-0 border-b border-white/5 bg-slate-950/80 backdrop-blur-md z-[100] relative">
+            <header className="h-16 px-6 flex items-center justify-between shrink-0 border-b border-white/[0.03] bg-black/20 backdrop-blur-xl z-[100] relative">
               <div className="flex items-center gap-10 relative z-10">
                 <div 
                   className="flex items-center gap-3 cursor-pointer group" 
@@ -1083,8 +1165,17 @@ export default function App() {
               </div>
             </header>
 
-            <main className="flex-1 flex overflow-hidden relative bg-[#06080c]">
-              <nav className="w-16 lg:w-60 border-r border-white/5 flex flex-col p-3 gap-1 bg-slate-950/40 backdrop-blur-md z-20">
+            <main className="flex-1 flex overflow-hidden relative bg-[#0f111a]">
+              {/* Atmospheric Background Layers */}
+              <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+                <div className="absolute top-[-5%] left-[-5%] w-[70%] h-[70%] bg-blue-500/[0.08] rounded-full blur-[160px]" />
+                <div className="absolute bottom-[10%] right-[-5%] w-[50%] h-[50%] bg-amber-500/[0.08] rounded-full blur-[140px]" />
+                <div className="absolute top-[30%] right-[10%] w-[40%] h-[40%] bg-purple-500/[0.05] rounded-full blur-[120px]" />
+                <div className="absolute inset-0 bg-gradient-to-b from-white/[0.01] to-transparent pointer-events-none" />
+              </div>
+
+              <nav className="w-16 lg:w-64 border-r border-white-[0.03] flex flex-col p-4 gap-1.5 bg-black/30 backdrop-blur-3xl z-20 shadow-[20px_0_50px_rgba(0,0,0,0.3)]">
+                 <NavButton icon={Layout} label="TỔNG QUAN" active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} />
                  <NavButton icon={LayoutGrid} label="BẢNG CÔNG VIỆC" active={activeTab === 'board'} onClick={() => setActiveTab('board')} />
                  <NavButton icon={Terminal} label="TERMINAL" active={activeTab === 'terminal'} onClick={() => setActiveTab('terminal')} />
                  <NavButton icon={Activity} label="HOẠT ĐỘNG" active={activeTab === 'logs'} onClick={() => setActiveTab('logs')} />
@@ -1127,6 +1218,200 @@ export default function App() {
                       initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
                       className="flex-1 flex flex-col overflow-hidden"
                     >
+                      {activeTab === 'dashboard' && (
+                        <div className="flex-1 p-8 overflow-auto custom-scrollbar max-w-7xl mx-auto w-full relative z-10">
+                          <div className="flex flex-col gap-12">
+                             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+                                <motion.div 
+                                  initial={{ opacity: 0, x: -20 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  transition={{ duration: 0.8 }}
+                                >
+                                  <div className="flex items-center gap-3 mb-4">
+                                     <div className="w-2 h-2 bg-[#FACC15] rounded-full shadow-[0_0_12px_rgba(250,204,21,0.5)] animate-pulse" />
+                                     <span className="text-[11px] font-mono font-black text-white/30 uppercase tracking-[0.5em]">COMMAND_CENTER::ACTIVE</span>
+                                  </div>
+                                   <h2 className="text-7xl font-display font-black text-white tracking-tighter leading-[0.85] uppercase drop-shadow-[0_0_30px_rgba(255,255,255,0.1)]">
+                                     HELLO, <br />
+                                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FACC15] via-[#fbbf24] to-[#f59e0b] drop-shadow-[0_0_40px_rgba(250,204,21,0.3)]">
+                                       {user.displayName?.split(' ')[user.displayName?.split(' ').length - 1] || 'ADMIN'}
+                                     </span>
+                                   </h2>
+                                </motion.div>
+                                <motion.div 
+                                  initial={{ opacity: 0, scale: 0.95 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  className="p-6 bg-white/[0.03] border border-white/10 rounded-3xl backdrop-blur-xl text-right min-w-[200px]"
+                                >
+                                   <span className="text-[10px] font-mono text-white/20 uppercase tracking-widest block mb-1">UTC_HỆ_THỐNG</span>
+                                   <span className="text-3xl font-mono font-bold text-white tracking-tighter block">{new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</span>
+                                   <span className="text-[9px] font-mono text-[#FACC15] uppercase tracking-widest opacity-60">UPLINK_READY</span>
+                                </motion.div>
+                             </div>
+
+                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <StatsCard 
+                                  label="Hạ tầng Node" 
+                                  value={projects.length} 
+                                  icon={<FolderKanban size={20} />} 
+                                  color="#FACC15"
+                                  status="Synchronized"
+                                />
+                                <StatsCard 
+                                  label="Lỗi tồn đọng" 
+                                  value={bugs.filter(b => b.status !== 'done').length} 
+                                  icon={<BugIcon size={20} />} 
+                                  color="#ef4444"
+                                  status="High Priority"
+                                  pulse
+                                />
+                                <StatsCard 
+                                  label="Hiệu suất Lõi" 
+                                  value={`${bugs.length > 0 ? Math.round((bugs.filter(b => b.status === 'done').length / bugs.length) * 100) : 0}%`} 
+                                  icon={<Zap size={20} />} 
+                                  color="#10b981"
+                                  status="Core Stable"
+                                />
+                             </div>
+
+                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div className="bg-white/[0.02] border border-white/5 rounded-3xl p-8 group hover:bg-white/[0.04] transition-all">
+                                   <div className="flex justify-between items-center mb-6">
+                                      <span className="text-[10px] font-mono font-bold text-white/20 uppercase tracking-widest">Dự án hoạt động</span>
+                                      <FolderKanban size={16} className="text-[#FACC15]" />
+                                   </div>
+                                   <div className="text-5xl font-display font-black text-white">{projects.length}</div>
+                                   <div className="mt-4 flex items-center gap-2">
+                                      <div className="w-1 h-1 bg-emerald-500 rounded-full" />
+                                      <span className="text-[9px] font-mono text-emerald-500 capitalize">Đã đồng bộ</span>
+                                   </div>
+                                </div>
+
+                                <div className="bg-white/[0.02] border border-white/5 rounded-3xl p-8 group hover:bg-white/[0.04] transition-all">
+                                   <div className="flex justify-between items-center mb-6">
+                                      <span className="text-[10px] font-mono font-bold text-white/20 uppercase tracking-widest">Báo cáo tồn đọng</span>
+                                      <BugIcon size={16} className="text-red-500" />
+                                   </div>
+                                   <div className="text-5xl font-display font-black text-white">{bugs.filter(b => b.status !== 'done').length}</div>
+                                   <div className="mt-4 flex items-center gap-2">
+                                      <div className="w-1 h-1 bg-red-500 rounded-full animate-pulse" />
+                                      <span className="text-[9px] font-mono text-red-500 capitalize">Cần xử lý</span>
+                                   </div>
+                                </div>
+
+                                <div className="bg-white/[0.02] border border-white/5 rounded-3xl p-8 group hover:bg-white/[0.04] transition-all">
+                                   <div className="flex justify-between items-center mb-6">
+                                      <span className="text-[10px] font-mono font-bold text-white/20 uppercase tracking-widest">Tỉ lệ hoàn thiện</span>
+                                      <Zap size={16} className="text-emerald-500" />
+                                   </div>
+                                   <div className="text-5xl font-display font-black text-white">
+                                      {bugs.length > 0 ? Math.round((bugs.filter(b => b.status === 'done').length / bugs.length) * 100) : 0}%
+                                   </div>
+                                   <div className="mt-4 h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                                      <div 
+                                         className="h-full bg-emerald-500" 
+                                         style={{ width: `${bugs.length > 0 ? (bugs.filter(b => b.status === 'done').length / bugs.length) * 100 : 0}%` }} 
+                                      />
+                                   </div>
+                                </div>
+                             </div>
+
+                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                <div className="bg-white/[0.02] border border-white/5 rounded-[40px] p-10 relative overflow-hidden group min-h-[360px] backdrop-blur-3xl">
+                                   <div className="absolute top-0 right-0 w-48 h-48 bg-[#FACC15]/5 blur-[80px] rounded-full translate-x-10 -translate-y-10 group-hover:bg-[#FACC15]/10 transition-colors duration-700" />
+                                   <h4 className="text-xl font-display font-black text-white uppercase mb-8 flex items-center gap-4">
+                                      <div className="w-10 h-10 rounded-xl bg-[#FACC15]/10 flex items-center justify-center">
+                                         <Rocket size={20} className="text-[#FACC15]" />
+                                      </div>
+                                      Truy cập hệ thống_
+                                   </h4>
+                                   <div className="grid grid-cols-2 gap-4">
+                                      <button 
+                                         onClick={() => setActiveTab('board')}
+                                         className="p-4 bg-white/5 border border-white/10 rounded-2xl text-left hover:bg-white/10 hover:border-[#FACC15]/40 transition-all font-mono group/item"
+                                      >
+                                         <div className="text-[10px] text-white/40 uppercase mb-1">Phòng Lab</div>
+                                         <div className="text-sm font-bold text-white flex items-center justify-between">
+                                            TRÌNH QUẢN LÝ
+                                            <ArrowRight size={14} className="opacity-0 group-hover/item:opacity-100 group-hover/item:translate-x-1 transition-all" />
+                                         </div>
+                                      </button>
+                                      <button 
+                                         onClick={() => setShowProjectModal(true)}
+                                         className="p-4 bg-white/5 border border-white/10 rounded-2xl text-left hover:bg-white/10 hover:border-[#FACC15]/40 transition-all font-mono group/item"
+                                      >
+                                         <div className="text-[10px] text-white/40 uppercase mb-1">Mở rộng node</div>
+                                         <div className="text-sm font-bold text-white flex items-center justify-between">
+                                            TẠO DỰ ÁN
+                                            <Plus size={14} className="opacity-0 group-hover/item:opacity-100 group-hover/item:scale-125 transition-all" />
+                                         </div>
+                                      </button>
+                                      <button 
+                                         onClick={() => setActiveTab('terminal')}
+                                         className="p-4 bg-white/5 border border-white/10 rounded-2xl text-left hover:bg-white/10 hover:border-[#FACC15]/40 transition-all font-mono group/item"
+                                      >
+                                         <div className="text-[10px] text-white/40 uppercase mb-1">Lệnh cốt lõi</div>
+                                         <div className="text-sm font-bold text-white flex items-center justify-between">
+                                            TERMINAL
+                                            <Terminal size={14} className="opacity-0 group-hover/item:opacity-100 transition-all" />
+                                         </div>
+                                      </button>
+                                      <button 
+                                         onClick={() => setActiveTab('members')}
+                                         className="p-4 bg-white/5 border border-white/10 rounded-2xl text-left hover:bg-white/10 hover:border-[#FACC15]/40 transition-all font-mono group/item"
+                                      >
+                                         <div className="text-[10px] text-white/40 uppercase mb-1">Mạng lưới</div>
+                                         <div className="text-sm font-bold text-white flex items-center justify-between">
+                                            NHÂN SỰ
+                                            <Users size={14} className="opacity-0 group-hover/item:opacity-100 transition-all" />
+                                         </div>
+                                      </button>
+                                   </div>
+                                </div>
+
+                                <div className="bg-white/[0.02] border border-white/5 rounded-[40px] p-10 flex flex-col group min-h-[360px] backdrop-blur-3xl overflow-hidden relative">
+                                   <div className="absolute bottom-0 right-0 w-32 h-32 bg-blue-500/5 blur-[60px] rounded-full translate-x-10 translate-y-10" />
+                                   <h4 className="text-xl font-display font-black text-white uppercase mb-8 flex items-center justify-between">
+                                      <span className="flex items-center gap-4">
+                                         <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                                            <History size={20} className="text-blue-400" />
+                                         </div>
+                                         Dòng thời gian_
+                                      </span>
+                                      <button 
+                                         onClick={() => setActiveTab('logs')}
+                                         className="text-[9px] font-mono text-white/20 hover:text-[#FACC15] uppercase tracking-widest transition-colors"
+                                      >
+                                         Xem tất cả
+                                      </button>
+                                   </h4>
+                                   <div className="flex-1 space-y-4">
+                                      {projectLogs.length > 0 ? projectLogs.slice(0, 4).map((log, i) => (
+                                         <div key={i} className="flex gap-4 items-start py-2 border-b border-white/5 last:border-0">
+                                            <div className="w-1.5 h-1.5 bg-[#FACC15]/60 rounded-full mt-2 shrink-0" />
+                                            <div className="flex-1 min-w-0">
+                                               <div className="flex justify-between items-center mb-1">
+                                                  <span className="text-[9px] font-mono font-bold text-white/60 uppercase">{log.action}</span>
+                                                  <span className="text-[8px] font-mono text-white/10">
+                                                     {log.createdAt?.toDate ? new Date(log.createdAt.toDate()).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : 'Vừa xong'}
+                                                  </span>
+                                               </div>
+                                               <div className="text-[10px] font-mono text-white/30 truncate uppercase">[{log.details}]</div>
+                                            </div>
+                                         </div>
+                                      )) : (
+                                         <div className="flex flex-col items-center justify-center h-full text-white/5">
+                                            <Activity size={32} className="mb-4 opacity-10" />
+                                            <span className="text-[10px] font-mono uppercase tracking-[0.2em]">Máy chủ trống</span>
+                                         </div>
+                                      )}
+                                   </div>
+                                </div>
+                             </div>
+                          </div>
+                        </div>
+                      )}
+
                       {activeTab === 'board' && <KanbanBoard key={selectedProject.id} projectId={selectedProject.id} userId={user.uid} userProfiles={userProfiles} bugs={bugs} />}
                       
                       {activeTab === 'logs' && (
@@ -1631,16 +1916,43 @@ function NavButton({ icon: Icon, label, active, onClick }: { icon: any, label: s
     <button 
       onClick={onClick}
       className={cn(
-        "w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all relative group mb-1",
-        active ? "bg-[#FACC15] text-black shadow-lg" : "text-white/40 hover:bg-white/5 hover:text-white"
+        "w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-500 relative group mb-2",
+        active 
+          ? "bg-gradient-to-r from-[#FACC15] to-[#fbbf24] text-black font-black shadow-[0_8px_32px_rgba(250,204,21,0.2)] scale-[1.02]" 
+          : "text-white/30 hover:bg-white/[0.04] hover:text-white"
       )}
     >
-      <Icon size={18} className={cn("transition-colors", active ? "text-black" : "opacity-50 group-hover:opacity-100")} />
-      <span className="text-[11px] font-mono font-bold uppercase tracking-wider hidden lg:inline">{label}</span>
+      <Icon size={20} className={cn("transition-all duration-300", active ? "text-black" : "opacity-40 group-hover:opacity-100 group-hover:scale-110")} />
+      <span className="text-[11px] font-mono font-black uppercase tracking-[0.3em] hidden lg:inline">{label}</span>
       {active && (
-         <div className="absolute right-3 w-1 h-1 bg-black rounded-full" />
+         <motion.div 
+           layoutId="nav-indicator"
+           className="absolute right-4 w-1.5 h-1.5 bg-black rounded-full shadow-lg" 
+         />
       )}
     </button>
+  );
+}
+
+function StatsCard({ label, value, icon, color, status, pulse }: { label: string, value: any, icon: any, color: string, status: string, pulse?: boolean }) {
+  return (
+    <motion.div 
+      whileHover={{ y: -5 }}
+      className="bg-white/[0.05] border border-white/10 rounded-[32px] p-8 group hover:bg-white/[0.08] hover:border-white/20 transition-all duration-500 backdrop-blur-3xl relative overflow-hidden"
+    >
+       <div className="absolute top-0 right-0 w-32 h-32 blur-[60px] opacity-0 group-hover:opacity-15 transition-opacity duration-700" style={{ backgroundColor: color }} />
+       <div className="flex justify-between items-center mb-10 relative z-10">
+          <span className="text-[11px] font-mono font-black text-white/30 uppercase tracking-[0.4em]">{label}</span>
+          <div className="p-3 rounded-2xl bg-white/[0.05] border border-white/10 group-hover:scale-125 transition-transform duration-700 shadow-xl" style={{ color }}>
+             {icon}
+          </div>
+       </div>
+       <div className="text-6xl font-display font-black text-white tracking-tighter mb-5 relative z-10">{value}</div>
+       <div className="flex items-center gap-3 relative z-10">
+          <div className={`w-2 h-2 rounded-full ${pulse ? 'animate-pulse' : ''} shadow-lg`} style={{ backgroundColor: color, boxShadow: `0 0 10px ${color}` }} />
+          <span className="text-[11px] font-mono font-black uppercase tracking-widest opacity-60 text-white/80">{status}</span>
+       </div>
+    </motion.div>
   );
 }
 

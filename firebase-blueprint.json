@@ -78,6 +78,17 @@
         "photoURL": { "type": "string" }
       },
       "required": ["userId", "email"]
+    },
+    "GlobalMetrics": {
+      "title": "GlobalMetrics",
+      "description": "Chỉ số hệ thống thời gian thực.",
+      "type": "object",
+      "properties": {
+        "bandwidth": { "type": "string" },
+        "latency": { "type": "string" },
+        "activeNodes": { "type": "integer" },
+        "serverLoad": { "type": "integer" }
+      }
     }
   },
   "firestore": {
@@ -85,6 +96,7 @@
     "/bugs": { "schema": "Bug", "description": "Danh sách các lỗi." },
     "/comments": { "schema": "Comment", "description": "Danh sách các bình luận." },
     "/activity_logs": { "schema": "ActivityLog", "description": "Lịch sử hoạt động." },
-    "/users": { "schema": "UserProfile", "description": "Danh sách người dùng." }
+    "/users": { "schema": "UserProfile", "description": "Danh sách người dùng." },
+    "/metrics": { "schema": "GlobalMetrics", "description": "Thông tin hạ tầng toàn cầu (Công khai)." }
   }
 }
