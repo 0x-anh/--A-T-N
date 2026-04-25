@@ -395,32 +395,6 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs }: K
 
   return (
     <div className="flex-1 w-full flex flex-col overflow-hidden relative z-10 px-8 py-6">
-      {/* Floating Status HUD */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-auto max-w-lg h-10 bg-slate-900/60 backdrop-blur-xl border border-white/10 rounded-full z-50 flex items-center px-6 gap-6 shadow-2xl overflow-hidden">
-         <div className="flex items-center gap-2 whitespace-nowrap">
-            <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-            <span className="text-[9px] font-mono text-emerald-500/80 font-bold tracking-wider">LIÊN KẾT BẢO MẬT</span>
-         </div>
-         
-         <div className="h-3 w-[1px] bg-white/10" />
-         
-         <div className="flex items-center gap-4 text-[9px] font-mono text-white/20 font-bold overflow-hidden">
-            <motion.div 
-               animate={{ x: [200, -200] }}
-               transition={{ duration: 15, repeat: Infinity, ease: 'linear' }}
-               className="flex gap-8 whitespace-nowrap"
-            >
-               <span>Hệ thống::Sẵn sàng</span>
-               <span>Trực tuyến::99%</span>
-               <span>NODE::0x44</span>
-            </motion.div>
-         </div>
-
-         <div className="flex items-center gap-2 shrink-0">
-            <Activity size={14} className="text-[#FACC15] opacity-40" />
-         </div>
-      </div>
-
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-10 px-2">
         <div>
           <div className="flex items-center gap-3 mb-2">

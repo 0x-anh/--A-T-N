@@ -5,7 +5,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from "motion/react";
-import { CheckCircle2, Check, Shield, X, Activity, Globe, LayoutGrid, Plus, Cpu, Bell, Lock, ShieldAlert, LogIn, LogOut, Zap } from "lucide-react";
+import { 
+  Sparkles, Code2, Rocket, ArrowRight, Layout, LayoutGrid, FolderKanban, PieChart, 
+  Zap, LogIn, LogOut, ShieldAlert, Bug as BugIcon, Activity, Cpu, Globe, Database, 
+  Terminal, FolderPlus, ChevronDown, ChevronRight, Users, Bell, Search, Plus, 
+  Filter, MessageSquare, History, Settings, Lock, CheckCircle2, Check, Shield, X 
+} from "lucide-react";
 import { toast } from "sonner";
 import { 
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, 
@@ -23,7 +28,7 @@ import { Toaster, toast } from 'sonner';
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'board' | 'metrics' | 'logs' | 'members' | 'settings'>('board');
+  const [activeTab, setActiveTab] = useState<'board' | 'metrics' | 'logs' | 'members' | 'settings' | 'terminal'>('board');
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [showProjectModal, setShowProjectModal] = useState(false);
@@ -36,6 +41,7 @@ export default function App() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
   const [showNetworkStats, setShowNetworkStats] = useState(false);
+  const [terminalLogs, setTerminalLogs] = useState<string[]>([]);
   const [jitter, setJitter] = useState(false);
 
   useEffect(() => {
@@ -171,6 +177,17 @@ export default function App() {
     });
     return () => unsubscribe();
   }, [user, selectedProject, activeTab]);
+
+  useEffect(() => {
+    if (projectLogs.length > 0) {
+      const latest = projectLogs[0];
+      const logMsg = `[${new Date().toLocaleTimeString()}] TRUY XUẤT: ${latest.action} - ${latest.details}`;
+      setTerminalLogs(prev => {
+        if (prev[0] === logMsg) return prev;
+        return [logMsg, ...prev].slice(0, 50);
+      });
+    }
+  }, [projectLogs]);
 
   const handleCreateProject = async () => {
     if (!newProjectName.trim() || !user) return;
@@ -856,6 +873,7 @@ export default function App() {
             <main className="flex-1 flex overflow-hidden relative bg-[#06080c]">
               <nav className="w-16 lg:w-60 border-r border-white/5 flex flex-col p-3 gap-1 bg-slate-950/40 backdrop-blur-md z-20">
                  <NavButton icon={LayoutGrid} label="BẢNG CÔNG VIỆC" active={activeTab === 'board'} onClick={() => setActiveTab('board')} />
+                 <NavButton icon={Terminal} label="TERMINAL" active={activeTab === 'terminal'} onClick={() => setActiveTab('terminal')} />
                  <NavButton icon={Activity} label="HOẠT ĐỘNG" active={activeTab === 'logs'} onClick={() => setActiveTab('logs')} />
                  <NavButton icon={PieChart} label="THỐNG KÊ" active={activeTab === 'metrics'} onClick={() => setActiveTab('metrics')} />
                  
@@ -1034,6 +1052,46 @@ export default function App() {
                               </div>
                            </div>
                         </motion.div>
+                      )}
+
+                      {activeTab === 'terminal' && (
+                        <div className="flex-1 p-8 overflow-hidden flex flex-col max-w-6xl mx-auto w-full">
+                           <div className="flex items-center gap-6 mb-8 shrink-0">
+                              <div className="w-14 h-14 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-[#FACC15]">
+                                 <Terminal size={24} />
+                              </div>
+                              <div>
+                                 <h2 className="text-3xl font-mono font-bold text-white uppercase tracking-tight">Hệ Thống Terminal</h2>
+                                 <p className="text-white/20 text-sm font-mono tracking-tight mt-1">Giao diện dòng lệnh trung tâm.</p>
+                              </div>
+                           </div>
+                           
+                           <div className="flex-1 bg-black/40 border border-white/5 rounded-2xl p-6 font-mono text-[11px] overflow-auto custom-scrollbar-mono flex flex-col-reverse">
+                              <div className="space-y-2">
+                                 {terminalLogs.length === 0 ? (
+                                    <div className="text-[#FACC15]/40 animate-pulse">ĐANG CHỜ TÍN HIỆU TỪ HỆ THỐNG...</div>
+                                 ) : (
+                                    terminalLogs.map((log, i) => (
+                                       <motion.div 
+                                         key={i} 
+                                         initial={{ opacity: 0, x: -10 }} 
+                                         animate={{ opacity: 1, x: 0 }}
+                                         className={cn(
+                                           "py-1 border-l-2 pl-3",
+                                           i === 0 ? "border-[#FACC15] text-[#FACC15]" : "border-white/10 text-white/40"
+                                         )}
+                                       >
+                                          {log}
+                                       </motion.div>
+                                    ))
+                                 )}
+                                 <div className="flex items-center gap-2 text-[#FACC15]">
+                                    <span className="animate-pulse">_</span>
+                                    <span>VORTEX-OS v3.5 READY</span>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
                       )}
 
                       {activeTab === 'members' && (
@@ -1350,6 +1408,7 @@ export default function App() {
           </div>
         )}
       </AnimatePresence>
+      {user && <SystemOverlay />}
     </div>
   );
 }
@@ -1369,5 +1428,54 @@ function NavButton({ icon: Icon, label, active, onClick }: { icon: any, label: s
          <div className="absolute right-3 w-1 h-1 bg-black rounded-full" />
       )}
     </button>
+  );
+}
+
+function SystemOverlay() {
+  return (
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-4xl h-12 bg-slate-950/80 backdrop-blur-3xl border border-white/5 rounded-2xl z-[200] flex items-center px-8 gap-10 shadow-2xl overflow-hidden group">
+       {/* Background accent */}
+       <div className="absolute inset-0 bg-[#FACC15]/[0.02] opacity-0 group-hover:opacity-100 transition-opacity" />
+       
+       <div className="flex items-center gap-3 shrink-0">
+          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+          <span className="text-[10px] font-mono font-black text-white/40 uppercase tracking-[0.2em]">CORE_STABLE</span>
+       </div>
+       
+       <div className="h-4 w-[1px] bg-white/10" />
+       
+       <div className="flex-1 overflow-hidden">
+          <motion.div 
+            animate={{ x: [0, -400] }}
+            transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
+            className="flex gap-12 whitespace-nowrap"
+          >
+             {[
+               "NODE_05::SYNC_OK", "CPU_LOAD::24%", "MEM_USAGE::1.4GB", "LATENCY::12MS", 
+               "ENCRYPT_ACTIVE::AES-256", "HỆ_THỐNG_BẢO_MẬT::SẴN_SÀNG", "UPLINK::STABLE", 
+               "DỮ_LIỆU_THỜI_GIAN_THỰC::ON", "PHIÊN_BẢN::v3.5.0", "HẠ_TẦNG::ELITE"
+             ].map((stat, i) => (
+                <span key={i} className="text-[9px] font-mono text-white/20 uppercase tracking-[0.1em]">{stat}</span>
+             ))}
+          </motion.div>
+       </div>
+       
+       <div className="h-4 w-[1px] bg-white/10 hidden md:block" />
+       
+       <div className="flex items-center gap-6 hidden md:flex shrink-0">
+          <div className="flex items-center gap-3">
+             <div className="text-[8px] font-mono text-white/20 uppercase">Network</div>
+             <div className="w-16 h-1 bg-white/5 rounded-full overflow-hidden">
+                <div className="h-full bg-[#FACC15] w-[75%] rounded-full opacity-60" />
+             </div>
+          </div>
+          <div className="flex items-center gap-3">
+             <div className="text-[8px] font-mono text-white/20 uppercase">Load</div>
+             <div className="w-16 h-1 bg-white/5 rounded-full overflow-hidden">
+                <div className="h-full bg-indigo-500 w-[30%] rounded-full opacity-60" />
+             </div>
+          </div>
+       </div>
+    </div>
   );
 }
