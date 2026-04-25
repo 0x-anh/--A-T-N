@@ -11,7 +11,6 @@ import {
   Terminal, FolderPlus, ChevronDown, ChevronRight, Users, Bell, Search, Plus, 
   Filter, MessageSquare, History, Settings, Lock, CheckCircle2, Check, Shield, X 
 } from "lucide-react";
-import { toast } from "sonner";
 import { 
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, 
   PieChart as RePieChart, Pie, Cell 
@@ -141,11 +140,12 @@ export default function App() {
     return () => unsubscribe();
   }, [user, selectedProject]);
 
-  const handleLogin = async () => {
+  const handleLogin = async (startTab?: typeof activeTab) => {
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
     try {
       await signInWithPopup(auth, provider);
+      if (startTab) setActiveTab(startTab);
       toast.success("Khởi động hệ thống thành công");
     } catch (error: any) {
       // Don't show error if user just closed the popup
@@ -416,29 +416,41 @@ export default function App() {
                      </div>
                      <span className="text-2xl font-display font-extrabold tracking-[-0.08em] text-white leading-none">TQ_PRO_v3.5</span>
                   </div>
-                  <nav className="hidden lg:flex items-center gap-16">
-                     {[
-                       { label: 'CHIẾN DỊCH', action: () => handleLogin() },
-                       { label: 'HẠ TẦNG', action: () => setShowNetworkStats(true) },
-                       { label: 'HỒ SƠ LÕI', action: () => setShowGuide(true) },
-                       { label: 'TƯỜNG LỬA', action: () => toast.info("Giao thức bảo mật đang hoạt động tối đa.") }
-                     ].map(item => (
-                       <button 
-                         key={item.label} 
-                         onClick={item.action}
-                         className="text-[10px] font-mono font-bold text-white/20 tracking-[0.4em] hover:text-[#FACC15] transition-all relative group uppercase cursor-pointer"
-                       >
-                         {item.label}
-                         <span className="absolute -bottom-2 left-0 w-0 h-[1px] bg-[#FACC15] transition-all group-hover:w-full" />
-                       </button>
-                     ))}
+                  <nav className="hidden xl:flex items-center gap-12">
+                     <div className="flex flex-col items-end">
+                        <span className="text-[8px] font-mono text-white/20 uppercase tracking-[0.3em]">Cấp độ Truy cập</span>
+                        <span className="text-[10px] font-mono font-black text-[#FACC15] tracking-[0.2em] uppercase">LEVEL_04_CLEARANCE</span>
+                     </div>
+                     <div className="h-8 w-[1px] bg-white/10" />
+                     <div className="flex gap-8">
+                       {[
+                         { label: 'HẠ TẦNG', action: () => setShowNetworkStats(true) },
+                         { label: 'HƯỚNG DẪN', action: () => setShowGuide(true) },
+                         { label: 'BẢO MẬT', action: () => toast.info("Hệ thống tường lửa đang ở mức tối đa.") }
+                       ].map(item => (
+                         <button 
+                           key={item.label} 
+                           onClick={item.action}
+                           className="text-[9px] font-mono font-bold text-white/40 tracking-[0.3em] hover:text-[#FACC15] transition-all relative group uppercase cursor-pointer"
+                         >
+                           {item.label}
+                           <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-[#FACC15] transition-all group-hover:w-full" />
+                         </button>
+                       ))}
+                     </div>
                   </nav>
                </div>
                
                <div className="flex items-center gap-12">
-                  <button onClick={handleLogin} className="text-[10px] font-mono font-bold text-white/40 hover:text-white transition-all tracking-[0.4em] uppercase">XÁC THỰC_</button>
+                  <div className="hidden md:flex flex-col items-end">
+                     <span className="text-[8px] font-mono text-white/20 uppercase tracking-[0.3em]">Trạng thái Đồng bộ</span>
+                     <div className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                        <span className="text-[9px] font-mono font-bold text-emerald-500">LIVE_CONNECTION</span>
+                     </div>
+                  </div>
                   <button onClick={handleLogin} className="btn-cyber">
-                    KHỞI TẠO ELITE_
+                    KHỞI CHẠY HỆ THỐNG_
                   </button>
                </div>
             </header>
@@ -457,39 +469,202 @@ export default function App() {
                  style={{ clipPath: 'polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)' }}
                >
                  <div className="w-2 h-2 bg-[#FACC15] shadow-[0_0_15px_#FACC15]" />
-                 <span className="text-[10px] font-mono font-bold tracking-[0.4em] text-white/60 uppercase">CỐT_LÕI_HỆ_THỐNG_ĐÃ_KÍCH_HOẠT</span>
-               </motion.div>
-               
-               <div className="relative">
-                 <h1 className="text-[8rem] md:text-[14rem] font-display font-bold tracking-[-0.08em] leading-[0.75] text-white mb-20 select-none text-center">
-                    VOID <br />
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-white/20 italic glow-text-amber">CONTROL.</span>
-                 </h1>
-                 <div className="absolute -top-10 -right-20 w-40 h-[1px] bg-[#FACC15]/40 rotate-45" />
-                 <div className="absolute -bottom-10 -left-20 w-40 h-[1px] bg-[#FACC15]/40 rotate-45" />
+                 <div className="relative mb-12">
+                  <div className="absolute inset-0 bg-[#FACC15]/5 blur-[80px] rounded-full" />
+                  <h1 className="text-[6rem] md:text-[10rem] font-sans font-black tracking-[-0.1em] text-white leading-[0.8] relative z-10 uppercase text-center">
+                    ELITE<span className="text-[#FACC15]">.</span>OS
+                  </h1>
                </div>
-               
-               <p className="text-xl md:text-2xl text-white/20 max-w-2xl mx-auto mb-24 text-center font-medium font-mono leading-relaxed tracking-tight px-6">
-                 Quản trị sự hỗn loạn thông qua độ chính xác của hạt nhân kỹ thuật. 
-                 Vận hành mạng lưới tác vụ với tốc độ ánh sáng.
-               </p>
+               </motion.div>
 
-               <div className="flex flex-col md:flex-row items-center justify-center gap-12 w-full max-w-4xl px-10">
-                  <div className="flex-1 p-12 cyber-panel border-[#818CF8]/20 flex flex-col items-center gap-8 group">
-                     <span className="text-[10px] font-mono font-bold text-[#818CF8] tracking-[0.5em]">NỀN TẢNG_X</span>
-                     <h3 className="text-4xl font-display font-bold text-white group-hover:scale-105 transition-transform text-center tracking-tighter">TRUNG TÂM ELITE</h3>
-                     <button onClick={handleLogin} className="btn-cyber w-full">BẮT ĐẦU NGAY_</button>
+               {/* Tactical Grid Visualization - Compacted */}
+               <div className="w-full max-w-5xl h-[280px] mb-16 relative px-10 group mt-4">
+                  <div className="absolute inset-0 border border-white/5 rounded-[32px] bg-white/[0.01] backdrop-blur-sm" style={{ maskImage: 'radial-gradient(circle at center, black, transparent 80%)' }} />
+                  
+                  <svg className="w-full h-full opacity-30">
+                     <defs>
+                        <pattern id="grid-dots-small" width="30" height="30" patternUnits="userSpaceOnUse">
+                           <circle cx="1.5" cy="1.5" r="0.5" fill="white" fillOpacity="0.1" />
+                        </pattern>
+                     </defs>
+                     <rect width="100%" height="100%" fill="url(#grid-dots-small)" />
+                  </svg>
+                  
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-6 w-full max-w-xl text-center">
+                     <p className="text-sm md:text-base font-mono text-white/20 uppercase tracking-[0.4em] leading-relaxed">
+                        Hệ thống <span className="text-white/40">Quản trị Tác vụ</span> & <span className="text-[#FACC15]">Tối ưu hóa</span> Dự án.
+                     </p>
+                     
+                     <div className="flex gap-4">
+                        <div className="px-3 py-1 bg-white/5 border border-white/10 text-[9px] font-medium text-emerald-500/60 font-mono tracking-widest uppercase">Mã hóa Live</div>
+                        <div className="px-3 py-1 bg-white/5 border border-white/10 text-[9px] font-medium text-[#FACC15]/60 font-mono tracking-widest uppercase">Lõi Elite</div>
+                     </div>
                   </div>
-                  <div className="flex-1 p-12 cyber-panel border-white/5 flex flex-col items-center gap-8 group">
-                     <span className="text-[10px] font-mono font-bold text-white/20 tracking-[0.5em] uppercase">HỒ SƠ TÀI LIỆU</span>
-                     <h3 className="text-4xl font-display font-bold text-white group-hover:scale-105 transition-transform text-center tracking-tighter uppercase">Hệ thống Lưu trữ</h3>
-                     <button 
-                       onClick={() => setShowGuide(true)}
-                       className="h-14 px-10 bg-white/5 text-white/40 font-bold border border-white/10 uppercase tracking-[0.2em] text-[12px] w-full hover:bg-white/10 transition-all"
-                     >
-                       XEM HƯỚNG DẪN_
-                     </button>
-                  </div>
+               </div>
+
+               {/* Operational Dashboard - Balanced Bento Grid */}
+               <div className="w-full max-w-6xl px-10 grid grid-cols-1 md:grid-cols-12 gap-5">
+                  {/* Main Access Node - Expanded */}
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    className="md:col-span-8 bg-white/[0.02] border border-white/5 rounded-3xl p-10 relative overflow-hidden group min-h-[340px] flex flex-col justify-between"
+                  >
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#FACC15]/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="absolute -right-20 -top-20 w-64 h-64 bg-[#FACC15]/5 rounded-full blur-[100px] pointer-events-none" />
+                    
+                    <div className="flex flex-col gap-12 relative z-10">
+                       <div className="flex justify-between items-start">
+                          <div className="space-y-1.5">
+                             <div className="flex items-center gap-2.5">
+                                <div className="w-2 h-2 bg-emerald-500 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.5)] animate-pulse" />
+                                <span className="text-[10px] font-mono font-black text-white/40 uppercase tracking-[0.4em]">Hệ Thống Trực Tuyến</span>
+                             </div>
+                             <h3 className="text-5xl font-display font-black text-white tracking-tighter uppercase leading-none">TRUNG TÂM_ <br /><span className="text-[#FACC15]">ĐIỀU HÀNH</span></h3>
+                          </div>
+                       </div>
+
+                       <div className="flex flex-wrap items-center gap-8">
+                          <button 
+                            onClick={() => handleLogin()}
+                            className="h-14 px-12 bg-[#FACC15] text-black font-black text-[11px] uppercase rounded-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-4 group/btn relative overflow-hidden shadow-[0_0_30px_rgba(250,204,21,0.15)]"
+                          >
+                            KÍCH HOẠT QUYỀN TRUY CẬP_
+                            <ArrowRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
+                          </button>
+                          
+                          <div className="flex items-center gap-4">
+                             <div className="flex -space-x-3">
+                                {[...Array(3)].map((_, i) => (
+                                  <div key={i} className="w-10 h-10 rounded-full border-2 border-[#05070a] bg-white/5 flex items-center justify-center overflow-hidden">
+                                     <div className="w-full h-full bg-slate-800" />
+                                  </div>
+                                ))}
+                             </div>
+                             <span className="text-[9px] font-mono text-white/20 uppercase tracking-widest">+8 ADMIN ĐANG ONLINE</span>
+                          </div>
+                       </div>
+                    </div>
+
+                    <div className="flex gap-6 mt-8 border-t border-white/5 pt-8 relative z-10">
+                       <div className="flex items-center gap-2">
+                          <div className="text-[8px] font-mono text-white/20 uppercase tracking-widest">Node:</div>
+                          <div className="text-[9px] font-mono text-white/60 font-bold">AS-SE-CORE-01</div>
+                       </div>
+                       <div className="flex items-center gap-2">
+                          <div className="text-[8px] font-mono text-white/20 uppercase tracking-widest">Latency:</div>
+                          <div className="text-[9px] font-mono text-emerald-500 font-bold">14ms</div>
+                       </div>
+                    </div>
+                  </motion.div>
+
+                  {/* System Health Node */}
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.1 }}
+                    className="md:col-span-4 bg-white/[0.02] border border-white/5 rounded-3xl p-8 flex flex-col justify-between group overflow-hidden"
+                  >
+                    <div className="flex justify-between items-center text-white/20">
+                       <span className="text-[9px] font-mono font-bold uppercase tracking-[0.2em]">Sức khỏe CPU</span>
+                       <Activity size={16} />
+                    </div>
+
+                    <div className="h-32 flex items-end gap-1 px-1">
+                       {[...Array(12)].map((_, i) => (
+                          <motion.div 
+                            key={i}
+                            animate={{ height: [20, 100, 20, 60, 20].map(v => v + '%') }}
+                            transition={{ duration: 1.5 + i * 0.1, repeat: Infinity, ease: "easeInOut" }}
+                            className="flex-1 bg-white/5 group-hover:bg-[#FACC15]/20 rounded-sm transition-colors"
+                          />
+                       ))}
+                    </div>
+
+                    <div className="space-y-1">
+                       <div className="text-[9px] font-mono text-white/20 uppercase">Tải trọng hiện tại</div>
+                       <div className="text-3xl font-display font-black text-white">42.8%</div>
+                    </div>
+                  </motion.div>
+
+                  {/* Security Status - Row 2 */}
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.2 }}
+                    className="md:col-span-4 bg-white/[0.02] border border-white/5 rounded-3xl p-8 flex flex-col gap-6 group hover:bg-white/[0.04] transition-colors"
+                  >
+                    <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-[#FACC15]">
+                       <Shield size={24} />
+                    </div>
+                    <div>
+                       <h4 className="text-sm font-display font-black text-white uppercase tracking-tight">Giao thức Bảo mật_</h4>
+                       <p className="text-[10px] font-mono text-white/30 uppercase mt-1 leading-relaxed">Mã hóa Quantum-Link kích hoạt. Cấp độ bảo mật tối đa.</p>
+                    </div>
+                    <div className="mt-auto flex items-center gap-2">
+                       <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
+                       <span className="text-[8px] font-mono text-emerald-500/60 uppercase font-black uppercase tracking-widest">ACTIVE PROTECT</span>
+                    </div>
+                  </motion.div>
+
+                  {/* Core StorageNode - Row 2 */}
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.3 }}
+                    className="md:col-span-4 bg-white/[0.02] border border-white/5 rounded-3xl p-8 flex flex-col justify-between group"
+                  >
+                    <div className="flex justify-between items-center text-white/20">
+                       <span className="text-[9px] font-mono font-bold uppercase tracking-[0.2em]">Bộ nhớ Lõi</span>
+                       <Cpu size={16} />
+                    </div>
+                    <div className="space-y-4">
+                       <div className="flex justify-between items-end">
+                          <span className="text-3xl font-display font-black text-white">88.4%</span>
+                          <span className="text-[9px] font-mono text-white/20 mb-2 font-bold uppercase tracking-widest">ĐÃ DÙNG</span>
+                       </div>
+                       <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                          <motion.div 
+                            initial={{ width: 0 }}
+                            whileInView={{ width: '88.4%' }}
+                            transition={{ duration: 1.5, ease: "easeOut" }}
+                            className="h-full bg-white/30 group-hover:bg-[#FACC15] transition-colors"
+                          />
+                       </div>
+                    </div>
+                  </motion.div>
+
+                  {/* Operational Feed - Row 2 */}
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.4 }}
+                    className="md:col-span-4 bg-[#0A0C10] border border-white/5 rounded-3xl p-8 flex flex-col gap-4 overflow-hidden relative"
+                  >
+                    <div className="flex justify-between items-center relative z-10">
+                       <span className="text-[9px] font-mono font-bold text-[#FACC15] uppercase tracking-widest">Hoạt động thời gian thực</span>
+                       <div className="flex gap-1">
+                          <div className="w-1 h-1 bg-[#FACC15] rounded-full animate-ping" />
+                       </div>
+                    </div>
+                    <div className="space-y-3 relative z-10">
+                       {[
+                         { label: 'UPLINK', val: 'CONNECTED', color: 'text-emerald-500' },
+                         { label: 'GATEWAY', val: 'SECURE', color: 'text-white/60' },
+                         { label: 'DB_SYNC', val: 'IDLE', color: 'text-indigo-400' }
+                       ].map((item, idx) => (
+                         <div key={idx} className="flex justify-between items-center py-2 border-b border-white/[0.03]">
+                            <span className="text-[8px] font-mono text-white/20 uppercase tracking-widest">{item.label}</span>
+                            <span className={`text-[9px] font-mono font-black ${item.color} uppercase`}>{item.val}</span>
+                         </div>
+                       ))}
+                    </div>
+                  </motion.div>
                </div>
 
                {/* Live Terminal Feed */}
@@ -666,25 +841,63 @@ export default function App() {
                </AnimatePresence>
             </div>
 
-            {/* Industrial Grid Features */}
-            <div className="w-full max-w-screen-2xl mx-auto px-10 pb-64 relative z-10">
-               <div className="grid grid-cols-1 md:grid-cols-4 border border-white/5 bg-white/[0.01]">
-                  {[
-                    { label: 'THIẾT LẬP', title: 'FAST_SYNC', desc: 'Đồng bộ hóa 24ms liên khu vực.', icon: <Zap /> },
-                    { label: 'AN NINH', title: 'SSL_ELITE', desc: 'Mã hóa lượng tử đa lớp.', icon: <ShieldAlert /> },
-                    { label: 'QUẢN TRỊ', title: 'TASK_GRID', desc: 'Ma trận tác vụ đa tầng.', icon: <LayoutGrid /> },
-                    { label: 'GIAO THỨC', title: 'API_OPEN', desc: 'Kết nối node không giới hạn.', icon: <Code2 /> }
-                  ].map((item, i) => (
-                    <div key={i} className="p-16 border border-white/[0.03] group hover:bg-[#818CF8]/5 transition-all relative">
-                       <span className="text-[9px] font-mono font-bold text-[#FACC15] tracking-[0.5em] mb-12 block">{item.label}</span>
-                       <div className="text-white/20 mb-8 transition-colors group-hover:text-[#FACC15]">
-                          {React.cloneElement(item.icon as React.ReactElement, { size: 32 })}
-                       </div>
-                       <h4 className="text-3xl font-display font-bold text-white mb-4 tracking-tighter">{item.title}</h4>
-                       <p className="text-white/30 text-sm font-mono leading-relaxed">{item.desc}</p>
-                       <div className="absolute bottom-4 right-4 text-[9px] font-mono text-white/5">NODE_00{i+1}</div>
-                    </div>
-                  ))}
+            {/* Industrial Feature Matrix */}
+            <div className="w-full max-w-7xl mx-auto px-10 pb-64 relative z-10">
+               <div className="flex flex-col gap-24">
+                  <div className="flex flex-col md:flex-row justify-between items-end gap-8 border-b border-white/5 pb-12">
+                     <div className="space-y-4">
+                        <div className="flex items-center gap-2">
+                           <div className="w-1.5 h-1.5 bg-[#FACC15] rounded-full animate-pulse" />
+                           <span className="text-[10px] font-mono font-black text-white uppercase tracking-[0.5em]">HỆ SINH THÁI NODE</span>
+                        </div>
+                        <h2 className="text-6xl font-display font-black text-white tracking-tighter uppercase whitespace-nowrap">HẠ TẦNG <br /><span className="text-white/20">SIÊU CẤP.</span></h2>
+                     </div>
+                     <p className="text-sm font-mono text-white/30 max-w-sm uppercase leading-relaxed text-right">
+                        Được trang bị các giao thức xử lý song song, đảm bảo tính vẹn toàn của dữ liệu trên toàn bộ mạng lưới phân tán.
+                     </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px bg-white/5 border border-white/5 overflow-hidden rounded-[32px]">
+                     {[
+                       { label: 'THIẾT LẬP', title: 'FAST_SYNC', desc: 'Đồng bộ hóa 24ms liên khu vực.', icon: <Zap />, node: '001', color: '#FACC15' },
+                       { label: 'AN NINH', title: 'SSL_ELITE', desc: 'Mã hóa lượng tử đa lớp.', icon: <ShieldAlert />, node: '002', color: '#818CF8' },
+                       { label: 'QUẢN TRỊ', title: 'TASK_GRID', desc: 'Ma trận tác vụ đa tầng.', icon: <LayoutGrid />, node: '003', color: '#10B981' },
+                       { label: 'GIAO THỨC', title: 'API_OPEN', desc: 'Kết nối node không giới hạn.', icon: <Code2 />, node: '004', color: '#F43F5E' }
+                     ].map((item, i) => (
+                       <motion.div 
+                         key={i} 
+                         whileHover={{ backgroundColor: 'rgba(255,255,255,0.02)' }}
+                         className="bg-slate-950 p-12 flex flex-col gap-12 relative group min-h-[400px]"
+                       >
+                          <div className="flex justify-between items-start">
+                             <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white/40 group-hover:scale-110 group-hover:border-white/20 transition-all duration-500">
+                                {React.cloneElement(item.icon as React.ReactElement, { size: 20 })}
+                             </div>
+                             <span className="text-[10px] font-mono font-bold text-white/10 uppercase tracking-widest">NODE_{item.node}</span>
+                          </div>
+
+                          <div className="space-y-4">
+                             <div className="flex flex-col">
+                                <span className="text-[9px] font-mono font-bold uppercase tracking-[0.4em] mb-2" style={{ color: item.color }}>{item.label}</span>
+                                <h4 className="text-3xl font-display font-black text-white tracking-tight group-hover:translate-x-1 transition-transform">{item.title}</h4>
+                             </div>
+                             <p className="text-xs font-mono text-white/30 uppercase leading-relaxed tracking-tight">{item.desc}</p>
+                          </div>
+
+                          <div className="mt-auto pt-12 border-t border-white/5 flex items-center justify-between">
+                             <div className="flex gap-1">
+                                {[...Array(3)].map((_, j) => (
+                                   <div key={j} className="w-3 h-1 bg-white/10 rounded-full" />
+                                ))}
+                             </div>
+                             <div className="text-[8px] font-mono text-white/10 uppercase">STATUS::NOMINAL</div>
+                          </div>
+
+                          {/* Hover Accent */}
+                          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                       </motion.div>
+                     ))}
+                  </div>
                </div>
             </div>
 
@@ -692,9 +905,9 @@ export default function App() {
                <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
                   <div className="flex items-center gap-3">
                      <Zap size={18} className="text-[#00F0FF]" />
-                     <span className="text-[12px] font-mono font-medium text-white/30 uppercase tracking-widest">© 2026 Vortex Engine Protocol</span>
+                     <span className="text-[11px] font-mono font-bold text-white/60 uppercase tracking-[0.2em]">© 2026 NGUYỄN ĐỨC ANH_</span>
                   </div>
-                  <div className="flex gap-8 text-[12px] font-medium text-white/30">
+                  <div className="flex gap-10 text-[10px] font-mono font-bold text-white/40 uppercase tracking-widest">
                      <a href="#" className="hover:text-white transition-colors">Twitter</a>
                      <a href="#" className="hover:text-white transition-colors">GitHub</a>
                      <a href="#" className="hover:text-white transition-colors">Security</a>
