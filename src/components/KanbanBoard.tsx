@@ -14,11 +14,10 @@ import {
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { db, auth, handleFirestoreError } from '../lib/firebase';
 import { Bug, BugStatus, BugPriority, STATUS_COLUMNS, PRIORITY_CONFIG, UserProfile, Comment, ActivityLog } from '../types';
-import { Plus, Trash2, GripVertical, Clock, Search, Filter, X, Activity, CheckCircle2, UserPlus, MessageSquare, History, Send, ChevronRight, User as UserIcon, Bug as BugIcon, Terminal, Code2 } from 'lucide-react';
+import { Plus, Trash2, Clock, Search, X, MessageSquare, MoreHorizontal, UserPlus } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
-
-import { Toaster, toast } from 'sonner';
+import { toast } from 'sonner';
 
 interface KanbanBoardProps {
   projectId: string;
@@ -30,9 +29,6 @@ interface KanbanBoardProps {
 const DraggableAny = Draggable as any;
 
 const BugCard: React.FC<{ bug: Bug, index: number, userProfiles: UserProfile[], onSelect: (bug: Bug) => void }> = ({ bug, index, userProfiles, onSelect }) => {
-  const config = PRIORITY_CONFIG[bug.priority];
-  const Icon = config.icon;
-
   return (
     <DraggableAny key={bug.id} draggableId={bug.id} index={index}>
       {(provided: any, snapshot: any) => (
@@ -41,158 +37,140 @@ const BugCard: React.FC<{ bug: Bug, index: number, userProfiles: UserProfile[], 
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           className={cn(
-            "cursor-pointer group relative overflow-hidden transition-all bg-slate-900 border border-white/5 rounded-xl mb-3 hover:border-[#FACC15]/40",
-            snapshot.isDragging ? "z-50 border-[#FACC15] shadow-2xl scale-[1.02]" : "shadow-md"
+            "mb-6 outline-none transition-all",
+            snapshot.isDragging ? "z-[210] scale-[1.05]" : ""
           )}
-          style={{
-            ...provided.draggableProps.style,
-          }}
+          style={{ ...provided.draggableProps.style }}
         >
           <div 
-            className="p-5"
-            onClick={(e) => {
-              if (!snapshot.isDragging) {
-                onSelect(bug);
-              }
-            }}
+            onClick={() => !snapshot.isDragging && onSelect(bug)}
+            className={cn(
+               "bg-white border border-slate-200/60 rounded-[2rem] p-8 transition-all duration-700 cursor-grab active:cursor-grabbing hover:border-brand-500/20 group select-none relative overflow-hidden",
+               snapshot.isDragging ? "shadow-[0_40px_80px_rgba(0,0,0,0.1)] ring-2 ring-brand-500/10 border-transparent rotate-[1deg]" : "hover:shadow-[0_20px_40px_rgba(0,0,0,0.04)]"
+            )}
           >
-            <div className="flex items-start justify-between gap-3 mb-3">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1.5 opacity-40">
-                <span className="text-[9px] font-mono font-bold text-[#FACC15]">#{bug.id.slice(0, 4).toUpperCase()}</span>
-                <div className="w-1 h-1 bg-white/20 rounded-full" />
-                <span className={cn("text-[8px] font-mono font-bold uppercase tracking-widest", config.color)}>
-                   {bug.priority}
-                </span>
+            {/* PRIORITY ACCENT BAR */}
+            <div className={cn(
+              "absolute top-0 right-0 bottom-0 w-2",
+              bug.priority === 'critical' ? "bg-rose-500 shadow-[-4px_0_15px_rgba(244,63,94,0.3)]" : bug.priority === 'high' ? "bg-amber-500 shadow-[-4px_0_15px_rgba(245,158,11,0.2)]" : "bg-brand-500 shadow-[-4px_0_15px_rgba(124,58,237,0.2)]"
+            )} />
+
+            <div className="space-y-6">
+              <div className="flex items-center justify-between gap-3">
+                 <div className="flex items-center gap-3">
+                    <div className="flex flex-col">
+                       <span className="text-[9px] font-black text-slate-300 uppercase tracking-[0.3em] font-mono leading-none">Node Hash</span>
+                       <span className="text-[10px] font-black text-slate-950 uppercase tracking-[0.1em] font-mono leading-none mt-1">{bug.id.slice(-6).toUpperCase()}</span>
+                    </div>
+                 </div>
+                 <div className="flex -space-x-2">
+                   {bug.assigneeId ? (
+                     <img 
+                       src={userProfiles.find(u => u.userId === bug.assigneeId)?.photoURL || `https://api.dicebear.com/7.x/notionists/svg?seed=${bug.assigneeId}`} 
+                       className="w-10 h-10 rounded-xl border-4 border-white bg-white shadow-xl transition-transform group-hover:scale-110" 
+                       alt=""
+                     />
+                   ) : (
+                     <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-300 group-hover:bg-brand-50 group-hover:text-brand-600 transition-colors">
+                        <UserPlus size={16} />
+                     </div>
+                   )}
+                 </div>
               </div>
-              <h4 className="text-sm font-mono font-bold text-white group-hover:text-[#FACC15] transition-colors line-clamp-2 leading-tight uppercase tracking-tight">
+
+              <h4 className="text-[17px] font-black text-slate-900 leading-[1.35] tracking-tight font-display italic group-hover:text-brand-600 transition-colors">
                 {bug.title}
               </h4>
-            </div>
-            <div className={cn("p-1.5 bg-white/5 border border-white/5 rounded-lg", config.color)}>
-              <Icon size={12} />
-            </div>
-          </div>
 
-          <div className="flex items-center justify-between pt-3 border-t border-white/5">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-lg bg-slate-800 border border-white/10 flex items-center justify-center overflow-hidden">
-                {bug.assigneeId ? (
-                  <img 
-                    src={userProfiles.find(u => u.userId === bug.assigneeId)?.photoURL} 
-                    className="w-full h-full object-cover"
-                    alt=""
-                  />
-                ) : <UserIcon size={10} className="text-white/20" />}
+              <div className="flex items-center justify-between pt-2 border-t border-slate-50/50">
+                 <div className="flex items-center gap-6 text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] font-mono">
+                    {bug.comments?.length > 0 && (
+                      <div className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 rounded-lg text-slate-500">
+                        <MessageSquare size={14} className="text-slate-400" strokeWidth={2.5} />
+                        <span>{bug.comments.length}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-1.5">
+                      <Clock size={14} className="text-slate-300" strokeWidth={2.5} />
+                      <span>{bug.updatedAt ? new Date((bug.updatedAt as any).toDate()).toLocaleDateString([], { month: 'short', day: 'numeric' }) : 'NOW'}</span>
+                    </div>
+                 </div>
+                 <MoreHorizontal size={18} className="text-slate-200 group-hover:text-slate-400 transition-colors cursor-pointer" />
               </div>
-              <span className="text-[9px] font-mono font-bold text-white/30 uppercase tracking-wider">
-                {bug.assigneeId ? userProfiles.find(u => u.userId === bug.assigneeId)?.displayName.split(' ')[0] : 'Chưa giao'}
-              </span>
-            </div>
-            
-            <div className="flex items-center gap-2">
-               {bug.updatedAt && <Clock size={10} className="text-white/10" />}
-               <div className="flex gap-0.5">
-                  {[1,2,3].map(i => <div key={i} className={cn("w-1.5 h-0.5 rounded-full", i <= (bug.priority === 'critical' ? 3 : bug.priority === 'high' ? 2 : 1) ? config.color.replace('text-', 'bg-') : "bg-white/5")} />)}
-               </div>
             </div>
           </div>
         </div>
-      </div>
       )}
     </DraggableAny>
   );
 };
 
-interface ColumnProps {
-  title: string;
-  tasks: Bug[];
-  status: BugStatus;
-  userProfiles: UserProfile[];
-  onSelect: (bug: Bug) => void;
-  isAdding: boolean;
-  setIsAdding: (status: BugStatus | null) => void;
-  newBugTitle: string;
-  setNewBugTitle: (val: string) => void;
-  handleAddBug: (status: BugStatus) => void;
-}
-
 const KanbanColumn: React.FC<ColumnProps> = ({ title, tasks, status, userProfiles, onSelect, isAdding, setIsAdding, newBugTitle, setNewBugTitle, handleAddBug }) => {
-  return (
-    <div 
-      className="w-[320px] shrink-0 flex flex-col h-full bg-slate-900/40 border border-white/5 rounded-2xl mx-2 overflow-hidden backdrop-blur-sm"
-    >
-      <div className="px-5 py-4 border-b border-white/5 bg-slate-900/60 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-1 h-6 bg-[#FACC15] rounded-full" />
-          <h3 className="text-sm font-mono font-bold text-white uppercase tracking-wider">{title}</h3>
+   return (
+    <div className="w-[360px] shrink-0 h-full flex flex-col px-4">
+      <div className="py-10 flex items-center justify-between group">
+        <div className="flex items-center gap-5">
+          <div className="w-3 h-3 rounded-full bg-brand-500 shadow-[0_0_15px_rgba(124,58,237,0.5)]" />
+          <div>
+             <h3 className="text-[12px] font-black text-slate-950 uppercase tracking-[0.4em] font-display italic leading-none">{title}</h3>
+             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1.5 font-mono">Channel {status.toUpperCase()}</p>
+          </div>
         </div>
-        <div className="text-xs font-mono text-white/20 font-bold">{tasks.length}</div>
+        <div className="flex items-center gap-4">
+           <span className="text-[11px] font-black text-brand-600 bg-brand-50 border border-brand-100 px-3 py-1 rounded-xl shadow-inner">{tasks.length} Nodes</span>
+           <button 
+             onClick={() => setIsAdding(status)}
+             className={cn("w-12 h-12 flex items-center justify-center rounded-2xl border border-slate-100 bg-white text-slate-400 hover:text-brand-600 hover:border-brand-200 hover:shadow-2xl transition-all", isAdding && "bg-brand-600 text-white border-transparent")}
+           >
+             <Plus size={20} strokeWidth={3} />
+           </button>
+        </div>
       </div>
 
       <Droppable droppableId={status}>
-        {(provided: any) => (
+        {(provided: any, snapshot: any) => (
           <div
             {...provided.droppableProps}
             ref={provided.innerRef}
-            className="flex-1 p-4 overflow-y-auto custom-scrollbar min-h-[200px]"
+            className={cn(
+              "flex-1 overflow-y-auto custom-scrollbar transition-all bg-slate-50/50 rounded-[3rem] p-6 border border-slate-200/40 shadow-inner",
+              snapshot.isDraggingOver && "bg-brand-50/30 border-brand-500/20 shadow-2xl shadow-brand-500/5"
+            )}
           >
-            {tasks.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-32 border border-dashed border-white/5 rounded-xl opacity-20">
-                 <span className="text-[9px] font-mono uppercase tracking-widest">Trống</span>
-              </div>
-            ) : (
-              tasks.map((bug, index) => (
+            <AnimatePresence>
+              {isAdding && (
+                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="bg-white border border-brand-500/20 rounded-[2.5rem] p-8 shadow-2xl shadow-brand-500/10 mb-10">
+                  <div className="text-[10px] font-black text-brand-600 uppercase tracking-widest mb-4 font-mono">Khởi tạo Packet mới</div>
+                  <input
+                    autoFocus
+                    className="w-full bg-transparent border-none p-0 text-lg font-black text-slate-950 outline-none placeholder:text-slate-300 mb-10 font-display italic"
+                    placeholder="Định danh vụ việc..."
+                    value={newBugTitle}
+                    onChange={(e) => setNewBugTitle(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleAddBug(status);
+                      if (e.key === 'Escape') setIsAdding(null);
+                    }}
+                  />
+                  <div className="flex gap-4">
+                    <button onClick={() => handleAddBug(status)} className="flex-1 h-14 bg-slate-950 text-white rounded-2xl text-[11px] font-black shadow-2xl shadow-slate-950/20 active:scale-95 transition-all uppercase tracking-widest">Deploy Node</button>
+                    <button onClick={() => setIsAdding(null)} className="h-14 px-6 text-[11px] font-black text-slate-400 hover:text-slate-950 transition-all uppercase tracking-widest">Abort</button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div className="min-h-[100px]">
+              {tasks.map((bug, index) => (
                 <BugCard key={bug.id} bug={bug} index={index} userProfiles={userProfiles} onSelect={onSelect} />
-              ))
-            )}
+              ))}
+            </div>
             {provided.placeholder}
-            
-            {isAdding ? (
-              <motion.div 
-                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                className="p-4 bg-slate-800 border border-white/10 rounded-xl"
-              >
-                <input
-                  autoFocus
-                  className="w-full bg-transparent border-none p-2 text-xs font-mono text-white outline-none uppercase placeholder:text-white/10"
-                  placeholder="TIÊU ĐỀ..."
-                  value={newBugTitle}
-                  onChange={(e) => setNewBugTitle(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleAddBug(status);
-                    if (e.key === 'Escape') setIsAdding(null);
-                  }}
-                />
-                <div className="flex gap-2 mt-4">
-                  <button onClick={() => handleAddBug(status)} className="flex-1 py-1.5 bg-[#FACC15] text-black text-[10px] font-bold uppercase rounded-lg">Lưu</button>
-                  <button onClick={() => setIsAdding(null)} className="flex-1 py-1.5 bg-white/5 text-white/40 text-[10px] font-bold uppercase rounded-lg">Hủy</button>
-                </div>
-              </motion.div>
-            ) : (
-              <button 
-                onClick={() => setIsAdding(status)}
-                className="w-full py-3 border border-dashed border-white/5 text-white/20 hover:text-[#FACC15] hover:border-[#FACC15]/20 transition-all flex items-center justify-center gap-2 group rounded-xl"
-              >
-                <Plus size={12} className="group-hover:rotate-90 transition-transform" />
-                <span className="text-[9px] font-mono font-bold uppercase tracking-widest">Thêm Tác Vụ</span>
-              </button>
-            )}
           </div>
         )}
       </Droppable>
     </div>
-  );
-};
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1
-    }
-  }
+   );
 };
 
 export default function KanbanBoard({ projectId, userId, userProfiles, bugs }: KanbanBoardProps & { key?: any }) {
@@ -200,7 +178,6 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs }: K
   const [isAdding, setIsAdding] = useState<BugStatus | null>(null);
   const [newBugTitle, setNewBugTitle] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [priorityFilter, setPriorityFilter] = useState<BugPriority | 'all'>('all');
   const [selectedBug, setSelectedBug] = useState<Bug | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
@@ -209,11 +186,8 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs }: K
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const animation = requestAnimationFrame(() => setEnabled(true));
-    return () => {
-      cancelAnimationFrame(animation);
-      setEnabled(false);
-    };
+    setEnabled(true);
+    return () => setEnabled(false);
   }, []);
 
   useEffect(() => {
@@ -224,24 +198,21 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs }: K
     }
 
     const commentsQuery = query(collection(db, 'comments'), where('bugId', '==', selectedBug.id), orderBy('createdAt', 'asc'));
-    const logsQuery = query(collection(db, 'activity_logs'), where('bugId', '==', selectedBug.id), orderBy('createdAt', 'desc'));
+    const logsQuery = query(collection(db, 'activity_logs'), 
+      where('bugId', '==', selectedBug.id), 
+      where('projectId', '==', projectId),
+      orderBy('createdAt', 'desc')
+    );
 
     const unsubComments = onSnapshot(commentsQuery, (snap) => {
       setComments(snap.docs.map(d => ({ id: d.id, ...d.data() } as Comment)));
-    }, (error) => {
-      console.warn("Comments listener failed:", error);
-    });
+    }, (error) => { handleFirestoreError(error, 'list', 'comments'); });
 
     const unsubLogs = onSnapshot(logsQuery, (snap) => {
       setActivityLogs(snap.docs.map(d => ({ id: d.id, ...d.data() } as ActivityLog)));
-    }, (error) => {
-      console.warn("Logs listener failed:", error);
-    });
+    }, (error) => { handleFirestoreError(error, 'list', 'activity_logs'); });
 
-    return () => {
-      unsubComments();
-      unsubLogs();
-    };
+    return () => { unsubComments(); unsubLogs(); };
   }, [selectedBug]);
 
   useEffect(() => {
@@ -252,11 +223,9 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs }: K
 
   const filteredBugs = useMemo(() => {
     return bugs.filter(bug => {
-      const titleMatch = bug.title.toLowerCase().includes(searchTerm.toLowerCase());
-      const priorityMatch = priorityFilter === 'all' || bug.priority === priorityFilter;
-      return titleMatch && priorityMatch;
+      return bug.title.toLowerCase().includes(searchTerm.toLowerCase());
     });
-  }, [bugs, searchTerm, priorityFilter]);
+  }, [bugs, searchTerm]);
 
   const logActivity = async (bugId: string, action: string, details: string) => {
     if (!auth.currentUser) return;
@@ -265,14 +234,12 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs }: K
         bugId,
         projectId,
         userId: auth.currentUser.uid,
-        userName: auth.currentUser.displayName || 'Điều hành viên',
+        userName: auth.currentUser.displayName || 'Operator',
         action,
         details,
         createdAt: serverTimestamp()
       });
-    } catch (e) {
-      console.error("Log error:", e);
-    }
+    } catch (e) { console.error("Log error:", e); }
   };
 
   const onDragEnd = async (result: DropResult) => {
@@ -288,16 +255,9 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs }: K
         status: newStatus as BugStatus,
         updatedAt: serverTimestamp()
       });
-      await logActivity(draggableId, 'STATUS_CHANGE', `Trạng thái: ${oldStatus} >> ${newStatus}`);
-      toast.success("DI CHUYỂN THÀNH CÔNG", {
-        description: `${oldStatus.toUpperCase()} -> ${newStatus.toUpperCase()}`
-      });
-    } catch (error) {
-      console.error("Lỗi khi cập nhật trạng thái:", error);
-      toast.error("DI CHUYỂN THẤT BẠI", {
-        description: "Giao thức cập nhập trạng thái bị gián đoạn."
-      });
-    }
+      await logActivity(draggableId, 'STATUS_UPDATE', `Thay đổi trạng thái từ ${oldStatus} sang ${newStatus}`);
+      toast.success("Đã đồng bộ cập nhật bảng");
+    } catch (error) { toast.error("Cập nhật thất bại"); }
   };
 
   const handleAddBug = async (status: BugStatus) => {
@@ -312,56 +272,29 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs }: K
         createdAt: serverTimestamp(),
         creatorId: auth.currentUser.uid
       });
-      await logActivity(docRef.id, 'CREATE', 'Khởi tạo hồ sơ lỗi mới.');
-      toast.success("Tác vụ ĐÃ ĐƯỢC TẠO", {
-        description: `Mã số: ${docRef.id.slice(0, 8)}`,
-      });
+      await logActivity(docRef.id, 'CREATE', 'Đã khởi tạo vụ việc mới.');
+      toast.success("Đã khởi tạo Node");
       setNewBugTitle('');
       setIsAdding(null);
-    } catch (error) {
-      handleFirestoreError(error, 'create', 'bugs');
-      toast.error("KHỞI TẠO THẤT BẠI", {
-        description: "Truy cập bị từ chối hoặc lỗi liên kết."
-      });
-    }
+    } catch (error) { toast.error("Khởi tạo thất bại"); }
   };
 
   const handleUpdateBugDetails = async (id: string, updates: Partial<Bug>) => {
     try {
-      await updateDoc(doc(db, 'bugs', id), {
-        ...updates,
-        updatedAt: serverTimestamp()
-      });
-      
-      const bugToUpdate = bugs.find(b => b.id === id);
-      if (updates.priority && bugToUpdate?.priority !== updates.priority) {
-        await logActivity(id, 'PRIORITY_UPDATE', `Mức độ ưu tiên: ${updates.priority.toUpperCase()}`);
-      }
-      if (updates.assigneeId && bugToUpdate?.assigneeId !== updates.assigneeId) {
-        const assignee = userProfiles.find(u => u.userId === updates.assigneeId);
-        await logActivity(id, 'ASSIGNMENT', `Phân công cho: ${assignee?.displayName || updates.assigneeId}`);
-      }
-
+      await updateDoc(doc(db, 'bugs', id), { ...updates, updatedAt: serverTimestamp() });
       if (selectedBug && selectedBug.id === id) {
         setSelectedBug(prev => prev ? { ...prev, ...updates } : null);
       }
-    } catch (error) {
-      handleFirestoreError(error, 'update', `bugs/${id}`);
-    }
+    } catch (error) { console.error(error); }
   };
 
   const handleDeleteBug = async (id: string) => {
-    if (!confirm("XÁC NHẬN XÓA TÁC VỤ? Dữ liệu này không thể khôi phục.")) return;
+    if (!confirm("Xác nhận tiêu hủy vụ việc này?")) return;
     try {
       await deleteDoc(doc(db, 'bugs', id));
       if (selectedBug?.id === id) setSelectedBug(null);
-      toast.info("HỆ THỐNG: ĐÃ XÓA TÁC VỤ", {
-        description: `Dữ liệu ${id.slice(0, 6)} đã được dọn sạch khỏi trung tâm điều khiển.`
-      });
-    } catch (error) {
-      handleFirestoreError(error, 'delete', `bugs/${id}`);
-      toast.error("LỖI HỆ THỐNG: XÓA THẤT BẠI");
-    }
+      toast.info("Node đã được giải phóng");
+    } catch (error) { toast.error("Giải phóng thất bại"); }
   };
 
   const handleAddComment = async () => {
@@ -370,21 +303,13 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs }: K
       await addDoc(collection(db, 'comments'), {
         bugId: selectedBug.id,
         userId: auth.currentUser.uid,
-        userName: auth.currentUser.displayName || 'Ẩn danh',
+        userName: auth.currentUser.displayName || 'Operator',
         content: newComment,
         createdAt: serverTimestamp()
       });
-      await logActivity(selectedBug.id, 'COMMENT_POSTED', 'Ghi chú kỹ thuật mới được đính kèm.');
+      await logActivity(selectedBug.id, 'COMMENT', 'Đã ghi nhận phản hồi.');
       setNewComment('');
-    } catch (error) {
-      handleFirestoreError(error, 'create', 'comments');
-    }
-  };
-
-  const stats = {
-    total: bugs.length,
-    critical: bugs.filter(b => b.priority === 'critical').length,
-    done: bugs.filter(b => b.status === 'done').length
+    } catch (error) { console.error(error); }
   };
 
   const getFilteredTasks = (status: BugStatus) => {
@@ -394,39 +319,30 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs }: K
   if (!enabled) return null;
 
   return (
-    <div className="flex-1 w-full flex flex-col overflow-hidden relative z-10 px-8 py-6">
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-10 px-2">
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-             <div className="w-2 h-2 bg-[#FACC15] rounded-full" />
-             <span className="text-[10px] font-mono font-bold text-[#FACC15] tracking-widest uppercase">Quản Lý Tác Vụ</span>
-          </div>
-          <h1 className="text-5xl font-mono font-black text-white tracking-widest uppercase">
-            Bảng Công Việc
-          </h1>
-        </div>
-
-        <div className="flex items-center gap-4">
+    <div className="flex-1 w-full flex flex-col overflow-hidden bg-[#FBFBFE]">
+      <div className="h-24 px-12 flex items-center justify-between border-b border-slate-100 bg-white/50 backdrop-blur-3xl shrink-0">
+        <div className="flex items-center gap-12">
+           <h2 className="text-2xl font-black text-slate-950 tracking-tight font-display italic">CHẾ ĐỘ MA TRẬN</h2>
            <div className="relative group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-[#FACC15] transition-all" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-brand-600 transition-colors" />
               <input 
-                type="text" placeholder="Tìm kiếm..." value={searchTerm}
+                type="text" placeholder="Tìm kiếm trong ma trận..." value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="h-11 bg-white/5 border border-white/5 rounded-xl pl-12 pr-4 text-xs font-mono font-bold text-white focus:border-[#FACC15]/40 focus:outline-none transition-all w-64 placeholder:text-white/10 uppercase"
+                className="h-12 bg-slate-50/50 border border-slate-100 rounded-2xl pl-12 pr-6 text-sm font-black text-slate-900 focus:bg-white focus:ring-8 focus:ring-brand-500/5 transition-all w-96 outline-none placeholder:text-slate-300 font-mono"
               />
            </div>
-           <button 
-             onClick={() => setIsAdding('backlog')}
-             className="bg-[#FACC15] text-black h-11 px-6 rounded-xl font-mono font-bold text-[11px] uppercase hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
-           >
-             <Plus size={16} />
-             Tạo Mới
-           </button>
         </div>
+
+        <button 
+          onClick={() => setIsAdding('todo')}
+          className="h-12 px-8 bg-slate-950 text-white rounded-2xl text-[10px] font-black hover:bg-brand-600 transition-all flex items-center gap-3 shadow-2xl shadow-slate-950/20 active:scale-95 uppercase tracking-widest"
+        >
+           <Plus size={18} strokeWidth={3} /> Đăng vụ việc
+        </button>
       </div>
 
       <div className="flex-1 overflow-x-auto custom-scrollbar">
-        <div className="flex gap-2 h-full min-w-max pb-8">
+        <div className="flex h-full p-12 gap-10">
           <DragDropContext onDragEnd={onDragEnd}>
             {STATUS_COLUMNS.map(col => (
                <KanbanColumn 
@@ -449,185 +365,132 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs }: K
 
       <AnimatePresence>
         {selectedBug && (
-          <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[300] flex items-center justify-end p-8">
             <motion.div 
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setSelectedBug(null)}
-              className="absolute inset-0 bg-black/80 backdrop-blur-md"
+              className="absolute inset-0 bg-slate-950/40 backdrop-blur-2xl"
             />
             <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-              className="relative w-full max-w-5xl h-[85vh] bg-slate-900 border border-white/10 shadow-2xl flex flex-col md:flex-row overflow-hidden rounded-3xl"
+              initial={{ x: '100%', opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: '100%', opacity: 0 }} transition={{ type: 'spring', damping: 30, stiffness: 200 }}
+              className="relative w-full max-w-2xl h-full bg-white rounded-[4rem] shadow-4xl flex flex-col overflow-hidden border border-white/20"
             >
-              {/* Sidebar Info */}
-              <div className="w-full md:w-72 border-r border-white/5 bg-slate-950/60 p-8 flex flex-col gap-8 shrink-0">
-                <div className="flex items-center gap-4 mb-2">
-                  <div className="w-12 h-12 bg-[#FACC15]/10 text-[#FACC15] rounded-xl flex items-center justify-center">
-                    <BugIcon size={20} />
-                  </div>
-                  <div>
-                    <h3 className="text-[11px] font-mono font-bold text-white uppercase tracking-widest leading-none">Tác Vụ</h3>
-                    <p className="text-[10px] font-mono text-white/20 mt-1 uppercase">#{selectedBug.id.slice(0, 6)}</p>
-                  </div>
+              <div className="px-12 h-28 border-b border-slate-50 flex items-center justify-between bg-white shrink-0">
+                <div className="flex items-center gap-8">
+                   <div className="text-[11px] font-black text-brand-600 uppercase tracking-[0.4em] bg-brand-50 px-4 py-1.5 rounded-xl font-mono">MÃ-{selectedBug.id.slice(-4).toUpperCase()}</div>
+                   <div className="h-6 w-px bg-slate-100" />
+                   <span className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] italic font-display">TRUNG TÂM CHI TIẾT</span>
+                </div>
+                <button 
+                  onClick={() => setSelectedBug(null)}
+                  className="w-14 h-14 flex items-center justify-center rounded-3xl hover:bg-slate-50 text-slate-300 hover:text-slate-950 transition-all border border-transparent hover:border-slate-100"
+                >
+                  <X size={28} strokeWidth={2.5} />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-12 lg:p-16 space-y-16 custom-scrollbar">
+                <div className="space-y-12">
+                   <textarea 
+                     rows={2}
+                     className="w-full text-5xl font-black text-slate-950 outline-none border-none p-0 bg-transparent tracking-tight font-display italic leading-tight resize-none"
+                     placeholder="Định danh..."
+                     value={selectedBug.title}
+                     onChange={(e) => handleUpdateBugDetails(selectedBug.id, { title: e.target.value })}
+                   />
+                   
+                   <div className="grid grid-cols-2 gap-12">
+                      <div className="space-y-5">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1 font-display italic">MA TRẬN ƯU TIÊN</label>
+                        <div className="relative">
+                          <select 
+                            value={selectedBug.priority}
+                            onChange={(e) => handleUpdateBugDetails(selectedBug.id, { priority: e.target.value as BugPriority })}
+                            className="w-full h-16 bg-slate-50/50 border border-slate-100 rounded-[1.5rem] px-8 text-sm font-black text-slate-900 outline-none hover:border-brand-300 transition-all appearance-none cursor-pointer uppercase tracking-widest font-mono"
+                          >
+                            {(Object.entries(PRIORITY_CONFIG) as [BugPriority, any][]).map(([key, cfg]) => (
+                              <option key={key} value={key}>{cfg.label === 'Critical' ? 'KHẨN CẤP' : cfg.label === 'High' ? 'CAO' : 'TRUNG BÌNH'}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                      <div className="space-y-5">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1 font-display italic">NÚT VẬN HÀNH</label>
+                        <div className="relative">
+                          <select 
+                            value={selectedBug.assigneeId || ''}
+                            onChange={(e) => handleUpdateBugDetails(selectedBug.id, { assigneeId: e.target.value })}
+                            className="w-full h-16 bg-slate-50/50 border border-slate-100 rounded-[1.5rem] px-8 text-sm font-black text-slate-900 outline-none hover:border-brand-300 transition-all appearance-none cursor-pointer uppercase tracking-widest"
+                          >
+                            <option value="">CHƯA CHỈ ĐỊNH</option>
+                            {userProfiles.map(u => <option key={u.userId} value={u.userId}>{u.displayName.toUpperCase()}</option>)}
+                          </select>
+                        </div>
+                      </div>
+                   </div>
                 </div>
 
                 <div className="space-y-6">
-                  <div>
-                    <label className="text-[9px] font-mono font-bold text-white/30 uppercase tracking-widest mb-2 block">Ưu Tiên</label>
-                    <select 
-                      value={selectedBug.priority}
-                      onChange={(e) => handleUpdateBugDetails(selectedBug.id, { priority: e.target.value as BugPriority })}
-                      className="w-full bg-white/5 border border-white/10 p-3 text-xs font-mono text-white outline-none focus:border-[#FACC15]/40 transition-all rounded-xl"
-                    >
-                      {Object.keys(PRIORITY_CONFIG).map(p => (
-                        <option key={p} value={p}>{p.toUpperCase()}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="text-[9px] font-mono font-bold text-white/30 uppercase tracking-widest mb-2 block">Trạng Thái</label>
-                    <select 
-                      value={selectedBug.status}
-                      onChange={(e) => handleUpdateBugDetails(selectedBug.id, { status: e.target.value as BugStatus })}
-                      className="w-full bg-white/5 border border-white/10 p-3 text-xs font-mono text-white outline-none focus:border-[#FACC15]/40 transition-all rounded-xl"
-                    >
-                      {['backlog', 'in-progress', 'in-review', 'done'].map(s => (
-                        <option key={s} value={s}>{s.toUpperCase()}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="text-[9px] font-mono font-bold text-white/30 uppercase tracking-widest mb-2 block">Người Thực Hiện</label>
-                    <select 
-                      value={selectedBug.assigneeId || ''}
-                      onChange={(e) => handleUpdateBugDetails(selectedBug.id, { assigneeId: e.target.value })}
-                      className="w-full bg-white/5 border border-white/10 p-3 text-xs font-mono text-white outline-none focus:border-[#FACC15]/40 transition-all rounded-xl"
-                    >
-                      <option value="">CHƯA GIAO</option>
-                      {userProfiles.map(u => (
-                        <option key={u.userId} value={u.userId}>{u.displayName}</option>
-                      ))}
-                    </select>
-                  </div>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1 font-display italic">BẢO MẬT GIAO THỨC</label>
+                  <textarea 
+                    placeholder="Nhập thông tin chi tiết vào bản ghi viễn thám..."
+                    className="w-full h-64 bg-slate-50/50 border border-slate-100 rounded-[2.5rem] p-10 text-base text-slate-600 outline-none focus:bg-white focus:border-brand-200 focus:ring-12 focus:ring-brand-500/5 transition-all leading-relaxed font-medium"
+                    value={selectedBug.description || ''}
+                    onChange={(e) => handleUpdateBugDetails(selectedBug.id, { description: e.target.value })}
+                  />
                 </div>
 
-                <div className="mt-auto pt-6 border-t border-white/5 space-y-3">
-                  <button 
-                    onClick={() => handleDeleteBug(selectedBug.id)}
-                    className="w-full py-3 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white text-[10px] font-bold font-mono transition-all rounded-xl uppercase"
-                  >
-                    Xóa Tác Vụ
-                  </button>
-                  <button 
-                    onClick={() => setSelectedBug(null)}
-                    className="w-full py-3 bg-white/5 text-white/40 hover:text-white text-[10px] font-bold font-mono transition-all rounded-xl uppercase"
-                  >
-                    Đóng
-                  </button>
-                </div>
-              </div>
+                <div className="space-y-12 pt-12 border-t border-slate-50">
+                  <h3 className="text-sm font-black text-slate-950 uppercase tracking-[0.3em] flex items-center gap-4 font-display italic">
+                    <div className="w-2 h-2 rounded-full bg-brand-500 shadow-[0_0_10px_rgba(124,58,237,0.5)]" /> SỔ CÁI TƯƠNG TÁC
+                  </h3>
 
-              {/* Main Content */}
-              <div className="flex-1 flex flex-col bg-slate-900/40 min-w-0">
-                <div className="px-8 h-16 border-b border-white/5 flex items-center shrink-0">
-                  <div className="flex gap-4">
-                    {['info', 'comments', 'history'].map((t) => (
-                      <button
-                        key={t}
-                        onClick={() => setActivePanelTab(t as any)}
-                        className={cn(
-                          "px-4 h-9 text-[10px] font-mono font-bold uppercase tracking-wider transition-all rounded-xl",
-                          activePanelTab === t ? "bg-[#FACC15] text-black" : "text-white/30 hover:text-white hover:bg-white/5"
-                        )}
-                      >
-                        {t === 'info' ? 'Chi Tiết' : t === 'comments' ? 'Thảo Luận' : 'Lịch Sử'}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex-1 overflow-y-auto p-10 custom-scrollbar">
-                  <AnimatePresence mode="wait">
-                    {activePanelTab === 'info' && (
-                      <motion.div key="info" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-10">
-                        <div className="space-y-3">
-                          <label className="text-[10px] font-mono font-bold text-[#FACC15] uppercase tracking-widest opacity-60">Tiêu Đề</label>
-                          <input 
-                            className="w-full bg-transparent text-3xl font-mono font-bold text-white outline-none border-none p-0 focus:text-[#FACC15] transition-all uppercase"
-                            placeholder="Nhập tiêu đề..."
-                            value={selectedBug.title}
-                            onChange={(e) => handleUpdateBugDetails(selectedBug.id, { title: e.target.value })}
-                          />
-                        </div>
-
-                        <div className="space-y-3">
-                          <label className="text-[10px] font-mono font-bold text-[#FACC15] uppercase tracking-widest opacity-60">Mô Tả</label>
-                          <textarea 
-                            placeholder="Mô tả chi tiết tác vụ..."
-                            className="w-full h-72 bg-white/5 border border-white/5 rounded-2xl p-6 text-sm font-mono text-white/80 outline-none focus:border-[#FACC15]/30 transition-all resize-none"
-                            value={selectedBug.description || ''}
-                            onChange={(e) => handleUpdateBugDetails(selectedBug.id, { description: e.target.value })}
-                          />
-                        </div>
-                      </motion.div>
-                    )}
-
-                    {activePanelTab === 'comments' && (
-                      <motion.div key="comments" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="h-full flex flex-col">
-                        <div className="flex-1 space-y-4 mb-6">
-                          {comments.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center h-40 opacity-10">
-                               <MessageSquare size={32} />
-                               <span className="text-[10px] font-mono mt-4 uppercase">Chưa có thảo luận</span>
+                  <div className="space-y-12">
+                    <div className="space-y-10">
+                      {comments.map((c) => (
+                        <div key={c.id} className="flex gap-8 group/comment">
+                          <div className="relative shrink-0">
+                            <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${c.userId}`} className="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-100 shadow-sm" alt="" />
+                            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-white rounded-lg flex items-center justify-center border border-slate-100">
+                              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                             </div>
-                          ) : comments.map((c) => (
-                            <div key={c.id} className="p-5 bg-white/5 border border-white/5 rounded-2xl">
-                              <div className="flex justify-between items-center mb-2">
-                                <span className="text-[11px] font-mono font-bold text-[#FACC15]">{c.userName}</span>
-                                <span className="text-[9px] font-mono text-white/20">{c.createdAt?.toDate ? new Date(c.createdAt.toDate()).toLocaleTimeString() : '...'}</span>
-                              </div>
-                              <p className="text-sm font-mono text-white/70 leading-relaxed uppercase">{c.content}</p>
+                          </div>
+                          <div className="flex-1 space-y-3">
+                            <div className="flex items-baseline justify-between gap-4">
+                              <span className="text-sm font-black text-slate-950 italic font-display">{c.userName}</span>
+                              <span className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em] font-mono">{c.createdAt?.toDate ? new Date(c.createdAt.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'VỪA XONG'}</span>
                             </div>
-                          ))}
-                          <div ref={bottomRef} />
-                        </div>
-                        <div className="mt-auto bg-slate-950/60 p-4 rounded-2xl border border-white/5">
-                          <textarea 
-                            placeholder="Viết phản hồi..."
-                            className="w-full bg-transparent border-none p-2 text-sm font-mono text-white outline-none resize-none h-20 uppercase placeholder:text-white/10"
-                            value={newComment} onChange={(e) => setNewComment(e.target.value)}
-                            onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleAddComment(); } }}
-                          />
-                          <div className="flex justify-end pt-2">
-                            <button onClick={handleAddComment} className="px-6 py-1.5 bg-[#FACC15] text-black text-[10px] font-bold uppercase rounded-lg hover:scale-105 transition-transform">Gửi</button>
+                            <div className="text-sm text-slate-600 font-medium leading-[1.6] bg-slate-50/50 p-8 rounded-[2rem] border border-transparent group-hover:bg-white group-hover:border-slate-100 transition-all">
+                               {c.content}
+                            </div>
                           </div>
                         </div>
-                      </motion.div>
-                    )}
+                      ))}
+                    </div>
 
-                    {activePanelTab === 'history' && (
-                      <motion.div key="history" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-                        {activityLogs.map((log) => (
-                          <div key={log.id} className="flex gap-4">
-                             <div className="flex flex-col items-center gap-1 mt-1 shrink-0">
-                                <div className="w-1.5 h-1.5 rounded-full bg-[#FACC15]/40" />
-                                <div className="w-[1px] flex-1 bg-white/5" />
-                             </div>
-                             <div className="pb-6">
-                                <div className="flex items-center gap-3 mb-1">
-                                   <span className="text-[10px] font-mono font-bold text-[#818CF8] uppercase tracking-wider">{log.action}</span>
-                                   <span className="text-[8px] font-mono text-white/20 uppercase">{log.createdAt?.toDate ? new Date(log.createdAt.toDate()).toLocaleTimeString() : ''}</span>
-                                </div>
-                                <p className="text-xs font-mono text-white/40 uppercase tracking-tight">{log.details}</p>
-                                <span className="text-[8px] font-mono text-white/10 uppercase mt-2 block">Bởi: {log.userName}</span>
-                             </div>
-                          </div>
-                        ))}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                    <div className="flex flex-col gap-8 pt-12 border-t border-slate-50">
+                        <textarea 
+                          placeholder="Ghi nhận tương tác mới vào ledger..."
+                          className="w-full bg-slate-50/40 border border-slate-100 rounded-[2rem] p-8 text-sm text-slate-950 outline-none focus:bg-white focus:border-brand-200 transition-all h-36 font-medium shadow-inner"
+                          value={newComment} onChange={(e) => setNewComment(e.target.value)}
+                        />
+                        <div className="flex items-center justify-between">
+                          <button 
+                            onClick={handleAddComment} 
+                            disabled={!newComment.trim()}
+                            className="h-14 px-12 bg-slate-950 text-white rounded-2xl text-[10px] font-black shadow-2xl shadow-slate-950/20 hover:bg-brand-600 transition-all disabled:opacity-30 active:scale-95 uppercase tracking-[0.2em]"
+                          >
+                            ĐĂNG BẢN GHI
+                          </button>
+                          <button 
+                            onClick={() => handleDeleteBug(selectedBug.id)}
+                            className="flex items-center gap-2 text-[10px] font-black text-rose-300 hover:text-rose-500 transition-all uppercase tracking-[0.3em] font-display italic"
+                          >
+                            <Trash2 size={16} /> TIÊU HỦY VỤ VIỆC
+                          </button>
+                        </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -636,4 +499,17 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs }: K
       </AnimatePresence>
     </div>
   );
+}
+
+interface ColumnProps {
+  title: string;
+  tasks: Bug[];
+  status: BugStatus;
+  userProfiles: UserProfile[];
+  onSelect: (bug: Bug) => void;
+  isAdding: boolean;
+  setIsAdding: (status: BugStatus | null) => void;
+  newBugTitle: string;
+  setNewBugTitle: (val: string) => void;
+  handleAddBug: (status: BugStatus) => void;
 }

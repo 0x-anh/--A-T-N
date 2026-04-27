@@ -6,14 +6,15 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from "motion/react";
 import { 
-  Sparkles, Code2, Rocket, ArrowRight, Layout, LayoutGrid, FolderKanban, PieChart, 
+  Radio, Rocket, ArrowRight, Layout, LayoutGrid, FolderKanban, PieChart, 
   Zap, LogIn, LogOut, ShieldAlert, Bug as BugIcon, Activity, Cpu, Globe, Database, 
   Terminal, FolderPlus, ChevronDown, ChevronRight, Users, Bell, Search, Plus, 
-  Filter, MessageSquare, History, Settings, Lock, CheckCircle2, Check, Shield, X 
+  Filter, MessageSquare, History, Settings, Lock, CheckCircle2, Check, Shield, ShieldCheck, X,
+  UserPlus, Clock, ArrowUpRight, Share2, MoreHorizontal, Orbit, Code2, Mail, Trash2
 } from "lucide-react";
 import { 
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, 
-  PieChart as RePieChart, Pie, Cell 
+  PieChart as RePieChart, Pie, Cell, AreaChart, Area, CartesianGrid 
 } from 'recharts';
 import { auth, db, handleFirestoreError, testConnection } from './lib/firebase';
 import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged, User } from 'firebase/auth';
@@ -27,7 +28,7 @@ import { Toaster, toast } from 'sonner';
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'board' | 'metrics' | 'logs' | 'members' | 'settings' | 'terminal' | 'dashboard'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'board' | 'metrics' | 'logs' | 'members' | 'dashboard'>('dashboard');
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [showProjectModal, setShowProjectModal] = useState(false);
@@ -37,11 +38,7 @@ export default function App() {
   const [userProfiles, setUserProfiles] = useState<UserProfile[]>([]);
   const [bugs, setBugs] = useState<Bug[]>([]);
   const [showProjectDropdown, setShowProjectDropdown] = useState(false);
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [showGuide, setShowGuide] = useState(false);
-  const [showNetworkStats, setShowNetworkStats] = useState(false);
-  const [terminalLogs, setTerminalLogs] = useState<string[]>([]);
-  const [jitter, setJitter] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [platformStats, setPlatformStats] = useState({
     bandwidth: "1.2 GB/s",
     latency: "24ms",
@@ -50,32 +47,15 @@ export default function App() {
   });
 
   useEffect(() => {
-    const triggerJitter = () => {
-      setJitter(true);
-      setTimeout(() => setJitter(false), 300);
-      const nextTime = Math.random() * 15000 + 10000;
-      setTimeout(triggerJitter, nextTime);
-    };
-    const timer = setTimeout(triggerJitter, 5000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    // Listen for public platform stats
-    const unsubscribe = onSnapshot(doc(db, 'metrics', 'global'), (snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.data();
-        setPlatformStats({
-          bandwidth: data.bandwidth || "1.2 GB/s",
-          latency: data.latency || "24ms",
-          activeNodes: data.activeNodes || 12,
-          serverLoad: data.serverLoad || 42
-        });
-      }
-    }, (error) => {
-      console.warn("Public metrics listener error:", error);
-    });
-    return () => unsubscribe();
+    const interval = setInterval(() => {
+      setPlatformStats(prev => ({
+        ...prev,
+        bandwidth: `${(1.1 + Math.random() * 0.2).toFixed(1)} GB/s`,
+        latency: `${Math.floor(20 + Math.random() * 10)}ms`,
+        serverLoad: Math.floor(40 + Math.random() * 15)
+      }));
+    }, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -83,7 +63,6 @@ export default function App() {
     const unsubscribe = onAuthStateChanged(auth, async (u) => {
       setUser(u);
       if (u) {
-        // Sync user profile
         try {
           const userRef = doc(db, 'users', u.uid);
           await setDoc(userRef, {
@@ -101,14 +80,12 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  // Listen for projects
   useEffect(() => {
     if (!user) {
       setProjects([]);
       setSelectedProject(null);
       return;
     }
-    // Secure query: Only projects where user is owner or member
     const q = query(
       collection(db, 'projects'), 
       where('members', 'array-contains', user.uid),
@@ -135,13 +112,12 @@ export default function App() {
     }
   }, [selectedProject]);
 
-  // Listen for all users
   useEffect(() => {
     if (!user) return;
     const unsubscribe = onSnapshot(collection(db, 'users'), (snapshot) => {
       setUserProfiles(snapshot.docs.map(doc => doc.data() as UserProfile));
     }, (error) => {
-      console.warn("Limited user profile access:", error.message);
+      console.warn("User profile sync limited");
     });
     return () => unsubscribe();
   }, [user]);
@@ -159,156 +135,69 @@ export default function App() {
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setBugs(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Bug[]);
     }, (error) => {
-      console.error("Bugs listener error:", error);
+      handleFirestoreError(error, 'list', 'bugs');
     });
     return () => unsubscribe();
   }, [user, selectedProject]);
 
-  useEffect(() => {
-    // Initialize terminal logs with some default entries
-    setTerminalLogs([
-      `[${new Date().toLocaleTimeString()}] CORE_BOOT::COMPLETED`,
-      `[${new Date().toLocaleTimeString()}] UPLINK_ESTABLISHED::SIGNAL_STRENGTH_94%`,
-      `[${new Date().toLocaleTimeString()}] ENCRYPTION_LAYER_CONNECTED::AES_256`,
-      `[${new Date().toLocaleTimeString()}] FIREBASE_SYNC_READY`,
-      `[${new Date().toLocaleTimeString()}] SYSTEM_NOMINAL::v3.5.0.1`
-    ]);
-  }, []);
-
-  const addTerminalLog = (msg: string) => {
-    setTerminalLogs(prev => [`[${new Date().toLocaleTimeString()}] ${msg}`, ...prev.slice(0, 49)]);
-  };
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   const handleLogin = async (startTab?: typeof activeTab) => {
+    if (isLoggingIn) return;
+    setIsLoggingIn(true);
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
     try {
       await signInWithPopup(auth, provider);
       if (startTab) setActiveTab(startTab);
-      toast.success("Khởi động hệ thống thành công");
+      toast.success("Welcome back");
     } catch (error: any) {
-      // Don't show error if user just closed the popup
-      if (error.code === 'auth/popup-closed-by-user') {
-        return;
-      }
-      console.error("Lỗi đăng nhập:", error);
-      toast.error("Không thể khởi động hệ thống. Vui lòng thử lại.");
+      if (error.code === 'auth/popup-closed-by-user') return;
+      toast.error("Authentication failed");
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
   const handleLogout = () => auth.signOut();
 
+  const [chartData] = useState([
+    { name: 'Mon', value: 12 }, { name: 'Tue', value: 34 }, { name: 'Wed', value: 25 },
+    { name: 'Thu', value: 56 }, { name: 'Fri', value: 42 }, { name: 'Sat', value: 18 }, { name: 'Sun', value: 29 },
+  ]);
+
   const [projectLogs, setProjectLogs] = useState<any[]>([]);
 
-  // Listen for project logs (used for notifications too)
   useEffect(() => {
     if (!user || !selectedProject) return;
     const q = query(
       collection(db, 'activity_logs'),
       where('projectId', '==', selectedProject.id),
       orderBy('createdAt', 'desc'),
-      limit(50)
+      limit(20)
     );
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setProjectLogs(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     }, (error) => {
-      console.warn("Project logs listener failed:", error);
+      handleFirestoreError(error, 'list', 'activity_logs');
     });
     return () => unsubscribe();
-  }, [user, selectedProject, activeTab]);
-
-  useEffect(() => {
-    if (projectLogs.length > 0) {
-      const latest = projectLogs[0];
-      const logMsg = `[${new Date().toLocaleTimeString()}] TRUY XUẤT: ${latest.action} - ${latest.details}`;
-      setTerminalLogs(prev => {
-        if (prev[0] === logMsg) return prev;
-        return [logMsg, ...prev].slice(0, 50);
-      });
-    }
-  }, [projectLogs]);
+  }, [user, selectedProject]);
 
   const handleCreateProject = async () => {
     if (!newProjectName.trim() || !user) return;
     try {
       const docRef = await addDoc(collection(db, 'projects'), {
         name: newProjectName,
-        description: 'Industrial Bug Tracking Space',
+        description: 'New Project',
         createdAt: serverTimestamp(),
         ownerId: user.uid,
         members: [user.uid]
       });
-      toast.success(`SYSTEM_INIT: Project '${newProjectName}' deployed.`, {
-        description: `Ref: ${docRef.id}`,
-      });
+      toast.success("Workspace created");
       setNewProjectName('');
       setShowProjectModal(false);
-    } catch (error) {
-      console.error("Error creating project:", error);
-      toast.error("DEPLOYMENT_FAILED: Error initializing project node.");
-    }
-  };
-
-  const handleInviteMember = async () => {
-    if (!user || !selectedProject || !inviteEmail.trim()) return;
-    
-    // Find user profile by email
-    const targetUser = userProfiles.find(p => p.email.toLowerCase() === inviteEmail.toLowerCase().trim());
-    
-    if (!targetUser) {
-      toast.error("Không tìm thấy người dùng với email này.");
-      return;
-    }
-    
-    if (selectedProject.members.includes(targetUser.userId)) {
-      toast.error("Người dùng này đã là thành viên.");
-      return;
-    }
-
-    try {
-      const projectRef = doc(db, 'projects', selectedProject.id);
-      const newMembers = [...selectedProject.members, targetUser.userId];
-      await setDoc(projectRef, { members: newMembers }, { merge: true });
-      
-      // Log activity
-      await addDoc(collection(db, 'activity_logs'), {
-        projectId: selectedProject.id,
-        userId: user.uid,
-        action: 'INVITE',
-        details: `Đã mời ${targetUser.displayName} tham gia dự án`,
-        createdAt: serverTimestamp()
-      });
-
-      toast.success(`Đã thêm ${targetUser.displayName} vào dự án.`);
-      setInviteEmail('');
-    } catch (error) {
-      handleFirestoreError(error, 'update', 'projects');
-    }
-  };
-
-  const handleRemoveMember = async (memberId: string) => {
-    if (!user || !selectedProject || memberId === selectedProject.ownerId) return;
-
-    try {
-      const projectRef = doc(db, 'projects', selectedProject.id);
-      const newMembers = selectedProject.members.filter(m => m !== memberId);
-      await setDoc(projectRef, { members: newMembers }, { merge: true });
-      
-      const targetUser = userProfiles.find(p => p.userId === memberId);
-
-      // Log activity
-      await addDoc(collection(db, 'activity_logs'), {
-        projectId: selectedProject.id,
-        userId: user.uid,
-        action: 'REMOVE_MEMBER',
-        details: `Đã xóa ${targetUser?.displayName || memberId} khỏi dự án`,
-        createdAt: serverTimestamp()
-      });
-
-      toast.success("Đã xóa thành viên.");
-    } catch (error) {
-      handleFirestoreError(error, 'update', 'projects');
-    }
+    } catch (error) { toast.error("Failed to create workspace."); }
   };
 
   const handleUpdateProject = async () => {
@@ -316,1691 +205,638 @@ export default function App() {
     setIsUpdatingProject(true);
     try {
       const projectRef = doc(db, 'projects', selectedProject.id);
-      await setDoc(projectRef, { 
-        name: selectedProject.name,
-        description: selectedProject.description || ''
-      }, { merge: true });
-      toast.success("Đã cập nhật dự án.");
-    } catch (error) {
-      handleFirestoreError(error, 'update', 'projects');
-    } finally {
-      setIsUpdatingProject(false);
-    }
+      await setDoc(projectRef, { name: selectedProject.name, description: selectedProject.description || '' }, { merge: true });
+      toast.success("Project updated.");
+    } catch (error) { handleFirestoreError(error, 'update', 'projects'); } finally { setIsUpdatingProject(false); }
   };
-
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-
-  useEffect(() => {
-    setShowDeleteConfirm(false);
-  }, [selectedProject]);
 
   const handleDeleteProject = async () => {
     if (!user || !selectedProject) return;
-
     try {
-      toast.info("Yêu cầu xóa dự án đang được xử lý...");
-      const projectRef = doc(db, 'projects', selectedProject.id);
-      await deleteDoc(projectRef); 
-      
-      toast.success("Dự án đã được xóa.");
+      await deleteDoc(doc(db, 'projects', selectedProject.id)); 
+      toast.success("Project archive finalized.");
       setSelectedProject(null);
-      setActiveTab('board');
-      setShowDeleteConfirm(false);
-    } catch (error) {
-      handleFirestoreError(error, 'delete', 'projects');
-    }
+      setActiveTab('dashboard');
+    } catch (error) { handleFirestoreError(error, 'delete', 'projects'); }
   };
-
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePos({ x: e.clientX, y: e.clientY });
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#000000] flex flex-col items-center justify-center font-mono text-[#FACC15] overflow-hidden relative">
-        <div className="fixed inset-0 pointer-events-none opacity-20">
-           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_black_100%)] z-10" />
-           <div className="grid grid-cols-20 gap-1">
-              {Array.from({ length: 400 }).map((_, i) => (
-                <div key={i} className="text-[10px] opacity-10 animate-pulse" style={{ animationDelay: `${Math.random() * 5}s` }}>
-                  {Math.random() > 0.5 ? '1' : '0'}
-                </div>
-              ))}
-           </div>
-        </div>
-
-        <div className="mb-16 relative p-16 border border-[#FACC15]/20 bg-white/[0.02] backdrop-blur-3xl shadow-[0_0_100px_rgba(250,204,21,0.05)]" style={{ clipPath: 'polygon(20% 0%, 80% 0%, 100% 20%, 100% 80%, 80% 100%, 20% 100%, 0% 80%, 0% 20%)' }}>
-          <motion.div
-            animate={{ scale: [1, 1.05, 1], opacity: [0.7, 1, 0.7] }}
-            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-          >
-            <Zap size={100} className="fill-current glow-text-amber" />
-          </motion.div>
-          <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-2 bg-[#FACC15] text-black text-[10px] font-bold tracking-[0.5em] uppercase">INIT_OPERATIONS_v3.5</div>
-        </div>
-
-        <div className="space-y-6 text-center z-10">
-           <div className="w-96 h-[2px] bg-white/5 relative overflow-hidden">
-             <motion.div 
-               className="absolute top-0 left-0 h-full bg-[#FACC15] shadow-[0_0_20px_#FACC15]"
-               initial={{ width: 0 }} animate={{ width: "100%" }}
-               transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-             />
-           </div>
-           <div className="flex flex-col gap-2">
-              <div className="text-[11px] font-bold uppercase tracking-[0.8em] text-[#FACC15]/60">SYNCHRONIZING_NODE_TRAIL...</div>
-              <div className="text-[9px] font-mono text-white/10 uppercase tracking-widest flex items-center justify-center gap-4">
-                 <span>SECURE_SHELL_ENABLED</span>
-                 <span className="w-1 h-1 bg-[#FACC15] rounded-full animate-ping" />
-                 <span>ELITE_ACCESS_LEVEL_5</span>
-              </div>
-           </div>
-        </div>
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }} className="w-10 h-10 border-4 border-brand-500 border-t-transparent rounded-full shadow-2xl shadow-brand-500/20" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen tech-mesh text-[#E2E8F0] font-sans flex flex-col">
-      <Toaster position="top-right" richColors theme="dark" />
+    <div className="min-h-screen flex flex-col font-sans">
+      <Toaster position="top-right" richColors />
       
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute inset-0 cyber-grid opacity-20" />
-        <div className="absolute inset-0 atmospheric-nebula opacity-10" />
-        <div className="scanline" />
-        <div className="scanning-laser" />
-        <div className="heavy-grain" />
-      </div>
-
       <AnimatePresence mode="wait">
         {!user ? (
-          <motion.div 
-            key="landing"
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: 1 }} 
-            exit={{ opacity: 0, scale: 0.98 }}
-            transition={{ duration: 0.6 }}
-            className="w-full min-h-screen relative z-10 flex flex-col overflow-x-hidden"
-          >
-            {/* Immersive Background Nodes */}
-            <div className="fixed inset-0 pointer-events-none z-0">
-               <div 
-                 className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#00F0FF]/10 blur-[120px] rounded-full animate-pulse" 
-                 style={{ animationDuration: '10s' }}
-               />
-               <div className="absolute bottom-[-5%] left-[-5%] w-[40%] h-[40%] bg-indigo-500/5 blur-[100px] rounded-full" />
-            </div>
-
-            <motion.div 
-              animate={{ 
-                x: mousePos.x - 250,
-                y: mousePos.y - 250,
-              }}
-              transition={{ type: "spring", damping: 50, stiffness: 20, mass: 1 }}
-              className="fixed top-0 left-0 w-[500px] h-[500px] bg-[#00F0FF]/5 blur-[100px] rounded-full pointer-events-none z-0 opacity-50"
-            />
-            
-            {/* Hyper-Industrial Asymmetrical Header */}
-            <header className="fixed top-0 w-full h-24 flex items-center justify-between px-10 md:px-20 z-[100] border-b border-white/[0.05] bg-black/80 backdrop-blur-3xl">
-               <div className="flex items-center gap-24">
-                  <div className="flex items-center gap-6 cursor-pointer group">
-                     <div className="relative w-12 h-12 bg-white text-black flex items-center justify-center transition-all duration-700 group-hover:bg-[#FACC15] group-hover:rotate-45" style={{ clipPath: 'polygon(20% 0%, 80% 0%, 100% 20%, 100% 80%, 80% 100%, 20% 100%, 0% 80%, 0% 20%)' }}>
-                        <Zap size={22} className="fill-current" />
-                     </div>
-                     <span className="text-2xl font-display font-extrabold tracking-[-0.08em] text-white leading-none">TQ_PRO_v3.5</span>
+          <motion.div key="landing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="w-full min-h-screen bg-[#FBFBFE]">
+            <nav className="fixed top-0 left-0 right-0 h-20 flex items-center justify-between px-10 lg:px-14 z-[100] bg-white/50 backdrop-blur-md border-b border-white/20">
+               <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-brand-600 text-white flex items-center justify-center rounded-xl shadow-lg shadow-brand-500/20">
+                     <Code2 size={20} strokeWidth={2.5} />
                   </div>
-                  <nav className="hidden xl:flex items-center gap-12">
-                     <div className="flex flex-col items-end">
-                        <span className="text-[8px] font-mono text-white/20 uppercase tracking-[0.3em]">Cấp độ Truy cập</span>
-                        <span className="text-[10px] font-mono font-black text-[#FACC15] tracking-[0.2em] uppercase">LEVEL_04_CLEARANCE</span>
-                     </div>
-                     <div className="h-8 w-[1px] bg-white/10" />
-                     <div className="flex gap-8">
-                       {[
-                         { label: 'HẠ TẦNG', action: () => setShowNetworkStats(true) },
-                         { label: 'HƯỚNG DẪN', action: () => setShowGuide(true) },
-                         { label: 'BẢO MẬT', action: () => toast.success("HỆ THỐNG AN TOÀN: ĐANG THEO DÕI THỜI GIAN THỰC") }
-                       ].map(item => (
-                         <button 
-                           key={item.label} 
-                           onClick={item.action}
-                           className="text-[9px] font-mono font-bold text-white/40 tracking-[0.3em] hover:text-[#FACC15] transition-all relative group uppercase cursor-pointer"
-                         >
-                           {item.label}
-                           <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-[#FACC15] transition-all group-hover:w-full" />
-                         </button>
-                       ))}
-                     </div>
-                  </nav>
+                  <span className="text-xl font-bold tracking-tight text-slate-900 font-display italic">Linebase</span>
                </div>
-               
-               <div className="flex items-center gap-12">
-                  <div className="hidden md:flex flex-col items-end">
-                     <span className="text-[8px] font-mono text-white/20 uppercase tracking-[0.3em]">Trạng thái Đồng bộ</span>
-                     <div className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                        <span className="text-[9px] font-mono font-bold text-emerald-500">LIVE_CONNECTION</span>
-                     </div>
-                  </div>
-                  <button onClick={handleLogin} className="btn-cyber">
-                    KHỞI CHẠY HỆ THỐNG_
-                  </button>
+               <div className="flex items-center gap-8">
+                 <button onClick={() => handleLogin()} className="text-[11px] font-bold text-slate-400 uppercase tracking-widest hover:text-brand-600 transition-colors">Đăng nhập</button>
+                 <button onClick={() => handleLogin()} className="h-11 px-6 bg-slate-900 text-white rounded-xl text-sm font-bold shadow-lg shadow-slate-900/10 hover:bg-brand-600 transition-all flex items-center gap-3 group">
+                   Khởi tạo Node <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                 </button>
                </div>
-            </header>
+            </nav>
 
-            {/* Cinematic Hero composition */}
-            <div className="w-full flex flex-col items-center pt-72 pb-64 relative z-10 overflow-hidden">
-               {/* Vertical Decorative Elements */}
-               <div className="absolute left-[5%] top-0 h-full w-[1px] bg-white/[0.03] hidden xl:block" />
-               <div className="absolute left-[5.5%] top-40 vertical-label">GIAO THỨC_ĐÃ_THIẾT_LẬP</div>
-               <div className="absolute right-[5%] top-0 h-full w-[1px] bg-white/[0.03] hidden xl:block" />
-               <div className="absolute right-[5.5%] top-80 vertical-label text-[#FACC15]">KẾT_NỐI_ỔN_ĐỊNH_99.9</div>
-
-               <motion.div 
-                 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
-                 className="px-8 py-3 bg-white/[0.03] border border-white/10 mb-16 flex items-center gap-4"
-                 style={{ clipPath: 'polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)' }}
-               >
-                 <div className="w-2 h-2 bg-[#FACC15] shadow-[0_0_15px_#FACC15]" />
-                 <div className="relative mb-12">
-                  <div className="absolute inset-0 bg-[#FACC15]/5 blur-[80px] rounded-full" />
-                  <h1 className="text-[6rem] md:text-[10rem] font-sans font-black tracking-[-0.1em] text-white leading-[0.8] relative z-10 uppercase text-center">
-                    ELITE<span className="text-[#FACC15]">.</span>OS
-                  </h1>
-               </div>
-               </motion.div>
-
-               {/* Tactical Grid Visualization - Compacted */}
-               <div className="w-full max-w-5xl h-[280px] mb-16 relative px-10 group mt-4">
-                  <div className="absolute inset-0 border border-white/5 rounded-[32px] bg-white/[0.01] backdrop-blur-sm" style={{ maskImage: 'radial-gradient(circle at center, black, transparent 80%)' }} />
-                  
-                  <svg className="w-full h-full opacity-30">
-                     <defs>
-                        <pattern id="grid-dots-small" width="30" height="30" patternUnits="userSpaceOnUse">
-                           <circle cx="1.5" cy="1.5" r="0.5" fill="white" fillOpacity="0.1" />
-                        </pattern>
-                     </defs>
-                     <rect width="100%" height="100%" fill="url(#grid-dots-small)" />
-                  </svg>
-                  
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-6 w-full max-w-xl text-center">
-                     <p className="text-sm md:text-base font-mono text-white/20 uppercase tracking-[0.4em] leading-relaxed">
-                        Hệ thống <span className="text-white/40">Quản trị Tác vụ</span> & <span className="text-[#FACC15]">Tối ưu hóa</span> Dự án.
-                     </p>
-                     
-                     <div className="flex gap-4">
-                        <div className="px-3 py-1 bg-white/5 border border-white/10 text-[9px] font-medium text-emerald-500/60 font-mono tracking-widest uppercase">Mã hóa Live</div>
-                        <div className="px-3 py-1 bg-white/5 border border-white/10 text-[9px] font-medium text-[#FACC15]/60 font-mono tracking-widest uppercase">Lõi Elite</div>
-                     </div>
-                  </div>
-               </div>
-
-               {/* Operational Dashboard - Balanced Bento Grid */}
-               <div className="w-full max-w-6xl px-10 grid grid-cols-1 md:grid-cols-12 gap-5">
-                  {/* Main Access Node - Expanded */}
-                  <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    className="md:col-span-8 bg-white/[0.02] border border-white/5 rounded-3xl p-10 relative overflow-hidden group min-h-[340px] flex flex-col justify-between"
-                  >
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#FACC15]/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <div className="absolute -right-20 -top-20 w-64 h-64 bg-[#FACC15]/5 rounded-full blur-[100px] pointer-events-none" />
+            <main className="pt-40 lg:pt-52 pb-32 px-10 lg:px-14 max-w-7xl mx-auto flex flex-col min-h-screen">
+               <div className="grid grid-cols-1 lg:grid-cols-12 gap-20 items-center">
+                 <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }} className="lg:col-span-7 space-y-10">
+                    <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-brand-50 border border-brand-100/50">
+                      <div className="w-2 h-2 rounded-full bg-brand-500 animate-pulse" />
+                      <span className="text-[10px] font-bold text-brand-600 uppercase tracking-[0.2em]">Matrix V2.0 Live Protocols</span>
+                    </div>
                     
-                    <div className="flex flex-col gap-12 relative z-10">
-                       <div className="flex justify-between items-start">
-                          <div className="space-y-1.5">
-                             <div className="flex items-center gap-2.5">
-                                <div className="w-2 h-2 bg-emerald-500 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.5)] animate-pulse" />
-                                <span className="text-[10px] font-mono font-black text-white/40 uppercase tracking-[0.4em]">Hệ Thống Trực Tuyến</span>
+                    <h1 className="text-6xl lg:text-[8rem] font-black tracking-tight text-slate-950 leading-[0.9] font-display italic">
+                      Trí tuệ <br />
+                      <span className="text-brand-600 underline decoration-[10px] decoration-brand-100">Kỹ thuật.</span>
+                    </h1>
+                    
+                    <p className="text-xl lg:text-2xl text-slate-400 max-w-xl font-bold leading-relaxed tracking-tight">
+                      Trung tâm chỉ huy hợp nhất cho các nhóm hiệu suất cao để đồng bộ hóa mã nguồn, công việc và dữ liệu đo lường.
+                    </p>
+
+                    <div className="flex flex-wrap items-center gap-6 pt-4">
+                       <button onClick={() => handleLogin()} className="h-14 px-10 bg-slate-950 text-white rounded-2xl text-base font-black shadow-2xl shadow-slate-900/20 hover:bg-brand-600 transition-all active:scale-95">
+                          Thiết lập không gian làm việc
+                       </button>
+                       <button onClick={() => handleLogin()} className="h-14 px-10 bg-white text-slate-400 border border-slate-100 rounded-2xl text-base font-black hover:bg-slate-50 transition-all active:scale-95">
+                          Tài liệu kỹ thuật
+                       </button>
+                    </div>
+                 </motion.div>
+
+                 <motion.div initial={{ x: 40, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 1, delay: 0.2 }} className="lg:col-span-5 relative">
+                    <div className="card-smart p-1 shadow-[0_40px_100px_rgba(0,0,0,0.05)] border-white/50 bg-white/30 backdrop-blur-sm rotate-3">
+                       <div className="bg-slate-950 rounded-[2rem] overflow-hidden aspect-[4/5] p-10 flex flex-col justify-between">
+                          <div className="space-y-4">
+                             <div className="w-12 h-12 bg-brand-600 rounded-xl flex items-center justify-center text-white shadow-lg">
+                                <Zap size={24} />
                              </div>
-                             <h3 className="text-5xl font-display font-black text-white tracking-tighter uppercase leading-none">TRUNG TÂM_ <br /><span className="text-[#FACC15]">ĐIỀU HÀNH</span></h3>
+                             <h3 className="text-3xl font-black text-white font-display italic">Quantum <br />Board Sync</h3>
                           </div>
-                       </div>
-
-                       <div className="flex flex-wrap items-center gap-8">
-                          <button 
-                            onClick={() => handleLogin()}
-                            className="h-14 px-12 bg-[#FACC15] text-black font-black text-[11px] uppercase rounded-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-4 group/btn relative overflow-hidden shadow-[0_0_30px_rgba(250,204,21,0.15)]"
-                          >
-                            KÍCH HOẠT QUYỀN TRUY CẬP_
-                            <ArrowRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
-                          </button>
-                          
-                          <div className="flex items-center gap-4">
-                             <div className="flex -space-x-3">
-                                {[...Array(3)].map((_, i) => (
-                                  <div key={i} className="w-10 h-10 rounded-full border-2 border-[#05070a] bg-white/5 flex items-center justify-center overflow-hidden">
-                                     <div className="w-full h-full bg-slate-800" />
-                                  </div>
-                                ))}
+                          <div className="space-y-6">
+                             <div className="h-1 w-full bg-slate-800 rounded-full overflow-hidden">
+                                <motion.div animate={{ width: "70%" }} transition={{ duration: 2, repeat: Infinity, repeatType: 'reverse' }} className="h-full bg-brand-500" />
                              </div>
-                             <span className="text-[9px] font-mono text-white/20 uppercase tracking-widest">+8 ADMIN ĐANG ONLINE</span>
-                          </div>
-                       </div>
-                    </div>
-
-                    <div className="flex gap-6 mt-8 border-t border-white/5 pt-8 relative z-10">
-                       <div className="flex items-center gap-2">
-                          <div className="text-[8px] font-mono text-white/20 uppercase tracking-widest">Node:</div>
-                          <div className="text-[9px] font-mono text-white/60 font-bold">AS-SE-CORE-01</div>
-                       </div>
-                       <div className="flex items-center gap-2">
-                          <div className="text-[8px] font-mono text-white/20 uppercase tracking-widest">Latency:</div>
-                          <div className="text-[9px] font-mono text-emerald-500 font-bold">14ms</div>
-                       </div>
-                    </div>
-                  </motion.div>
-
-                  {/* System Health Node */}
-                  <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.1 }}
-                    className="md:col-span-4 bg-white/[0.02] border border-white/5 rounded-3xl p-8 flex flex-col justify-between group overflow-hidden"
-                  >
-                    <div className="flex justify-between items-center text-white/20">
-                       <span className="text-[9px] font-mono font-bold uppercase tracking-[0.2em]">Sức khỏe CPU</span>
-                       <Activity size={16} />
-                    </div>
-
-                    <div className="h-32 flex items-end gap-1 px-1">
-                       {[...Array(12)].map((_, i) => (
-                          <motion.div 
-                            key={i}
-                            animate={{ height: [20, 100, 20, 60, 20].map(v => v + '%') }}
-                            transition={{ duration: 1.5 + i * 0.1, repeat: Infinity, ease: "easeInOut" }}
-                            className="flex-1 bg-white/5 group-hover:bg-[#FACC15]/20 rounded-sm transition-colors"
-                          />
-                       ))}
-                    </div>
-
-                    <div className="space-y-1">
-                       <div className="text-[9px] font-mono text-white/20 uppercase">Tải trọng hiện tại</div>
-                       <div className="text-3xl font-display font-black text-white">42.8%</div>
-                    </div>
-                  </motion.div>
-
-                  {/* Security Status - Row 2 */}
-                  <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.2 }}
-                    className="md:col-span-4 bg-white/[0.02] border border-white/5 rounded-3xl p-8 flex flex-col gap-6 group hover:bg-white/[0.04] transition-colors"
-                  >
-                    <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-[#FACC15]">
-                       <Shield size={24} />
-                    </div>
-                    <div>
-                       <h4 className="text-sm font-display font-black text-white uppercase tracking-tight">Giao thức Bảo mật_</h4>
-                       <p className="text-[10px] font-mono text-white/30 uppercase mt-1 leading-relaxed">Mã hóa Quantum-Link kích hoạt. Cấp độ bảo mật tối đa.</p>
-                    </div>
-                    <div className="mt-auto flex items-center gap-2">
-                       <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
-                       <span className="text-[8px] font-mono text-emerald-500/60 uppercase font-black uppercase tracking-widest">ACTIVE PROTECT</span>
-                    </div>
-                  </motion.div>
-
-                  {/* Core StorageNode - Row 2 */}
-                  <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.3 }}
-                    className="md:col-span-4 bg-white/[0.02] border border-white/5 rounded-3xl p-8 flex flex-col justify-between group"
-                  >
-                    <div className="flex justify-between items-center text-white/20">
-                       <span className="text-[9px] font-mono font-bold uppercase tracking-[0.2em]">Bộ nhớ Lõi</span>
-                       <Cpu size={16} />
-                    </div>
-                    <div className="space-y-4">
-                       <div className="flex justify-between items-end">
-                          <span className="text-3xl font-display font-black text-white">88.4%</span>
-                          <span className="text-[9px] font-mono text-white/20 mb-2 font-bold uppercase tracking-widest">ĐÃ DÙNG</span>
-                       </div>
-                       <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                          <motion.div 
-                            initial={{ width: 0 }}
-                            whileInView={{ width: '88.4%' }}
-                            transition={{ duration: 1.5, ease: "easeOut" }}
-                            className="h-full bg-white/30 group-hover:bg-[#FACC15] transition-colors"
-                          />
-                       </div>
-                    </div>
-                  </motion.div>
-
-                  {/* Operational Feed - Row 2 */}
-                  <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.4 }}
-                    className="md:col-span-4 bg-[#0A0C10] border border-white/5 rounded-3xl p-8 flex flex-col gap-4 overflow-hidden relative"
-                  >
-                    <div className="flex justify-between items-center relative z-10">
-                       <span className="text-[9px] font-mono font-bold text-[#FACC15] uppercase tracking-widest">Hoạt động thời gian thực</span>
-                       <div className="flex gap-1">
-                          <div className="w-1 h-1 bg-[#FACC15] rounded-full animate-ping" />
-                       </div>
-                    </div>
-                    <div className="space-y-3 relative z-10">
-                       {[
-                         { label: 'UPLINK', val: 'CONNECTED', color: 'text-emerald-500' },
-                         { label: 'GATEWAY', val: 'SECURE', color: 'text-white/60' },
-                         { label: 'DB_SYNC', val: 'IDLE', color: 'text-indigo-400' }
-                       ].map((item, idx) => (
-                         <div key={idx} className="flex justify-between items-center py-2 border-b border-white/[0.03]">
-                            <span className="text-[8px] font-mono text-white/20 uppercase tracking-widest">{item.label}</span>
-                            <span className={`text-[9px] font-mono font-black ${item.color} uppercase`}>{item.val}</span>
-                         </div>
-                       ))}
-                    </div>
-                  </motion.div>
-               </div>
-
-               {/* Live Terminal Feed */}
-               <div className="mt-40 w-full max-w-6xl px-10">
-                  <div className="border-t border-white/5 pt-8 flex items-start gap-12 overflow-hidden">
-                     <div className="shrink-0 flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 bg-[#FACC15] rounded-full animate-pulse" />
-                        <span className="text-[10px] font-mono font-black text-white uppercase tracking-widest">Global_Feed</span>
-                     </div>
-                     <div className="flex-1">
-                        <motion.div 
-                          animate={{ x: [0, -1000] }}
-                          transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-                          className="flex gap-16 whitespace-nowrap"
-                        >
-                          {[
-                            "SYS_CHECK::OK", "NODE_04_STABLE", "ENCRYPT_LAYER_7_ACTIVE", "SYNCING_WITH_FIREBASE_REALTIME",
-                            "DB_QUOTA_88.4%_REMAINING", "USER_ADMIN_SIGNAL_STRENGTH_MAX", "LATENCY_44MS", "UPLINK_ESTABLISHED",
-                            "TRUY CẬP HỆ THỐNG::THÀNH CÔNG", "DỮ LIỆU ĐANG ĐƯỢC BẢO MẬT", "PHIÊN BẢN v3.5.0.1", "TỐI ƯU HÓA LÕI::HOÀN TẤT"
-                          ].map((log, i) => (
-                            <span key={i} className="text-[9px] font-mono text-white/20 uppercase tracking-[0.2em]">{log}</span>
-                          ))}
-                        </motion.div>
-                     </div>
-                  </div>
-               </div>
-
-               {/* Mission Briefing Modal */}
-               <AnimatePresence>
-                 {showGuide && (
-                   <div className="fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-slate-950/90 backdrop-blur-md">
-                     <motion.div 
-                       initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                       animate={{ opacity: 1, scale: 1, y: 0 }}
-                       exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                       className="w-full max-w-2xl bg-slate-900 border border-[#FACC15]/20 rounded-3xl overflow-hidden shadow-[0_0_100px_rgba(250,204,21,0.05)]"
-                     >
-                       <div className="px-8 py-6 bg-[#FACC15]/5 border-b border-white/5 flex items-center justify-between">
-                         <div className="flex items-center gap-3">
-                           <div className="w-10 h-10 bg-[#FACC15]/10 rounded-xl flex items-center justify-center text-[#FACC15]">
-                             <Shield size={20} />
-                           </div>
-                           <div>
-                             <h4 className="text-sm font-bold text-white uppercase tracking-widest">HƯỚNG DẪN NHIỆM VỤ</h4>
-                             <p className="text-[9px] font-mono text-[#FACC15]/60 uppercase tracking-tighter">Gia nhập hệ thống Elite v3.5</p>
-                           </div>
-                         </div>
-                         <button onClick={() => setShowGuide(false)} className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white/40 hover:text-white transition-all">
-                           <X size={16} />
-                         </button>
-                       </div>
-                       
-                       <div className="p-8 space-y-10">
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                           <div className="space-y-4">
-                             <h5 className="text-[10px] font-mono font-bold text-white/30 uppercase tracking-widest flex items-center gap-2">
-                               <LayoutGrid size={12} className="text-[#FACC15]" />
-                               01. Quản lý Bảng
-                             </h5>
-                             <p className="text-xs text-white/50 leading-relaxed font-mono uppercase">
-                               Kéo thả các thẻ Bug qua các trạng thái: Chờ xử lý, Đang thực hiện và Đã hoàn thành.
-                             </p>
-                           </div>
-                           <div className="space-y-4">
-                             <h5 className="text-[10px] font-mono font-bold text-white/30 uppercase tracking-widest flex items-center gap-2">
-                               <Plus size={12} className="text-[#FACC15]" />
-                               02. Khởi tạo Bug
-                             </h5>
-                             <p className="text-xs text-white/50 leading-relaxed font-mono uppercase">
-                               Gán mức độ ưu tiên: Thấp, Cao hoặc Nghiêm trọng để đội ngũ xử lý kịp thời.
-                             </p>
-                           </div>
-                           <div className="space-y-4">
-                             <h5 className="text-[10px] font-mono font-bold text-white/30 uppercase tracking-widest flex items-center gap-2">
-                               <Cpu size={12} className="text-[#FACC15]" />
-                               03. Tương tác AI
-                             </h5>
-                             <p className="text-xs text-white/50 leading-relaxed font-mono uppercase">
-                               Hệ thống tự động phân tích và gán nhãn cho các báo cáo lỗi dựa trên dữ liệu lịch sử.
-                             </p>
-                           </div>
-                           <div className="space-y-4">
-                             <h5 className="text-[10px] font-mono font-bold text-white/30 uppercase tracking-widest flex items-center gap-2">
-                               <Activity size={12} className="text-[#FACC15]" />
-                               04. Nhật ký Thực tế
-                             </h5>
-                             <p className="text-xs text-white/50 leading-relaxed font-mono uppercase">
-                               Mọi hành động đều được lưu vết trong thời gian thực tại bảng điều khiển trung tâm.
-                             </p>
-                           </div>
-                         </div>
-
-                         <div className="pt-8 border-t border-white/5">
-                           <button 
-                             onClick={() => setShowGuide(false)}
-                             className="w-full h-14 bg-[#FACC15] text-black font-black text-xs uppercase rounded-2xl hover:scale-[1.01] transition-all active:scale-95 shadow-xl shadow-[#FACC15]/10"
-                           >
-                             TÔI ĐÃ HIỂU NHIỆM VỤ_
-                           </button>
-                         </div>
-                       </div>
-                     </motion.div>
-                   </div>
-                 )}
-               </AnimatePresence>
-
-               {/* Network Infrastructure Modal */}
-               <AnimatePresence>
-                 {showNetworkStats && (
-                   <div className="fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-slate-950/90 backdrop-blur-md">
-                     <motion.div 
-                       initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                       animate={{ opacity: 1, scale: 1, y: 0 }}
-                       exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                       className="w-full max-w-xl bg-slate-900 border border-emerald-500/20 rounded-3xl overflow-hidden shadow-[0_0_100px_rgba(16,185,129,0.05)]"
-                     >
-                       <div className="px-8 py-6 bg-emerald-500/5 border-b border-white/5 flex items-center justify-between">
-                         <div className="flex items-center gap-3">
-                           <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-500">
-                             <Globe size={20} />
-                           </div>
-                           <div>
-                             <h4 className="text-sm font-bold text-white uppercase tracking-widest">HẠ TẦNG CHIẾN DỊCH</h4>
-                             <p className="text-[9px] font-mono text-emerald-500/60 uppercase tracking-tighter">Trạng thái mạng lưới toàn cầu</p>
-                           </div>
-                         </div>
-                         <button onClick={() => setShowNetworkStats(false)} className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white/40 hover:text-white transition-all">
-                           <X size={16} />
-                         </button>
-                       </div>
-                       
-                       <div className="p-8 space-y-8">
-                         <div className="grid grid-cols-2 gap-4">
-                           <div className="p-4 bg-white/[0.02] border border-white/5 rounded-2xl">
-                             <div className="text-[8px] font-mono text-white/20 uppercase mb-1">Băng thông</div>
-                             <div className="text-lg font-mono font-bold text-white transition-all duration-500">{platformStats.bandwidth}</div>
-                           </div>
-                           <div className="p-4 bg-white/[0.02] border border-white/5 rounded-2xl">
-                             <div className="text-[8px] font-mono text-white/20 uppercase mb-1">Độ trễ</div>
-                             <div className="text-lg font-mono font-bold text-emerald-500 transition-all duration-500">{platformStats.latency}</div>
-                           </div>
-                           <div className="p-4 bg-white/[0.02] border border-white/5 rounded-2xl">
-                             <div className="text-[8px] font-mono text-white/20 uppercase mb-1">Nút mạng</div>
-                             <div className="text-lg font-mono font-bold text-white transition-all duration-500">ACTIVE: {platformStats.activeNodes}</div>
-                           </div>
-                           <div className="p-4 bg-white/[0.02] border border-white/5 rounded-2xl">
-                             <div className="text-[8px] font-mono text-white/20 uppercase mb-1">Mã hóa</div>
-                             <div className="text-lg font-mono font-bold text-white">AES-256</div>
-                           </div>
-                         </div>
-
-                         <div className="space-y-3">
-                           <div className="flex items-center justify-between text-[10px] font-mono text-white/40 uppercase">
-                             <span>Tải trọng máy chủ</span>
-                             <span className="text-emerald-500">{platformStats.serverLoad}%</span>
-                           </div>
-                           <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                             <motion.div 
-                               initial={false}
-                               animate={{ width: `${platformStats.serverLoad}%` }}
-                               transition={{ duration: 1, ease: "easeOut" }}
-                               className="h-full bg-emerald-500 rounded-full animate-pulse" 
-                             />
-                           </div>
-                         </div>
-
-                         <div className="pt-4">
-                           <button 
-                             onClick={() => setShowNetworkStats(false)}
-                             className="w-full h-12 bg-white/5 border border-white/10 text-white/60 font-bold text-[10px] uppercase rounded-xl hover:bg-white/10 transition-all"
-                           >
-                             QUAY LẠI GIAO DIỆN CHÍNH_
-                           </button>
-                         </div>
-                       </div>
-                     </motion.div>
-                   </div>
-                 )}
-               </AnimatePresence>
-            </div>
-
-            {/* Industrial Feature Matrix */}
-            <div className="w-full max-w-7xl mx-auto px-10 pb-64 relative z-10">
-               <div className="flex flex-col gap-24">
-                  <div className="flex flex-col md:flex-row justify-between items-end gap-8 border-b border-white/5 pb-12">
-                     <div className="space-y-4">
-                        <div className="flex items-center gap-2">
-                           <div className="w-1.5 h-1.5 bg-[#FACC15] rounded-full animate-pulse" />
-                           <span className="text-[10px] font-mono font-black text-white uppercase tracking-[0.5em]">HỆ SINH THÁI NODE</span>
-                        </div>
-                        <h2 className="text-6xl font-display font-black text-white tracking-tighter uppercase whitespace-nowrap">HẠ TẦNG <br /><span className="text-white/20">SIÊU CẤP.</span></h2>
-                     </div>
-                     <p className="text-sm font-mono text-white/30 max-w-sm uppercase leading-relaxed text-right">
-                        Được trang bị các giao thức xử lý song song, đảm bảo tính vẹn toàn của dữ liệu trên toàn bộ mạng lưới phân tán.
-                     </p>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 px-2">
-                     {[
-                       { label: 'QUY TRÌNH', title: 'FAST_SYNC', desc: `Đồng bộ hóa ${platformStats.latency} liên khu vực thông qua giao thức đa tầng.`, icon: <Zap />, node: '001', color: '#FACC15' },
-                       { label: 'BẢO MẬT', title: 'SSL_ELITE', desc: 'Mã hóa lượng tử cấp quân đội với lớp bảo vệ kép AES-256.', icon: <ShieldAlert />, node: '002', color: '#818CF8' },
-                       { label: 'HỆ THỐNG', title: 'TASK_GRID', desc: `Phân phối tác vụ thông minh dựa trên ${platformStats.activeNodes} Nodes xử lý.`, icon: <LayoutGrid />, node: '003', color: '#10B981' },
-                       { label: 'KẾT NỐI', title: 'API_OPEN', desc: `Băng thông ${platformStats.bandwidth} cho hệ sinh thái mở.`, icon: <Code2 />, node: '004', color: '#F43F5E' }
-                     ].map((item, i) => (
-                       <motion.div 
-                         key={i} 
-                         initial={{ opacity: 0, y: 30 }}
-                         whileInView={{ opacity: 1, y: 0 }}
-                         viewport={{ once: true }}
-                         transition={{ delay: i * 0.1, duration: 0.8 }}
-                         whileHover={{ y: -10, scale: 1.02 }}
-                         className="relative group h-[420px]"
-                       >
-                          {/* Card Background with Glow */}
-                          <div className="absolute inset-0 bg-white/[0.02] border border-white/5 rounded-[48px] overflow-hidden transition-all duration-500 group-hover:border-white/10 group-hover:bg-white/[0.04]">
-                             <div 
-                               className="absolute -top-24 -right-24 w-48 h-48 rounded-full blur-[80px] opacity-0 group-hover:opacity-20 transition-opacity duration-700"
-                               style={{ backgroundColor: item.color }}
-                             />
-                          </div>
-
-                          <div className="relative h-full p-10 flex flex-col justify-between z-10">
-                             <div>
-                                <div className="flex justify-between items-start mb-10">
-                                   <div 
-                                     className="w-16 h-16 rounded-2xl flex items-center justify-center relative overflow-hidden"
-                                     style={{ backgroundColor: `${item.color}10`, border: `1px solid ${item.color}30` }}
-                                   >
-                                      <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
-                                      {React.cloneElement(item.icon as React.ReactElement, { size: 28, style: { color: item.color } })}
-                                   </div>
-                                   <div className="flex flex-col items-end">
-                                      <span className="text-[9px] font-mono font-black text-white/10 uppercase tracking-widest">VER_2.4.0</span>
-                                      <span className="text-[10px] font-mono font-black text-white/30 uppercase tracking-[0.2em]">NODE_{item.node}</span>
-                                   </div>
-                                </div>
-
-                                <div className="space-y-4">
-                                   <div className="flex flex-col">
-                                      <div className="flex items-center gap-2 mb-2">
-                                         <div className="w-1 h-1 rounded-full" style={{ backgroundColor: item.color }} />
-                                         <span className="text-[10px] font-mono font-black uppercase tracking-[0.4em] opacity-40">{item.label}</span>
-                                      </div>
-                                      <h4 className="text-3xl font-display font-black text-white tracking-tighter leading-none uppercase group-hover:tracking-normal transition-all duration-500">
-                                         {item.title.split('_')[0]}<span className="text-white/20">_</span>{item.title.split('_')[1]}
-                                      </h4>
-                                   </div>
-                                   <p className="text-[11px] font-mono text-white/30 uppercase leading-relaxed font-semibold italic">
-                                      {item.desc}
-                                   </p>
-                                </div>
-                             </div>
-
-                             <div className="space-y-6">
-                                <div className="h-px bg-gradient-to-r from-white/10 via-white/5 to-transparent" />
-                                <div className="flex items-center justify-between">
-                                   <div className="flex items-center gap-3">
-                                      <div className="flex gap-1">
-                                         {[...Array(3)].map((_, j) => (
-                                            <motion.div 
-                                              key={j}
-                                              animate={{ opacity: [0.2, 1, 0.2] }}
-                                              transition={{ duration: 2, repeat: Infinity, delay: j * 0.3 }}
-                                              className="w-1 h-1 rounded-full bg-emerald-500" 
-                                            />
-                                         ))}
-                                      </div>
-                                      <span className="text-[9px] font-mono font-black text-emerald-500/60 uppercase tracking-[0.2em]">STABLE_CORE</span>
-                                   </div>
-                                   <div className="text-[8px] font-mono text-white/5 uppercase font-bold tracking-widest">0xEF_SYS_OK</div>
-                                </div>
+                             <div className="flex justify-between items-end">
+                                <div className="text-slate-500 text-sm font-mono">0101010111</div>
+                                <div className="text-brand-500 text-4xl font-black font-display italic">72%</div>
                              </div>
                           </div>
-                       </motion.div>
-                     ))}
-                  </div>
+                       </div>
+                    </div>
+                    {/* ACCENT FLOAT */}
+                    <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-brand-400/10 blur-[80px] -z-10 rounded-full" />
+                 </motion.div>
                </div>
-            </div>
 
-            <footer className="w-full py-20 px-8 border-t border-white/5">
-               <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
-                  <div className="flex items-center gap-3">
-                     <Zap size={18} className="text-[#00F0FF]" />
-                     <span className="text-[11px] font-mono font-bold text-white/60 uppercase tracking-[0.2em]">© 2026 NGUYỄN ĐỨC ANH_</span>
-                  </div>
-                  <div className="flex gap-10 text-[10px] font-mono font-bold text-white/40 uppercase tracking-widest">
-                     <a href="#" className="hover:text-white transition-colors">Twitter</a>
-                     <a href="#" className="hover:text-white transition-colors">GitHub</a>
-                     <a href="#" className="hover:text-white transition-colors">Security</a>
-                  </div>
+               <div className="mt-32 w-full grid grid-cols-1 md:grid-cols-3 gap-12 pt-20 border-t border-slate-100">
+                  {[
+                    { label: "Sync Latency", value: "0.04ms", desc: "Real-time protocol relay." },
+                    { label: "Node Health", value: "Optimal", desc: "Always-on telemetric pulse." },
+                    { label: "Matrix Flux", value: "Stable", desc: "Network parity maintained." }
+                  ].map((stat, i) => (
+                    <div key={i} className="space-y-4 px-4 border-l border-slate-50 first:border-none">
+                       <span className="text-[11px] font-black text-brand-600 uppercase tracking-[0.2em]">{stat.label}</span>
+                       <div className="text-4xl font-black text-slate-950 font-display italic">{stat.value}</div>
+                       <p className="text-sm font-bold text-slate-400 tracking-tight leading-relaxed">{stat.desc}</p>
+                    </div>
+                  ))}
                </div>
-            </footer>
+            </main>
           </motion.div>
         ) : (
-          <div className={cn(
-            "flex-1 flex flex-col h-screen overflow-hidden bg-[#0a0f18] relative",
-            jitter && "brightness-110"
-          )}>
-            <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-[0.02]">
-                <div className="absolute inset-0 cyber-grid" />
-            </div>
-
-            <header className="h-16 px-6 flex items-center justify-between shrink-0 border-b border-white/[0.03] bg-black/20 backdrop-blur-xl z-[100] relative">
-              <div className="flex items-center gap-10 relative z-10">
-                <div 
-                  className="flex items-center gap-3 cursor-pointer group" 
-                  onClick={() => setActiveTab('board')}
-                >
-                  <div className="w-9 h-9 bg-[#FACC15] text-black flex items-center justify-center rounded-lg">
-                    <Zap size={18} className="fill-current" />
+          <div className="flex-1 flex h-screen overflow-hidden bg-[#FBFBFE]">
+            {/* BACKGROUND GLOWS */}
+            <div className="bg-glow top-[-10%] left-[-10%] w-[40%] h-[40%]" />
+            <div className="bg-glow bottom-[-10%] right-[-10%] w-[50%] h-[50%]" />
+            
+            {/* PREMIUM SIDEBAR */}
+            <aside className="w-64 h-full flex flex-col bg-[#0F1115] border-r border-white/5 relative z-50">
+               <div className="p-6 h-24 flex items-center gap-4">
+                  <div className="w-11 h-11 bg-brand-600 text-white rounded-xl flex items-center justify-center shadow-2xl shadow-brand-500/40">
+                     <Code2 size={22} strokeWidth={2.5} />
                   </div>
                   <div className="flex flex-col">
-                     <span className="text-lg font-mono font-black text-white tracking-widest leading-none uppercase">VORTEX</span>
-                     <span className="text-[8px] font-mono text-[#FACC15] tracking-[0.3em] uppercase opacity-60">System Ready</span>
+                     <span className="text-lg font-black text-white tracking-tight font-display italic leading-none">Linebase</span>
+                     <span className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] mt-1.5 font-mono">Kernel v2.04</span>
                   </div>
-                </div>
+               </div>
 
-                <div className="h-6 w-[1px] bg-white/10 hidden lg:block" />
-
-                <div className="relative hidden lg:block">
-                  <button 
-                    onClick={() => setShowProjectDropdown(!showProjectDropdown)}
-                    className={cn(
-                      "flex items-center gap-3 px-4 h-10 bg-white/[0.03] border border-white/10 rounded-lg transition-all font-mono font-bold text-[10px] tracking-wider uppercase",
-                      showProjectDropdown ? "border-[#FACC15] text-[#FACC15]" : "text-white/40 hover:border-white/20"
-                    )}
-                  >
-                    <FolderKanban size={14} className="opacity-40" />
-                    <span className="truncate max-w-[120px]">{selectedProject?.name || 'Chọn Dự Án'}</span>
-                    <ChevronDown size={12} className={cn("transition-transform", showProjectDropdown && "rotate-180")} />
-                  </button>
-                  
-                  <AnimatePresence>
-                    {showProjectDropdown && (
-                      <div className="absolute top-12 left-0 w-72 z-[200]">
-                        <motion.div 
-                          initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-                          className="p-2 rounded-xl bg-slate-900 border border-white/10 shadow-2xl"
-                        >
-                           <div className="max-h-[250px] overflow-y-auto custom-scrollbar space-y-1">
-                             {projects.map(p => (
-                               <button 
-                                 key={p.id}
-                                 onClick={() => { setSelectedProject(p); setShowProjectDropdown(false); }}
-                                 className={cn(
-                                   "w-full flex items-center justify-between px-4 py-2.5 rounded-lg text-left transition-all",
-                                   selectedProject?.id === p.id 
-                                     ? "bg-[#FACC15]/10 text-[#FACC15]" 
-                                     : "text-white/40 hover:bg-white/5 hover:text-white"
-                                 )}
-                               >
-                                 <span className="text-[10px] font-mono font-bold uppercase">{p.name}</span>
-                               </button>
-                             ))}
-                           </div>
-                           <button 
-                             onClick={() => { setShowProjectModal(true); setShowProjectDropdown(false); }}
-                             className="w-full mt-2 py-2.5 bg-white/5 text-white/60 text-[10px] font-bold uppercase rounded-lg hover:bg-[#FACC15] hover:text-black transition-all"
-                           >
-                             Tạo Dự Án Mới
-                           </button>
-                        </motion.div>
-                      </div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-6 relative z-10">
-                <div className="flex items-center gap-3">
-                  <div className="flex flex-col items-end hidden lg:flex">
-                    <span className="text-[11px] font-mono font-bold text-white/90">{user.displayName || user.email?.split('@')[0]}</span>
-                    <span className="text-[8px] font-mono text-white/30 uppercase tracking-widest leading-none">Admin</span>
-                  </div>
-                  <div className="w-9 h-9 rounded-lg overflow-hidden border border-white/10">
-                    <img src={user.photoURL || `https://api.dicebear.com/7.x/notionists/svg?seed=${user.uid}`} alt="" className="w-full h-full object-cover" />
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <div className="relative">
+               <div className="flex-1 py-12 px-4 space-y-1.5 overflow-y-auto custom-scrollbar">
+                  {[
+                    { id: 'dashboard', icon: LayoutGrid, label: 'Tổng quan' },
+                    { id: 'board', icon: FolderKanban, label: 'Ma trận công việc' },
+                    { id: 'metrics', icon: PieChart, label: 'Phân tích' },
+                    { id: 'members', icon: Users, label: 'Nhân sự' },
+                    { id: 'logs', icon: Activity, label: 'Nhật ký' },
+                  ].map(item => (
                     <button 
-                      onClick={() => setShowNotifications(!showNotifications)}
+                      key={item.id}
+                      onClick={() => setActiveTab(item.id as any)}
                       className={cn(
-                        "w-9 h-9 flex items-center justify-center transition-all relative",
-                        showNotifications ? "text-[#FACC15]" : "text-white/30 hover:text-white"
+                        "w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl text-[13px] font-bold transition-all duration-300",
+                        activeTab === item.id 
+                          ? "bg-white/10 text-white shadow-xl shadow-black/20 ring-1 ring-white/10" 
+                          : "text-slate-500 hover:text-slate-200 hover:bg-white/5"
                       )}
                     >
-                      <Bell size={18} />
-                      {projectLogs.length > 0 && (
-                        <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-red-600 rounded-full border border-slate-950 animate-pulse" />
-                      )}
+                      <item.icon size={18} strokeWidth={activeTab === item.id ? 2.5 : 2} />
+                      <span className="tracking-tight">{item.label}</span>
                     </button>
+                  ))}
+               </div>
 
-                    <AnimatePresence>
-                      {showNotifications && (
-                        <>
-                          <div 
-                            className="fixed inset-0 z-[190]" 
-                            onClick={() => setShowNotifications(false)}
-                          />
-                          <div className="absolute top-12 right-0 w-80 z-[200]">
-                            <motion.div 
-                              initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                              animate={{ opacity: 1, y: 0, scale: 1 }}
-                              exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                              className="bg-slate-900 border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden"
-                            >
-                              <div className="px-5 py-4 bg-white/5 border-b border-white/10 flex items-center justify-between">
-                                <span className="text-[10px] font-mono font-black text-white uppercase tracking-widest">Trung tâm Thông báo</span>
-                                <div className="flex items-center gap-2">
-                                  <div className="w-1.5 h-1.5 bg-[#FACC15] rounded-full animate-pulse" />
-                                  <span className="text-[8px] font-mono text-white/20 uppercase tracking-tighter">Live Sync</span>
-                                </div>
+               <div className="p-6 pt-0">
+                  <div className="bg-white/5 border border-white/5 p-4 rounded-3xl flex items-center gap-3 backdrop-blur-sm">
+                    <img className="w-10 h-10 rounded-2xl border border-white/10" src={user.photoURL || `https://api.dicebear.com/7.x/notionists/svg?seed=${user.uid}`} alt="" />
+                    <div className="min-w-0 flex-1">
+                       <div className="text-[11px] font-black text-white truncate mb-0.5">{user.displayName || 'Quản trị viên'}</div>
+                       <button onClick={handleLogout} className="text-[9px] font-black text-slate-500 uppercase tracking-widest hover:text-brand-400 transition-colors">Đăng xuất hệ thống</button>
+                    </div>
+                  </div>
+               </div>
+            </aside>
+
+            <main className="flex-1 overflow-hidden flex flex-col">
+               {/* TOP HEADER */}
+               <header className="h-20 px-10 flex items-center justify-between bg-white/50 backdrop-blur-md relative z-40 border-b border-white/20">
+                  <div className="flex items-center gap-6">
+                    <div className="relative">
+                      <button 
+                        onClick={() => setShowProjectDropdown(!showProjectDropdown)}
+                        className="flex items-center gap-2.5 h-11 px-4 rounded-xl bg-white border border-slate-100 shadow-sm hover:shadow-md transition-all active:scale-[0.98] group"
+                      >
+                         <div className="w-1.5 h-1.5 rounded-full bg-brand-500" />
+                         <span className="text-sm font-bold text-slate-900 font-display">{selectedProject?.name || 'Loading...'}</span>
+                         <ChevronDown size={14} className={cn("text-slate-400 transition-transform group-hover:text-slate-950", showProjectDropdown && "rotate-180")} />
+                      </button>
+                      
+                      <AnimatePresence>
+                         {showProjectDropdown && (
+                           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="absolute top-14 left-0 w-72 z-[110] p-2 bg-white border border-slate-100 rounded-2xl shadow-2xl">
+                             <div className="space-y-1">
+                               {projects.map(p => (
+                                 <button key={p.id} onClick={() => { setSelectedProject(p); setShowProjectDropdown(false); }} className={cn("w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold transition-all", selectedProject?.id === p.id ? "bg-brand-50 text-brand-600" : "text-slate-500 hover:bg-slate-50 hover:text-slate-950")}>
+                                   {p.name}
+                                   {selectedProject?.id === p.id && <Check size={14} strokeWidth={3} />}
+                                 </button>
+                               ))}
+                               <div className="h-px bg-slate-50 my-2" />
+                               <button onClick={() => { setShowProjectModal(true); setShowProjectDropdown(false); }} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-slate-900 font-bold hover:bg-slate-50">
+                                 <Plus size={16} /> New Node
+                               </button>
+                             </div>
+                           </motion.div>
+                         )}
+                      </AnimatePresence>
+                    </div>
+
+                    <div className="h-4 w-px bg-slate-200" />
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active Hub Sync</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <button 
+                      onClick={() => setShowSettingsModal(true)}
+                      className="w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 hover:text-brand-600 hover:bg-brand-50 transition-all"
+                    >
+                       <Settings size={18} />
+                    </button>
+                    <button className="w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 hover:text-brand-600 hover:bg-brand-50 transition-all relative">
+                       <Bell size={18} />
+                       <span className="absolute top-3 right-3 w-1.5 h-1.5 bg-brand-500 rounded-full border-2 border-white" />
+                    </button>
+                    <div className="h-4 w-px bg-slate-200" />
+                    <button onClick={() => setShowProjectModal(true)} className="h-11 px-5 bg-slate-900 text-white rounded-xl text-sm font-bold shadow-lg shadow-slate-900/10 hover:bg-brand-600 transition-all flex items-center gap-2">
+                       <Plus size={18} /> New Event
+                    </button>
+                  </div>
+               </header>
+
+               <div className="flex-1 overflow-auto custom-scrollbar p-10 lg:p-14">
+                 <AnimatePresence mode="wait">
+                    {activeTab === 'dashboard' && (
+                      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-16 max-w-7xl">
+                        <div className="flex items-end justify-between gap-8">
+                           <div className="space-y-4">
+                              <div className="flex items-center gap-4">
+                                <div className="h-0.5 w-12 bg-brand-500/30 rounded-full" />
+                                <span className="text-[10px] font-black text-brand-600 uppercase tracking-[0.4em] font-mono">Kernel Core v2.04</span>
                               </div>
-                              <div className="max-h-[350px] overflow-y-auto custom-scrollbar p-2 space-y-1 bg-slate-950/40">
-                                {projectLogs.length === 0 ? (
-                                  <div className="p-12 text-center">
-                                    <Bell size={24} className="mx-auto text-white/5 mb-3" />
-                                    <div className="text-white/10 font-mono text-[9px] uppercase tracking-widest">Không có dữ liệu mới</div>
+                              <h2 className="text-6xl font-black text-slate-950 tracking-tighter font-display italic leading-none">
+                                Hệ thống <span className="text-slate-400">Điều phối</span>
+                              </h2>
+                           </div>
+                           <div className="flex items-center gap-4">
+                              <div className="flex -space-x-3">
+                                {userProfiles.slice(0, 5).map((p, i) => (
+                                  <img key={i} className="w-12 h-12 rounded-2xl border-4 border-[#FBFBFE] shadow-2xl shadow-black/10" src={p.photoURL || `https://api.dicebear.com/7.x/notionists/svg?seed=${p.userId}`} alt="" />
+                                ))}
+                                {userProfiles.length > 5 && (
+                                  <div className="w-12 h-12 rounded-2xl bg-slate-950 text-white flex items-center justify-center text-[10px] font-black border-4 border-[#FBFBFE] shadow-2xl shadow-black/10">
+                                     +{userProfiles.length - 5}
                                   </div>
-                                ) : (
-                                  projectLogs.slice(0, 8).map((log) => (
-                                    <div key={log.id} className="p-3 bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 rounded-xl transition-all group cursor-default">
-                                      <div className="flex items-start gap-3">
-                                        <div className="w-1.5 h-1.5 bg-[#FACC15]/40 rounded-full mt-1.5 shrink-0 group-hover:bg-[#FACC15] transition-colors" />
-                                        <div className="flex-1 min-w-0">
-                                          <div className="text-[10px] font-bold text-white/80 leading-snug uppercase tracking-tight line-clamp-2">{log.action}: {log.details}</div>
-                                          <div className="text-[8px] font-mono text-white/20 uppercase mt-1">
-                                            {log.createdAt?.toDate ? new Date(log.createdAt.toDate()).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : 'Vừa xong'}
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  ))
                                 )}
                               </div>
-                              <div className="p-3 bg-white/5 border-t border-white/10">
-                                <button 
-                                  onClick={() => { setActiveTab('logs'); setShowNotifications(false); }}
-                                  className="w-full py-2 bg-white/5 rounded-lg text-[9px] font-mono text-white/40 uppercase font-black hover:text-white hover:bg-white/10 transition-all"
-                                >
-                                  Mở nhật ký đầy đủ
-                                </button>
+                           </div>
+                        </div>
+ 
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                           <StatsCard label="Vụ việc mở" value={bugs.filter(b => b.status !== 'done').length} icon={<BugIcon size={20} />} trend="+4.5%" />
+                           <StatsCard label="Nút thành viên" value={userProfiles.length} icon={<Users size={20} />} trend="Ổn định" />
+                           <StatsCard label="Tải hệ thống" value={`${platformStats.serverLoad}%`} icon={<Zap size={20} />} trend="-1.2%" />
+                           <StatsCard label="Độ trễ" value={platformStats.latency} icon={<Activity size={20} />} trend="Tối ưu" />
+                        </div>
+ 
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                           <div className="lg:col-span-8 space-y-12">
+                             <div className="card-smart min-h-[520px] flex flex-col p-10 bg-slate-950 border-none shadow-brand-500/10">
+                                <div className="flex items-center justify-between mb-12">
+                                   <div className="space-y-1">
+                                      <h3 className="text-white text-lg font-black font-display italic tracking-tight">Giám sát hoạt động</h3>
+                                      <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] font-mono">Dòng dữ liệu thời gian thực</p>
+                                   </div>
+                                   <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-xl border border-white/5">
+                                      <div className="w-2 h-2 rounded-full bg-brand-500 animate-pulse shadow-[0_0_12px_rgba(124,58,237,0.5)]" />
+                                      <span className="text-[10px] font-black text-brand-400 uppercase tracking-widest font-mono">Active Hub Link</span>
+                                   </div>
+                                </div>
+                                <div className="flex-1 w-full translate-x-[-10px]">
+                                   <ResponsiveContainer width="100%" height="100%">
+                                     <AreaChart data={chartData}>
+                                       <defs>
+                                         <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                                           <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.2}/>
+                                           <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                                         </linearGradient>
+                                       </defs>
+                                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.03)" />
+                                       <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 900, fill: '#475569', fontFamily: 'JetBrains Mono' }} dy={10} />
+                                       <Tooltip contentStyle={{ backgroundColor: '#0F1115', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '24px', boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }} />
+                                       <Area type="monotone" dataKey="value" stroke="#8b5cf6" strokeWidth={4} fillOpacity={1} fill="url(#areaGrad)" />
+                                     </AreaChart>
+                                   </ResponsiveContainer>
+                                </div>
+                             </div>
+ 
+                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <QuickLink title="Ma trận vụ việc" desc="Trung tâm điều phối Kanban nâng cao." icon={<FolderKanban size={24} />} onClick={() => setActiveTab('board')} />
+                                <QuickLink title="Nhân sự" desc="Mạng lưới Operator được ủy quyền." icon={<Users size={24} />} onClick={() => setActiveTab('members')} />
+                                <QuickLink title="Phân tích" desc="Dữ liệu đo lường hiệu năng hệ thống." icon={<PieChart size={24} />} onClick={() => setActiveTab('metrics')} />
+                                <QuickLink title="Giao thức" desc="Cấu hình Kernel và tham số Node." icon={<Settings size={24} />} onClick={() => setShowSettingsModal(true)} />
+                             </div>
+                           </div>
+ 
+                           <div className="lg:col-span-4 flex flex-col gap-10">
+                              <div className="card-smart flex-1 flex flex-col p-0 overflow-hidden border-slate-100/60 shadow-3xl bg-white">
+                                <div className="p-8 border-b border-slate-50 flex items-center justify-between bg-slate-50/30 backdrop-blur-sm">
+                                  <h3 className="text-[12px] font-black text-slate-950 uppercase tracking-[0.3em] font-display italic">Sổ cái toàn cầu</h3>
+                                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_12px_rgba(16,185,129,0.4)]" />
+                                </div>
+                                <div className="flex-1 overflow-y-auto custom-scrollbar p-8 space-y-4">
+                                  {projectLogs.slice(0, 10).map((log, i) => (
+                                    <div key={i} className="flex gap-4 p-4 rounded-2xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100 group/log">
+                                       <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 group-hover/log:bg-brand-600 group-hover/log:text-white transition-all shrink-0 border border-slate-100">
+                                          <div className="w-1.5 h-1.5 rounded-full bg-current" />
+                                       </div>
+                                       <div className="flex-1 min-w-0">
+                                          <div className="text-[13px] font-bold text-slate-800 leading-tight mb-1 group-hover/log:text-slate-950 transition-colors line-clamp-2">{log.details}</div>
+                                          <div className="flex items-center gap-2">
+                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{log.createdAt ? 'Synced' : 'Pending'}</span>
+                                            <div className="w-1 h-1 rounded-full bg-slate-200" />
+                                            <span className="text-[9px] font-mono text-slate-300 font-bold">{log.createdAt?.toDate ? new Date(log.createdAt.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}</span>
+                                          </div>
+                                       </div>
+                                    </div>
+                                  ))}
+                                </div>
                               </div>
-                            </motion.div>
-                          </div>
-                        </>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                  <button 
-                    onClick={handleLogout}
-                    className="w-9 h-9 flex items-center justify-center text-red-500/60 hover:text-red-400 transition-all"
-                  >
-                    <LogOut size={18} />
-                  </button>
-                </div>
-              </div>
-            </header>
+                           </div>
+                        </div>
+                      </motion.div>
+                    )}
 
-            <main className="flex-1 flex overflow-hidden relative bg-[#0f111a]">
-              {/* Atmospheric Background Layers */}
-              <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
-                <div className="absolute top-[-5%] left-[-5%] w-[70%] h-[70%] bg-blue-500/[0.08] rounded-full blur-[160px]" />
-                <div className="absolute bottom-[10%] right-[-5%] w-[50%] h-[50%] bg-amber-500/[0.08] rounded-full blur-[140px]" />
-                <div className="absolute top-[30%] right-[10%] w-[40%] h-[40%] bg-purple-500/[0.05] rounded-full blur-[120px]" />
-                <div className="absolute inset-0 bg-gradient-to-b from-white/[0.01] to-transparent pointer-events-none" />
-              </div>
-
-              <nav className="w-16 lg:w-64 border-r border-white-[0.03] flex flex-col p-4 gap-1.5 bg-black/30 backdrop-blur-3xl z-20 shadow-[20px_0_50px_rgba(0,0,0,0.3)]">
-                 <NavButton icon={Layout} label="TỔNG QUAN" active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} />
-                 <NavButton icon={LayoutGrid} label="BẢNG CÔNG VIỆC" active={activeTab === 'board'} onClick={() => setActiveTab('board')} />
-                 <NavButton icon={Terminal} label="TERMINAL" active={activeTab === 'terminal'} onClick={() => setActiveTab('terminal')} />
-                 <NavButton icon={Activity} label="HOẠT ĐỘNG" active={activeTab === 'logs'} onClick={() => setActiveTab('logs')} />
-                 <NavButton icon={PieChart} label="THỐNG KÊ" active={activeTab === 'metrics'} onClick={() => setActiveTab('metrics')} />
-                 
-                 <div className="mt-6 mb-1 px-4 text-[8px] font-mono font-bold text-white/10 uppercase tracking-widest hidden lg:block">System</div>
-                 <NavButton icon={Users} label="THÀNH VIÊN" active={activeTab === 'members'} onClick={() => setActiveTab('members')} />
-                 <NavButton icon={Settings} label="CÀI ĐẶT" active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} />
-              </nav>
-
-              <div className="flex-1 flex flex-col min-w-0 relative overflow-hidden">
-                <AnimatePresence mode="wait">
-                  {!selectedProject ? (
-                    <motion.div 
-                      key="empty"
-                      initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }}
-                      className="flex-1 flex flex-col items-center justify-center p-12 text-center relative"
-                    >
-                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#818CF8]/5 blur-[120px] rounded-full pointer-events-none" />
-                      
-                      <div className="w-40 h-40 cyber-panel flex items-center justify-center mb-16 relative group" style={{ clipPath: 'polygon(20% 0%, 80% 0%, 100% 20%, 100% 80%, 80% 100%, 20% 100%, 0% 80%, 0% 20%)' }}>
-                        <div className="absolute inset-0 bg-[#FACC15]/5 opacity-0 group-hover:opacity-100 transition-opacity animate-pulse" />
-                        <FolderKanban size={56} className="text-[#FACC15] relative z-10" />
-                      </div>
-                      
-                      <h2 className="text-6xl font-display font-bold mb-8 text-white tracking-tighter uppercase italic">KHÔNG_TÌM_THẤY_NÚT.</h2>
-                      <p className="text-white/20 max-w-sm mx-auto mb-16 font-mono font-medium leading-relaxed tracking-tight">
-                        TRÌNH ĐIỀU KHIỂN CHƯA ĐƯỢC LIÊN KẾT VỚI DỮ LIỆU. VUI LÒNG KHỞI TẠO MA TRẬN MỚI ĐỂ BẮT ĐẦU.
-                      </p>
-                      <button 
-                        onClick={() => setShowProjectModal(true)}
-                        className="btn-cyber h-20 px-16"
-                      >
-                        KHỞI_TẠO_MA_TRẬN_MỚI_
-                      </button>
-                    </motion.div>
-                  ) : (
-                    <motion.div 
-                      key={activeTab}
-                      initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-                      className="flex-1 flex flex-col overflow-hidden"
-                    >
-                      {activeTab === 'dashboard' && (
-                        <div className="flex-1 p-8 overflow-auto custom-scrollbar max-w-7xl mx-auto w-full relative z-10">
-                          <div className="flex flex-col gap-12">
-                             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-                                <motion.div 
-                                  initial={{ opacity: 0, x: -20 }}
-                                  animate={{ opacity: 1, x: 0 }}
-                                  transition={{ duration: 0.8 }}
-                                >
-                                  <div className="flex items-center gap-3 mb-4">
-                                     <div className="w-2 h-2 bg-[#FACC15] rounded-full shadow-[0_0_12px_rgba(250,204,21,0.5)] animate-pulse" />
-                                     <span className="text-[11px] font-mono font-black text-white/30 uppercase tracking-[0.5em]">COMMAND_CENTER::ACTIVE</span>
-                                  </div>
-                                   <h2 className="text-7xl font-display font-black text-white tracking-tighter leading-[0.85] uppercase drop-shadow-[0_0_30px_rgba(255,255,255,0.1)]">
-                                     HELLO, <br />
-                                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FACC15] via-[#fbbf24] to-[#f59e0b] drop-shadow-[0_0_40px_rgba(250,204,21,0.3)]">
-                                       {user.displayName?.split(' ')[user.displayName?.split(' ').length - 1] || 'ADMIN'}
-                                     </span>
-                                   </h2>
-                                </motion.div>
-                                <motion.div 
-                                  initial={{ opacity: 0, scale: 0.95 }}
-                                  animate={{ opacity: 1, scale: 1 }}
-                                  className="p-6 bg-white/[0.03] border border-white/10 rounded-3xl backdrop-blur-xl text-right min-w-[200px]"
-                                >
-                                   <span className="text-[10px] font-mono text-white/20 uppercase tracking-widest block mb-1">UTC_HỆ_THỐNG</span>
-                                   <span className="text-3xl font-mono font-bold text-white tracking-tighter block">{new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</span>
-                                   <span className="text-[9px] font-mono text-[#FACC15] uppercase tracking-widest opacity-60">UPLINK_READY</span>
-                                </motion.div>
+                    {activeTab === 'metrics' && (
+                      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-20 max-w-7xl">
+                        <div className="space-y-6">
+                           <div className="flex items-center gap-4">
+                              <div className="h-0.5 w-12 bg-brand-500/30 rounded-full" />
+                              <span className="text-[10px] font-black text-brand-600 uppercase tracking-[0.5em] font-mono">Telemetry Analytics</span>
+                           </div>
+                           <h2 className="text-7xl font-black text-slate-950 tracking-tighter font-display italic leading-none">Phân tích <span className="text-slate-400">Hiệu năng</span></h2>
+                           <p className="text-lg text-slate-400 font-medium tracking-tight max-w-2xl">Trực quan hóa hiệu quả vận hành hệ thống và phân phối giao thức truyền thông đa kênh.</p>
+                        </div>
+ 
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+                           <StatsCard label="Tỉ lệ xử lý" value="94%" icon={<CheckCircle2 size={24} strokeWidth={2.5} />} trend="Ổn định" />
+                           <StatsCard label="Vận tốc Node" value="12.4" icon={<Rocket size={24} strokeWidth={2.5} />} trend="+0.8" />
+                           <StatsCard label="Thời gian Phục hồi" value="2.4h" icon={<Clock size={24} strokeWidth={2.5} />} trend="-15m" />
+                        </div>
+ 
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                           <div className="card-smart h-[520px] flex flex-col bg-slate-950 border-none p-12">
+                             <div className="flex items-center justify-between mb-12">
+                                <h3 className="text-[11px] font-black text-slate-500 uppercase tracking-[0.4em] font-mono">Vận tốc giải quyết</h3>
+                                <div className="px-4 py-1.5 bg-white/5 rounded-xl text-[9px] font-black text-brand-400 tracking-widest border border-white/5">ALPHA-CHART</div>
                              </div>
-
-                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <StatsCard 
-                                  label="Hạ tầng Node" 
-                                  value={projects.length} 
-                                  icon={<FolderKanban size={20} />} 
-                                  color="#FACC15"
-                                  status="Synchronized"
-                                />
-                                <StatsCard 
-                                  label="Lỗi tồn đọng" 
-                                  value={bugs.filter(b => b.status !== 'done').length} 
-                                  icon={<BugIcon size={20} />} 
-                                  color="#ef4444"
-                                  status="High Priority"
-                                  pulse
-                                />
-                                <StatsCard 
-                                  label="Hiệu suất Lõi" 
-                                  value={`${bugs.length > 0 ? Math.round((bugs.filter(b => b.status === 'done').length / bugs.length) * 100) : 0}%`} 
-                                  icon={<Zap size={20} />} 
-                                  color="#10b981"
-                                  status="Core Stable"
-                                />
+                             <div className="flex-1 w-full translate-x-[-15px]">
+                                <ResponsiveContainer width="100%" height="100%">
+                                  <BarChart data={chartData}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.03)" />
+                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 900, fill: '#475569', fontFamily: 'JetBrains Mono' }} dy={10} />
+                                    <Tooltip cursor={{ fill: 'rgba(255,255,255,0.02)' }} contentStyle={{ backgroundColor: '#0F1115', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '24px' }} />
+                                    <Bar dataKey="value" fill="#7c3aed" radius={[10, 10, 0, 0]} barSize={44} />
+                                  </BarChart>
+                                </ResponsiveContainer>
                              </div>
-
-                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div className="bg-white/[0.02] border border-white/5 rounded-3xl p-8 group hover:bg-white/[0.04] transition-all">
-                                   <div className="flex justify-between items-center mb-6">
-                                      <span className="text-[10px] font-mono font-bold text-white/20 uppercase tracking-widest">Dự án hoạt động</span>
-                                      <FolderKanban size={16} className="text-[#FACC15]" />
-                                   </div>
-                                   <div className="text-5xl font-display font-black text-white">{projects.length}</div>
-                                   <div className="mt-4 flex items-center gap-2">
-                                      <div className="w-1 h-1 bg-emerald-500 rounded-full" />
-                                      <span className="text-[9px] font-mono text-emerald-500 capitalize">Đã đồng bộ</span>
-                                   </div>
-                                </div>
-
-                                <div className="bg-white/[0.02] border border-white/5 rounded-3xl p-8 group hover:bg-white/[0.04] transition-all">
-                                   <div className="flex justify-between items-center mb-6">
-                                      <span className="text-[10px] font-mono font-bold text-white/20 uppercase tracking-widest">Báo cáo tồn đọng</span>
-                                      <BugIcon size={16} className="text-red-500" />
-                                   </div>
-                                   <div className="text-5xl font-display font-black text-white">{bugs.filter(b => b.status !== 'done').length}</div>
-                                   <div className="mt-4 flex items-center gap-2">
-                                      <div className="w-1 h-1 bg-red-500 rounded-full animate-pulse" />
-                                      <span className="text-[9px] font-mono text-red-500 capitalize">Cần xử lý</span>
-                                   </div>
-                                </div>
-
-                                <div className="bg-white/[0.02] border border-white/5 rounded-3xl p-8 group hover:bg-white/[0.04] transition-all">
-                                   <div className="flex justify-between items-center mb-6">
-                                      <span className="text-[10px] font-mono font-bold text-white/20 uppercase tracking-widest">Tỉ lệ hoàn thiện</span>
-                                      <Zap size={16} className="text-emerald-500" />
-                                   </div>
-                                   <div className="text-5xl font-display font-black text-white">
-                                      {bugs.length > 0 ? Math.round((bugs.filter(b => b.status === 'done').length / bugs.length) * 100) : 0}%
-                                   </div>
-                                   <div className="mt-4 h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                                      <div 
-                                         className="h-full bg-emerald-500" 
-                                         style={{ width: `${bugs.length > 0 ? (bugs.filter(b => b.status === 'done').length / bugs.length) * 100 : 0}%` }} 
-                                      />
-                                   </div>
+                           </div>
+ 
+                           <div className="card-smart h-[520px] flex flex-col items-center p-12">
+                             <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] font-display italic mb-12 self-start">Phân phối ưu tiên</h3>
+                             <div className="flex-1 w-full flex items-center justify-center relative">
+                                <ResponsiveContainer width="100%" height="100%">
+                                  <RePieChart>
+                                    <Pie 
+                                      data={[
+                                        { name: 'Khẩn cấp', value: bugs.filter(b => b.priority === 'critical').length || 1 },
+                                        { name: 'Cao', value: bugs.filter(b => b.priority === 'high').length || 2 },
+                                        { name: 'Trung bình', value: bugs.filter(b => b.priority === 'medium').length || 4 },
+                                      ]} 
+                                      innerRadius={110} outerRadius={150} paddingAngle={15} dataKey="value"
+                                      stroke="none"
+                                    >
+                                      <Cell fill="#f43f5e" />
+                                      <Cell fill="#f59e0b" />
+                                      <Cell fill="#8b5cf6" />
+                                    </Pie>
+                                    <Tooltip />
+                                  </RePieChart>
+                                </ResponsiveContainer>
+                                <div className="absolute flex flex-col items-center justify-center gap-1">
+                                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Nodes</span>
+                                   <span className="text-5xl font-black text-slate-950 font-display italic leading-none">{bugs.length}</span>
                                 </div>
                              </div>
+                           </div>
+                        </div>
+                      </motion.div>
+                    )}
 
-                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                                <div className="bg-white/[0.02] border border-white/5 rounded-[40px] p-10 relative overflow-hidden group min-h-[360px] backdrop-blur-3xl">
-                                   <div className="absolute top-0 right-0 w-48 h-48 bg-[#FACC15]/5 blur-[80px] rounded-full translate-x-10 -translate-y-10 group-hover:bg-[#FACC15]/10 transition-colors duration-700" />
-                                   <h4 className="text-xl font-display font-black text-white uppercase mb-8 flex items-center gap-4">
-                                      <div className="w-10 h-10 rounded-xl bg-[#FACC15]/10 flex items-center justify-center">
-                                         <Rocket size={20} className="text-[#FACC15]" />
+                    {activeTab === 'members' && (
+                      <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="space-y-16 max-w-7xl">
+                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-10">
+                            <div className="space-y-4">
+                               <div className="flex items-center gap-4">
+                                  <div className="h-0.5 w-12 bg-brand-500/30 rounded-full" />
+                                  <span className="text-[10px] font-black text-brand-600 uppercase tracking-[0.4em] font-mono">Operator Deployment Registry</span>
+                               </div>
+                               <h2 className="text-6xl font-black text-slate-950 tracking-tighter font-display italic leading-none">Mạng lưới <span className="text-slate-400">Nhân sự</span></h2>
+                               <p className="text-lg text-slate-400 font-medium tracking-tight max-w-xl">Hợp tác điều phối hệ thống giữa các Engine Operator được ủy nhiệm cho mạng lưới Node này.</p>
+                            </div>
+                            <button className="h-16 px-10 bg-slate-950 text-white rounded-2xl font-black text-[12px] uppercase tracking-[0.3em] flex items-center gap-4 shadow-2xl shadow-slate-950/20 hover:bg-brand-600 transition-all active:scale-95">
+                               <UserPlus size={20} strokeWidth={3} /> Mời thành viên
+                            </button>
+                        </div>
+  
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                            {userProfiles.map((profile) => (
+                              <div key={profile.userId} className="card-smart flex items-center justify-between group bg-white/80 backdrop-blur-xl p-10 hover:shadow-4xl transition-all duration-700 border-white group relative overflow-hidden">
+                                 <div className="absolute top-0 left-0 w-full h-1 bg-slate-50 group-hover:bg-brand-500 transition-colors" />
+                                 <div className="flex items-center gap-10">
+                                    <div className="relative">
+                                      <img src={profile.photoURL || `https://api.dicebear.com/7.x/notionists/svg?seed=${profile.userId}`} alt="" className="w-28 h-28 rounded-[2.5rem] bg-slate-50 border border-slate-100 shadow-2xl transition-all duration-700 group-hover:scale-110 group-hover:-rotate-3 group-hover:shadow-brand-500/10" />
+                                      <div className="absolute -bottom-3 -right-3 w-12 h-12 bg-white rounded-2xl flex items-center justify-center border border-slate-100 shadow-xl group-hover:rotate-[15deg] transition-transform">
+                                        <div className="w-3.5 h-3.5 rounded-full bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)] animate-pulse" />
                                       </div>
-                                      Truy cập hệ thống_
-                                   </h4>
-                                   <div className="grid grid-cols-2 gap-4">
-                                      <button 
-                                         onClick={() => setActiveTab('board')}
-                                         className="p-4 bg-white/5 border border-white/10 rounded-2xl text-left hover:bg-white/10 hover:border-[#FACC15]/40 transition-all font-mono group/item"
-                                      >
-                                         <div className="text-[10px] text-white/40 uppercase mb-1">Phòng Lab</div>
-                                         <div className="text-sm font-bold text-white flex items-center justify-between">
-                                            TRÌNH QUẢN LÝ
-                                            <ArrowRight size={14} className="opacity-0 group-hover/item:opacity-100 group-hover/item:translate-x-1 transition-all" />
-                                         </div>
-                                      </button>
-                                      <button 
-                                         onClick={() => setShowProjectModal(true)}
-                                         className="p-4 bg-white/5 border border-white/10 rounded-2xl text-left hover:bg-white/10 hover:border-[#FACC15]/40 transition-all font-mono group/item"
-                                      >
-                                         <div className="text-[10px] text-white/40 uppercase mb-1">Mở rộng node</div>
-                                         <div className="text-sm font-bold text-white flex items-center justify-between">
-                                            TẠO DỰ ÁN
-                                            <Plus size={14} className="opacity-0 group-hover/item:opacity-100 group-hover/item:scale-125 transition-all" />
-                                         </div>
-                                      </button>
-                                      <button 
-                                         onClick={() => setActiveTab('terminal')}
-                                         className="p-4 bg-white/5 border border-white/10 rounded-2xl text-left hover:bg-white/10 hover:border-[#FACC15]/40 transition-all font-mono group/item"
-                                      >
-                                         <div className="text-[10px] text-white/40 uppercase mb-1">Lệnh cốt lõi</div>
-                                         <div className="text-sm font-bold text-white flex items-center justify-between">
-                                            TERMINAL
-                                            <Terminal size={14} className="opacity-0 group-hover/item:opacity-100 transition-all" />
-                                         </div>
-                                      </button>
-                                      <button 
-                                         onClick={() => setActiveTab('members')}
-                                         className="p-4 bg-white/5 border border-white/10 rounded-2xl text-left hover:bg-white/10 hover:border-[#FACC15]/40 transition-all font-mono group/item"
-                                      >
-                                         <div className="text-[10px] text-white/40 uppercase mb-1">Mạng lưới</div>
-                                         <div className="text-sm font-bold text-white flex items-center justify-between">
-                                            NHÂN SỰ
-                                            <Users size={14} className="opacity-0 group-hover/item:opacity-100 transition-all" />
-                                         </div>
-                                      </button>
-                                   </div>
-                                </div>
-
-                                <div className="bg-white/[0.02] border border-white/5 rounded-[40px] p-10 flex flex-col group min-h-[360px] backdrop-blur-3xl overflow-hidden relative">
-                                   <div className="absolute bottom-0 right-0 w-32 h-32 bg-blue-500/5 blur-[60px] rounded-full translate-x-10 translate-y-10" />
-                                   <h4 className="text-xl font-display font-black text-white uppercase mb-8 flex items-center justify-between">
-                                      <span className="flex items-center gap-4">
-                                         <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
-                                            <History size={20} className="text-blue-400" />
-                                         </div>
-                                         Dòng thời gian_
-                                      </span>
-                                      <button 
-                                         onClick={() => setActiveTab('logs')}
-                                         className="text-[9px] font-mono text-white/20 hover:text-[#FACC15] uppercase tracking-widest transition-colors"
-                                      >
-                                         Xem tất cả
-                                      </button>
-                                   </h4>
-                                   <div className="flex-1 space-y-4">
-                                      {projectLogs.length > 0 ? projectLogs.slice(0, 4).map((log, i) => (
-                                         <div key={i} className="flex gap-4 items-start py-2 border-b border-white/5 last:border-0">
-                                            <div className="w-1.5 h-1.5 bg-[#FACC15]/60 rounded-full mt-2 shrink-0" />
-                                            <div className="flex-1 min-w-0">
-                                               <div className="flex justify-between items-center mb-1">
-                                                  <span className="text-[9px] font-mono font-bold text-white/60 uppercase">{log.action}</span>
-                                                  <span className="text-[8px] font-mono text-white/10">
-                                                     {log.createdAt?.toDate ? new Date(log.createdAt.toDate()).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : 'Vừa xong'}
-                                                  </span>
-                                               </div>
-                                               <div className="text-[10px] font-mono text-white/30 truncate uppercase">[{log.details}]</div>
-                                            </div>
-                                         </div>
-                                      )) : (
-                                         <div className="flex flex-col items-center justify-center h-full text-white/5">
-                                            <Activity size={32} className="mb-4 opacity-10" />
-                                            <span className="text-[10px] font-mono uppercase tracking-[0.2em]">Máy chủ trống</span>
-                                         </div>
-                                      )}
-                                   </div>
-                                </div>
-                             </div>
-                          </div>
+                                    </div>
+                                    <div className="min-w-0">
+                                       <div className="text-3xl font-black text-slate-950 tracking-tighter font-display italic leading-none mb-4 group-hover:text-brand-600 transition-colors">{profile.displayName}</div>
+                                       <div className="flex items-center gap-4 py-2 px-4 bg-slate-50 rounded-xl w-fit border border-slate-100/50">
+                                          <Mail size={14} className="text-slate-300" />
+                                          <div className="text-[11px] font-black text-slate-400 truncate uppercase tracking-widest font-mono">{profile.email}</div>
+                                       </div>
+                                    </div>
+                                 </div>
+                                 <div className="flex flex-col items-end gap-10">
+                                    <div className="px-6 py-2.5 bg-slate-950 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] font-mono shadow-xl shadow-slate-900/10 group-hover:bg-brand-600 transition-colors">
+                                      {selectedProject?.ownerId === profile.userId ? 'Administrator' : 'Core Operator'}
+                                    </div>
+                                    <div className="flex items-center gap-8 text-slate-300 group-hover:text-slate-400 transition-colors">
+                                       <button className="w-12 h-12 flex items-center justify-center rounded-2xl hover:bg-brand-50 hover:text-brand-600 transition-all border border-transparent hover:border-brand-100"><Share2 size={20} /></button>
+                                       <button className="w-12 h-12 flex items-center justify-center rounded-2xl hover:bg-rose-50 hover:text-rose-600 transition-all border border-transparent hover:border-rose-100"><Trash2 size={20} /></button>
+                                    </div>
+                                 </div>
+                              </div>
+                            ))}
                         </div>
-                      )}
+                      </motion.div>
+                    )}
 
-                      {activeTab === 'board' && <KanbanBoard key={selectedProject.id} projectId={selectedProject.id} userId={user.uid} userProfiles={userProfiles} bugs={bugs} />}
-                      
-                      {activeTab === 'logs' && (
-                        <div className="flex-1 p-8 overflow-auto custom-scrollbar max-w-6xl mx-auto w-full">
-                           <div className="flex items-center gap-6 mb-12">
-                              <div className="w-14 h-14 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-[#FACC15]">
-                                 <Activity size={24} />
-                              </div>
-                              <div>
-                                 <h2 className="text-3xl font-mono font-bold text-white uppercase tracking-tight">Hoạt Động</h2>
-                                 <p className="text-white/20 text-sm font-mono tracking-tight mt-1">Dữ liệu vận hành thời gian thực.</p>
-                              </div>
+                    {activeTab === 'board' && selectedProject && <KanbanBoard key={selectedProject.id} projectId={selectedProject.id} userId={user.uid} userProfiles={userProfiles} bugs={bugs} />}
+
+                     {activeTab === 'logs' && (
+                      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-16 max-w-7xl">
+                        <div className="space-y-4">
+                           <div className="flex items-center gap-4">
+                              <div className="h-0.5 w-12 bg-brand-500/30 rounded-full" />
+                              <span className="text-[10px] font-black text-brand-600 uppercase tracking-[0.4em] font-mono">System Ledger Index</span>
                            </div>
-                           <div className="border border-white/5 rounded-2xl overflow-hidden bg-slate-900/20 backdrop-blur-sm">
-                              <table className="w-full text-left">
-                                 <thead className="bg-white/5 text-white/30 text-[9px] font-mono font-bold uppercase tracking-widest border-b border-white/5">
-                                    <tr>
-                                       <th className="px-6 py-5">Thời Gian</th>
-                                       <th className="px-6 py-5">Sự Kiện</th>
-                                       <th className="px-6 py-5">Chi Tiết</th>
-                                    </tr>
-                                 </thead>
-                                 <tbody className="divide-y divide-white/[0.03] text-sm">
-                                    {projectLogs.length === 0 ? (
-                                       <tr><td colSpan={3} className="px-6 py-20 text-center text-white/10 font-mono text-xs italic">Không có dữ liệu</td></tr>
-                                    ) : projectLogs.map((log) => (
-                                       <tr key={log.id} className="hover:bg-white/[0.01] transition-colors">
-                                          <td className="px-6 py-5 text-white/30 font-mono text-xs">
-                                             {log.createdAt?.toDate ? new Date(log.createdAt.toDate()).toLocaleTimeString('vi-VN') : '--:--:--'}
-                                          </td>
-                                          <td className="px-6 py-5">
-                                             <span className="px-2.5 py-1 bg-[#FACC15]/10 text-[#FACC15] text-[10px] font-mono font-bold rounded-lg uppercase">{log.action}</span>
-                                          </td>
-                                          <td className="px-6 py-5 text-white/60 font-mono text-xs tracking-tight">[{log.details}]</td>
-                                       </tr>
-                                    ))}
-                                 </tbody>
-                              </table>
-                           </div>
-                        </div>
-                      )}
-                      
-                      {activeTab === 'metrics' && (
-                        <motion.div 
-                          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                          className="flex-1 p-8 overflow-auto custom-scrollbar max-w-6xl mx-auto w-full"
-                        >
-                           <div className="flex items-center gap-6 mb-12">
-                              <div className="w-14 h-14 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-[#FACC15]">
-                                 <PieChart size={24} />
-                              </div>
-                              <div>
-                                 <h2 className="text-3xl font-mono font-bold text-white uppercase tracking-tight">Thống Kê</h2>
-                                 <p className="text-white/20 text-sm font-mono tracking-tight mt-1">Phân tích ma trận dự án hiện tại.</p>
-                              </div>
-                           </div>
-                           
-                           <div className="space-y-10">
-                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                                 {[
-                                   { label: 'Tổng Tác Vụ', val: bugs.length, color: 'text-white' },
-                                   { label: 'Đang Xử Lý', val: bugs.filter(b => b.status === 'in-progress' || b.status === 'in-review').length, color: 'text-blue-400' },
-                                   { label: 'Hoàn Thành', val: bugs.length > 0 ? Math.round((bugs.filter(b => b.status === 'done').length / bugs.length) * 100) : 0, unit: '%', color: 'text-emerald-400' },
-                                   { label: 'Khẩn Cấp', val: bugs.filter(b => b.priority === 'critical').length, color: 'text-red-500' },
-                                 ].map((s, i) => (
-                                   <div key={i} className="p-8 rounded-2xl bg-slate-900/40 border border-white/5 hover:border-white/10 transition-colors">
-                                      <div className="text-[10px] font-mono font-bold text-white/30 uppercase tracking-[0.2em] mb-3">{s.label}</div>
-                                      <div className={cn("text-4xl font-mono font-black", s.color)}>
-                                        {s.val}{s.unit}
+                           <h2 className="text-6xl font-black text-slate-950 tracking-tighter font-display italic leading-none">Nhật ký <span className="text-slate-400">Hệ thống</span></h2>
+                           <p className="text-lg text-slate-400 font-medium tracking-tight max-w-xl">Lịch sử toàn diện về các thay đổi và chuyển đổi trạng thái mạng lưới.</p>
+                         </div>
+
+                         <div className="card-smart p-0 overflow-hidden border-slate-100 shadow-3xl bg-white">
+                           <table className="w-full text-left">
+                             <thead>
+                               <tr className="bg-slate-50/50 border-b border-slate-100">
+                                 <th className="px-12 py-8 text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono">Thời điểm</th>
+                                 <th className="px-12 py-8 text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono">Giao thức</th>
+                                 <th className="px-12 py-8 text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono">Người vận hành</th>
+                                 <th className="px-12 py-8 text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono">Nội dung Alpha</th>
+                               </tr>
+                             </thead>
+                             <tbody className="divide-y divide-slate-50">
+                               {projectLogs.map((log) => (
+                                 <tr key={log.id} className="hover:bg-slate-50/30 transition-colors group/row">
+                                   <td className="px-12 py-8 font-mono text-[11px] text-slate-400 font-bold group-hover/row:text-slate-600 transition-colors">{log.createdAt?.toDate ? new Date(log.createdAt.toDate()).toLocaleString() : 'Đang xử lý...'}</td>
+                                   <td className="px-12 py-8">
+                                     <span className="px-5 py-2 bg-slate-950 text-white rounded-xl text-[9px] font-black uppercase tracking-[0.2em] shadow-lg shadow-slate-900/10 group-hover/row:bg-brand-600 transition-all">{log.action || 'THAY ĐỔI'}</span>
+                                   </td>
+                                   <td className="px-12 py-8">
+                                      <div className="flex items-center gap-4">
+                                         <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-[10px] font-black border border-slate-100 group-hover/row:border-brand-200 transition-colors uppercase italic font-display">
+                                            {userProfiles.find(u => u.userId === log.userId)?.displayName?.slice(0, 2) || 'SY'}
+                                         </div>
+                                         <span className="font-bold text-slate-900 text-sm group-hover/row:text-brand-600 transition-colors italic font-display">{userProfiles.find(u => u.userId === log.userId)?.displayName || 'System Relay'}</span>
                                       </div>
-                                   </div>
-                                 ))}
-                              </div>
-
-                              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                                 <div className="p-8 rounded-2xl bg-slate-900/40 border border-white/5 flex flex-col min-h-[450px]">
-                                    <label className="text-[11px] font-mono font-bold text-[#FACC15] tracking-[0.3em] uppercase mb-10 block opacity-60">Trạng Thái Xử Lý</label>
-                                    <div className="flex-1 min-h-[300px]">
-                                       <ResponsiveContainer width="100%" height="100%">
-                                          <BarChart data={[
-                                             { name: 'BACKLOG', value: bugs.filter(b => b.status === 'backlog').length },
-                                             { name: 'ACTION', value: bugs.filter(b => b.status === 'in-progress').length },
-                                             { name: 'REVIEW', value: bugs.filter(b => b.status === 'in-review').length },
-                                             { name: 'DONE', value: bugs.filter(b => b.status === 'done').length },
-                                          ]}>
-                                             <XAxis dataKey="name" stroke="#ffffff10" fontSize={10} tick={{ fill: '#ffffff30' }} axisLine={false} tickLine={false} />
-                                             <YAxis stroke="#ffffff10" fontSize={10} tick={{ fill: '#ffffff30' }} axisLine={false} tickLine={false} />
-                                             <Tooltip 
-                                                cursor={{ fill: 'rgba(255,255,255,0.02)' }}
-                                                contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #ffffff10', borderRadius: '12px', padding: '12px' }}
-                                                itemStyle={{ color: '#FACC15', fontFamily: 'monospace', fontWeight: 'bold' }}
-                                             />
-                                             <Bar dataKey="value" radius={[6, 6, 0, 0]}>
-                                                <Cell fill="#475569" />
-                                                <Cell fill="#3b82f6" />
-                                                <Cell fill="#a855f7" />
-                                                <Cell fill="#10b981" />
-                                             </Bar>
-                                          </BarChart>
-                                       </ResponsiveContainer>
-                                    </div>
-                                 </div>
-
-                                 <div className="p-8 rounded-2xl bg-slate-900/40 border border-white/5 flex flex-col min-h-[450px] relative">
-                                    <label className="text-[11px] font-mono font-bold text-[#FACC15] tracking-[0.3em] uppercase mb-10 block opacity-60">Mức Độ Ưu Tiên</label>
-                                    <div className="flex-1 flex items-center justify-center min-h-[300px]">
-                                       <ResponsiveContainer width="100%" height="100%">
-                                          <RePieChart>
-                                             <Pie
-                                                data={[
-                                                   { name: 'KHẨN CẤP', value: bugs.filter(b => b.priority === 'critical').length },
-                                                   { name: 'TIÊU CHUẨN', value: bugs.length - bugs.filter(b => b.priority === 'critical').length }
-                                                ]}
-                                                cx="50%" cy="50%"
-                                                innerRadius={80}
-                                                outerRadius={110}
-                                                paddingAngle={10}
-                                                dataKey="value"
-                                                stroke="none"
-                                             >
-                                                <Cell fill="#ef4444" />
-                                                <Cell fill="#1e293b" />
-                                             </Pie>
-                                             <Tooltip 
-                                                contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #ffffff10', borderRadius: '12px' }}
-                                                itemStyle={{ color: '#fff', fontFamily: 'monospace' }}
-                                             />
-                                          </RePieChart>
-                                       </ResponsiveContainer>
-                                       <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-12">
-                                          <span className="text-5xl font-mono font-black text-white">{bugs.filter(b => b.priority === 'critical').length}</span>
-                                          <span className="text-[10px] font-mono text-white/20 uppercase tracking-[0.3em] mt-1">Crits</span>
-                                       </div>
-                                    </div>
-                                 </div>
-                              </div>
-                           </div>
-                        </motion.div>
-                      )}
-
-                      {activeTab === 'terminal' && (
-                        <div className="flex-1 p-8 overflow-hidden flex flex-col max-w-6xl mx-auto w-full">
-                           <div className="flex items-center gap-6 mb-8 shrink-0">
-                              <div className="w-14 h-14 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-[#FACC15]">
-                                 <Terminal size={24} />
-                              </div>
-                              <div>
-                                 <h2 className="text-3xl font-mono font-bold text-white uppercase tracking-tight">Hệ Thống Terminal</h2>
-                                 <p className="text-white/20 text-sm font-mono tracking-tight mt-1">Giao diện dòng lệnh trung tâm.</p>
-                              </div>
-                           </div>
-                           
-                           <div className="flex-1 bg-black/40 border border-white/5 rounded-2xl p-6 font-mono text-[11px] overflow-auto custom-scrollbar-mono flex flex-col-reverse">
-                              <div className="space-y-2">
-                                 {terminalLogs.length === 0 ? (
-                                    <div className="text-[#FACC15]/40 animate-pulse">ĐANG CHỜ TÍN HIỆU TỪ HỆ THỐNG...</div>
-                                 ) : (
-                                    terminalLogs.map((log, i) => (
-                                       <motion.div 
-                                         key={i} 
-                                         initial={{ opacity: 0, x: -10 }} 
-                                         animate={{ opacity: 1, x: 0 }}
-                                         className={cn(
-                                           "py-1 border-l-2 pl-3",
-                                           i === 0 ? "border-[#FACC15] text-[#FACC15]" : "border-white/10 text-white/40"
-                                         )}
-                                       >
-                                          {log}
-                                       </motion.div>
-                                    ))
-                                 )}
-                                 <div className="flex items-center gap-2 text-[#FACC15]">
-                                    <span className="animate-pulse">_</span>
-                                    <span>VORTEX-OS v3.5 READY</span>
-                                 </div>
-                              </div>
-                           </div>
-                        </div>
-                      )}
-
-                      {activeTab === 'members' && (
-                        <div className="flex-1 p-8 overflow-auto custom-scrollbar max-w-4xl mx-auto w-full">
-                           <div className="flex items-center gap-6 mb-12">
-                              <div className="w-14 h-14 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-[#FACC15]">
-                                 <Users size={24} />
-                              </div>
-                              <div>
-                                 <h2 className="text-3xl font-mono font-bold text-white uppercase tracking-tight">Thành Viên</h2>
-                                 <p className="text-white/20 text-sm font-mono tracking-tight mt-1">Quản lý đội ngũ phát triển.</p>
-                              </div>
-                           </div>
-
-                           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                              <div className="md:col-span-1 space-y-6">
-                                <div className="p-6 bg-slate-900/40 border border-white/5 rounded-2xl">
-                                   <h4 className="text-[10px] font-mono font-bold text-[#FACC15] tracking-[0.2em] uppercase mb-4">Mời Thành Viên</h4>
-                                   <div className="space-y-4">
-                                     <input 
-                                       type="email" 
-                                       placeholder="Email người dùng..."
-                                       className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs font-mono text-white focus:border-[#FACC15]/40 outline-none"
-                                       value={inviteEmail}
-                                       onChange={(e) => setInviteEmail(e.target.value)}
-                                     />
-                                     <button 
-                                       onClick={handleInviteMember}
-                                       className="w-full py-3 bg-[#FACC15] text-black text-[11px] font-bold uppercase rounded-xl hover:scale-[1.02] transition-transform"
-                                     >
-                                       Gửi Lời Mời
-                                     </button>
-                                   </div>
-                                </div>
-                              </div>
-
-                              <div className="md:col-span-2">
-                                <div className="space-y-3">
-                                  {selectedProject.members.map(memberId => {
-                                    const profile = userProfiles.find(p => p.userId === memberId);
-                                    const isOwner = memberId === selectedProject.ownerId;
-                                    const isSelf = memberId === user.uid;
-
-                                    return (
-                                      <div key={memberId} className="p-4 bg-slate-900 border border-white/5 rounded-2xl flex items-center justify-between group">
-                                         <div className="flex items-center gap-4">
-                                           <div className="w-10 h-10 rounded-lg overflow-hidden border border-white/10">
-                                             <img src={profile?.photoURL || `https://api.dicebear.com/7.x/notionists/svg?seed=${memberId}`} alt="" className="w-full h-full object-cover" />
-                                           </div>
-                                           <div>
-                                             <div className="flex items-center gap-2">
-                                               <span className="text-xs font-mono font-bold text-white">{profile?.displayName || "Đang tải..."}</span>
-                                               {isOwner && <span className="text-[8px] font-mono bg-[#FACC15] text-black px-1.5 py-0.5 rounded font-bold">OWNER</span>}
-                                               {isSelf && <span className="text-[8px] font-mono bg-white/10 text-white px-1.5 py-0.5 rounded font-bold">BẠN</span>}
-                                             </div>
-                                             <div className="text-[10px] font-mono text-white/20">{profile?.email || memberId}</div>
-                                           </div>
-                                         </div>
-                                         {!isOwner && user.uid === selectedProject.ownerId && (
-                                           <button 
-                                             onClick={() => handleRemoveMember(memberId)}
-                                             className="p-2 text-red-500 hover:text-red-400 transition-all opacity-0 group-hover:opacity-100"
-                                           >
-                                             <Lock size={14} />
-                                           </button>
-                                         )}
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              </div>
-                           </div>
-                        </div>
-                      )}
-
-                      {activeTab === 'settings' && (
-                        <div className="flex-1 p-4 lg:p-10 overflow-auto custom-scrollbar">
-                           <div className="max-w-6xl mx-auto space-y-8">
-                              {/* Header & Quick Sync */}
-                              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8 border-b border-white/5">
-                                 <div>
-                                    <h2 className="text-4xl font-sans font-black text-white tracking-tighter uppercase mb-2">Trung tâm Điều khiển</h2>
-                                    <p className="text-white/30 text-xs font-mono uppercase tracking-widest flex items-center gap-2">
-                                       <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                                       Máy chủ: stable-core-v4  /  Người dùng: {userProfiles.find(p => p.userId === user?.uid)?.displayName || 'Quản trị viên'}
-                                    </p>
-                                 </div>
-                                 <div className="flex items-center gap-4">
-                                    <div className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl">
-                                       <div className="text-[10px] font-mono text-white/20 uppercase">Mã Dự án</div>
-                                       <div className="text-xs font-mono text-white font-bold">{selectedProject.id.slice(0, 8)}</div>
-                                    </div>
-                                    {user.uid === selectedProject.ownerId && (
-                                       <button 
-                                         onClick={handleUpdateProject}
-                                         disabled={isUpdatingProject}
-                                         className="h-12 px-8 bg-[#FACC15] text-black font-black text-[11px] uppercase rounded-xl hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 shadow-lg shadow-[#FACC15]/10 flex items-center gap-2"
-                                       >
-                                          <Check size={14} />
-                                          {isUpdatingProject ? "Đang lưu..." : "Đồng bộ cấu hình"}
-                                       </button>
-                                    )}
-                                 </div>
-                              </div>
-
-                              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                                 {/* Left Column: Context & Stats */}
-                                 <div className="lg:col-span-4 space-y-6">
-                                    {/* Personal Card */}
-                                    <div className="p-6 bg-slate-900 border border-white/10 rounded-3xl relative overflow-hidden group">
-                                       <div className="absolute top-0 right-0 w-32 h-32 bg-[#FACC15]/5 rounded-full -translate-y-16 translate-x-16 blur-3xl group-hover:bg-[#FACC15]/10 transition-colors" />
-                                       <div className="relative z-10 flex flex-col items-center text-center">
-                                          <div className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-white/10 mb-4 shadow-2xl">
-                                             <img src={user?.photoURL || `https://api.dicebear.com/7.x/notionists/svg?seed=${user?.uid}`} alt="" className="w-full h-full object-cover" />
-                                          </div>
-                                          <h4 className="text-lg font-bold text-white mb-1">{userProfiles.find(p => p.userId === user?.uid)?.displayName}</h4>
-                                          <p className="text-[10px] font-mono text-white/30 uppercase tracking-widest">{user?.email}</p>
-                                          
-                                          <div className="mt-6 pt-6 border-t border-white/5 w-full grid grid-cols-2 gap-4">
-                                             <div className="text-left">
-                                                <div className="text-[9px] font-mono text-white/20 uppercase mb-1">Dự án quản lý</div>
-                                                <div className="text-xl font-mono font-bold text-white">{projects.filter(p => p.ownerId === user?.uid).length}</div>
-                                             </div>
-                                             <div className="text-left">
-                                                <div className="text-[9px] font-mono text-white/20 uppercase mb-1">Tổng Bug xử lý</div>
-                                                <div className="text-xl font-mono font-bold text-[#FACC15]">{bugs.length}</div>
-                                             </div>
-                                          </div>
-                                       </div>
-                                    </div>
-
-                                    {/* Project Health Index */}
-                                    <div className="p-6 bg-slate-900/60 border border-white/5 rounded-3xl backdrop-blur-xl">
-                                       <h5 className="text-[10px] font-mono font-bold text-white/40 uppercase tracking-widest mb-6 flex items-center gap-2">
-                                          <Activity size={12} className="text-[#FACC15]" />
-                                          Chỉ số dự án
-                                       </h5>
-                                       <div className="space-y-4">
-                                          <div className="space-y-2">
-                                             <div className="flex justify-between text-[10px] font-mono text-white/40 uppercase">
-                                                <span>Tiến độ hoàn thành</span>
-                                                <span className="text-white">{bugs.length > 0 ? Math.round((bugs.filter(b => b.status === 'done').length / bugs.length) * 100) : 0}%</span>
-                                             </div>
-                                             <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                                                <div 
-                                                   className="h-full bg-emerald-500 rounded-full transition-all duration-1000" 
-                                                   style={{ width: `${bugs.length > 0 ? (bugs.filter(b => b.status === 'done').length / bugs.length) * 100 : 0}%` }}
-                                                />
-                                             </div>
-                                          </div>
-                                          <div className="grid grid-cols-2 gap-4 pt-4">
-                                             <div className="p-3 bg-white/[0.02] border border-white/5 rounded-xl">
-                                                <div className="text-[8px] font-mono text-white/20 uppercase mb-1">Mức nghiêm trọng</div>
-                                                <div className="text-sm font-mono font-bold text-red-500">{bugs.filter(b => b.priority === 'critical').length}</div>
-                                             </div>
-                                             <div className="p-3 bg-white/[0.02] border border-white/5 rounded-xl">
-                                                <div className="text-[8px] font-mono text-white/20 uppercase mb-1">Đang chờ xử lý</div>
-                                                <div className="text-sm font-mono font-bold text-white">{bugs.filter(b => b.status === 'todo').length}</div>
-                                             </div>
-                                          </div>
-                                       </div>
-                                    </div>
-                                 </div>
-
-                                 {/* Right Column: Main Configuration */}
-                                 <div className="lg:col-span-8 space-y-8">
-                                    <div className="bg-slate-900 border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
-                                       <div className="px-8 py-6 border-b border-white/5 bg-white/5 flex items-center justify-between">
-                                          <div className="flex items-center gap-3">
-                                             <div className="w-10 h-10 bg-[#FACC15]/10 rounded-xl flex items-center justify-center text-[#FACC15]">
-                                                <LayoutGrid size={20} />
-                                             </div>
-                                             <div>
-                                                <h4 className="text-sm font-bold text-white">Tham số Dự án</h4>
-                                                <p className="text-[10px] font-mono text-white/30 uppercase mt-0.5 tracking-tighter">Cấu hình thực thể: {selectedProject.name}</p>
-                                             </div>
-                                          </div>
-                                          {user.uid !== selectedProject.ownerId && (
-                                             <div className="flex items-center gap-2 px-3 py-1 bg-red-500/10 border border-red-500/20 rounded-full">
-                                                <Lock size={10} className="text-red-500" />
-                                                <span className="text-[9px] font-mono text-red-500 font-bold uppercase">Chỉ xem</span>
-                                             </div>
-                                          )}
-                                       </div>
-                                       
-                                       <div className="p-8 space-y-8">
-                                          <div className="space-y-3 px-1">
-                                             <label className="text-[10px] font-mono font-bold text-white/30 uppercase tracking-widest ml-1">Tên bí danh dự án</label>
-                                             <input 
-                                               type="text" 
-                                               className="w-full bg-slate-950 border border-white/10 rounded-2xl px-6 py-5 text-base font-mono text-white focus:border-[#FACC15] outline-none transition-all placeholder:text-white/5"
-                                               value={selectedProject.name}
-                                               placeholder="Ví dụ: Hệ thống Alpha..."
-                                               onChange={(e) => user.uid === selectedProject.ownerId && setSelectedProject({...selectedProject, name: e.target.value})}
-                                               disabled={user.uid !== selectedProject.ownerId}
-                                             />
-                                          </div>
-
-                                          <div className="space-y-3 px-1">
-                                             <label className="text-[10px] font-mono font-bold text-white/30 uppercase tracking-widest ml-1">Mục tiêu Chiến lược / Mô tả</label>
-                                             <textarea 
-                                               rows={5}
-                                               className="w-full bg-slate-950 border border-white/10 rounded-2xl px-6 py-5 text-sm font-mono text-white focus:border-[#FACC15] outline-none transition-all resize-none leading-relaxed placeholder:text-white/5"
-                                               value={selectedProject.description || ''}
-                                               placeholder="Mô tả các mục tiêu kỹ thuật hoặc tầm nhìn của dự án..."
-                                               onChange={(e) => user.uid === selectedProject.ownerId && setSelectedProject({...selectedProject, description: e.target.value})}
-                                               disabled={user.uid !== selectedProject.ownerId}
-                                             />
-                                          </div>
-                                       </div>
-                                    </div>
-
-                                    {/* Danger Zone */}
-                                    {user.uid === selectedProject.ownerId && (
-                                       <div className="bg-red-600/5 border border-red-600/20 rounded-3xl p-8 group hover:bg-red-600/10 transition-colors duration-500">
-                                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
-                                             <div className="space-y-2">
-                                                <h4 className="text-sm font-bold text-red-500 uppercase tracking-tight flex items-center gap-2">
-                                                   <ShieldAlert size={16} />
-                                                   Giao thức Tiêu hủy Dữ liệu
-                                                </h4>
-                                                <p className="text-xs text-white/20 font-mono leading-relaxed max-w-sm uppercase">
-                                                   Xóa vĩnh viễn thực thể dự án này khỏi Firestore. Mọi báo cáo lỗi và lịch sử sẽ bị tiêu hủy hoàn toàn.
-                                                </p>
-                                             </div>
-                                             
-                                             {!showDeleteConfirm ? (
-                                                <button 
-                                                  onClick={() => setShowDeleteConfirm(true)}
-                                                  className="shrink-0 h-14 px-10 bg-transparent border border-red-500/30 text-red-500 text-[11px] font-black uppercase rounded-2xl hover:bg-red-500 hover:text-white transition-all shadow-xl shadow-red-500/5 active:scale-95"
-                                                >
-                                                   Khởi tạo lệnh xóa
-                                                </button>
-                                             ) : (
-                                                <div className="flex items-center gap-3">
-                                                   <button 
-                                                     onClick={() => setShowDeleteConfirm(false)}
-                                                     className="h-14 px-6 bg-white/5 border border-white/10 text-white/40 text-[11px] font-bold uppercase rounded-2xl hover:text-white transition-all"
-                                                   >
-                                                      Hủy lệnh
-                                                   </button>
-                                                   <button 
-                                                     onClick={handleDeleteProject}
-                                                     className="h-14 px-10 bg-red-600 text-white text-[11px] font-black uppercase rounded-2xl animate-pulse shadow-2xl shadow-red-600/20 active:scale-95"
-                                                   >
-                                                      Xác nhận Xóa
-                                                   </button>
-                                                </div>
-                                             )}
-                                          </div>
-                                       </div>
-                                    )}
-                                 </div>
-                              </div>
-                           </div>
-                        </div>
-                      )}
-
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+                                   </td>
+                                   <td className="px-12 py-8 text-slate-500 font-bold text-sm truncate max-w-md italic font-display">{log.details}</td>
+                                 </tr>
+                               ))}
+                             </tbody>
+                           </table>
+                         </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+               </div>
             </main>
           </div>
         )}
       </AnimatePresence>
 
       <AnimatePresence>
+        {showSettingsModal && selectedProject && (
+          <div className="fixed inset-0 z-[500] flex items-center justify-center p-6">
+             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowSettingsModal(false)} className="absolute inset-0 bg-slate-950/60 backdrop-blur-3xl" />
+             <motion.div initial={{ scale: 0.9, opacity: 0, rotateX: 10 }} animate={{ scale: 1, opacity: 1, rotateX: 0 }} exit={{ scale: 0.9, opacity: 0 }} className="bg-white rounded-[3.5rem] w-full max-w-2xl relative z-[510] shadow-[0_40px_100px_rgba(0,0,0,0.4)] overflow-hidden">
+                <div className="bg-slate-50 px-12 py-10 flex items-center justify-between border-b border-slate-100">
+                   <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-slate-950 text-white flex items-center justify-center rounded-2xl shadow-xl">
+                         <Settings size={22} className="animate-spin-slow" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-black text-slate-900 font-display italic tracking-tight uppercase">Cốt lõi hệ thống</h3>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Ghi đè nút toàn cầu</p>
+                      </div>
+                   </div>
+                   <button onClick={() => setShowSettingsModal(false)} className="w-12 h-12 rounded-2xl hover:bg-white transition-all flex items-center justify-center text-slate-400 hover:text-slate-950">
+                      <X size={24} />
+                   </button>
+                </div>
+                <div className="p-12 space-y-12">
+                   <div className="space-y-4">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] ml-2">Tên định danh Node</label>
+                      <input 
+                        className="w-full h-16 bg-slate-50 border border-slate-100 rounded-[2rem] px-8 text-xl font-black text-slate-900 outline-none focus:bg-white focus:ring-8 focus:ring-brand-500/5 focus:border-brand-200 transition-all"
+                        value={selectedProject.name} 
+                        onChange={(e) => setSelectedProject({...selectedProject, name: e.target.value})} 
+                        disabled={user.uid !== selectedProject.ownerId}
+                      />
+                   </div>
+
+                   <div className="grid grid-cols-2 gap-8">
+                      <div className="card-smart p-8 space-y-2 border-slate-50 bg-slate-50/20">
+                         <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Loại giao thức</span>
+                         <div className="text-base font-black text-slate-900 italic font-display">Node Tiêu chuẩn</div>
+                      </div>
+                      <div className="card-smart p-8 space-y-2 border-slate-50 bg-slate-50/20">
+                         <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Mức độ an ninh</span>
+                         <div className="text-base font-black text-emerald-500 italic font-display flex items-center gap-2">
+                            <Lock size={16} /> Xác thực cấp 4
+                         </div>
+                      </div>
+                   </div>
+
+                   <div className="pt-10 flex items-center justify-between gap-6">
+                      {user.uid === selectedProject.ownerId && (
+                        <button 
+                          onClick={() => { if(confirm("Thực thi giao thức hủy diệt?")) handleDeleteProject()}}
+                          className="text-[11px] font-bold text-rose-300 hover:text-rose-600 uppercase tracking-[0.2em] transition-all"
+                        >
+                          Xóa bỏ Nút mạng
+                        </button>
+                      )}
+                      <button 
+                        onClick={() => { handleUpdateProject(); setShowSettingsModal(false); }}
+                        className="h-14 px-12 bg-slate-950 text-white rounded-[2rem] font-black text-base shadow-2xl shadow-slate-950/20 hover:bg-brand-600 transition-all active:scale-95"
+                      >
+                         Đồng bộ tham số
+                      </button>
+                   </div>
+                </div>
+             </motion.div>
+          </div>
+        )}
+
         {showProjectModal && (
           <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
-            <motion.div 
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onClick={() => setShowProjectModal(false)}
-              className="absolute inset-0 bg-black/60 backdrop-blur-md"
-            />
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-lg bg-slate-900 border border-white/10 p-10 rounded-3xl z-10 shadow-2xl"
-            >
-              <div className="flex items-center gap-6 mb-10">
-                <div className="w-16 h-16 bg-[#FACC15] text-black rounded-2xl flex items-center justify-center">
-                  <Plus size={32} />
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowProjectModal(false)} className="absolute inset-0 bg-slate-950/40 backdrop-blur-3xl" />
+            <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }} className="bg-white rounded-[3rem] w-full max-w-lg p-12 relative z-[210] shadow-2xl">
+              <div className="flex flex-col text-center space-y-4 mb-10">
+                <div className="w-20 h-20 bg-slate-950 text-white flex items-center justify-center rounded-[2.5rem] mx-auto shadow-2xl shadow-slate-950/20 mb-2">
+                   <FolderPlus size={32} strokeWidth={2.5} />
                 </div>
-                <div>
-                  <h3 className="text-3xl font-mono font-bold text-white uppercase tracking-tight">Tạo Dự Án</h3>
-                  <p className="text-white/20 text-sm font-mono mt-1">Khởi tạo không gian làm việc mới.</p>
-                </div>
+                <h3 className="text-4xl font-black text-slate-950 font-display italic tracking-tight">Initialize Workspace</h3>
+                <p className="text-slate-400 font-bold text-lg">Define the parameters of your new engineering node.</p>
               </div>
-              
               <div className="space-y-8">
-                <div className="group">
-                  <label className="text-[10px] font-mono font-bold uppercase tracking-widest text-white/20 mb-3 block group-focus-within:text-[#FACC15] transition-colors">Tên Dự Án</label>
-                  <input 
-                    autoFocus type="text" value={newProjectName}
-                    onChange={(e) => setNewProjectName(e.target.value)}
-                    placeholder="Nhập tên dự án..."
-                    className="w-full h-14 bg-white/5 border border-white/10 rounded-xl px-4 text-xl font-mono text-white focus:bg-white/10 focus:border-[#FACC15]/40 focus:outline-none transition-all placeholder:text-white/10 uppercase tracking-wider"
-                  />
+                <div className="space-y-3">
+                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] ml-2">Node Designation</label>
+                  <input autoFocus placeholder="e.g. Project Overdrive" className="input-premium h-16 text-lg text-center" value={newProjectName} onChange={(e) => setNewProjectName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleCreateProject()} />
                 </div>
-                
-                <div className="flex gap-4 pt-4">
-                  <button onClick={() => setShowProjectModal(false)} className="flex-1 h-14 text-[11px] font-mono font-bold text-white/30 hover:text-white transition-all uppercase tracking-widest">
-                    Hủy Bỏ
-                  </button>
-                  <button 
-                    onClick={handleCreateProject} disabled={!newProjectName.trim()}
-                    className="btn-cyber flex-1 h-14"
-                  >
-                    Khởi Tạo
-                  </button>
+                <div className="flex gap-4">
+                  <button onClick={handleCreateProject} disabled={!newProjectName.trim()} className="flex-1 btn-premium bg-slate-950 text-white disabled:opacity-50">Create Node</button>
+                  <button onClick={() => setShowProjectModal(false)} className="px-8 font-black text-slate-400 hover:text-slate-950 transition-colors uppercase tracking-widest text-[11px]">Abort</button>
                 </div>
               </div>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
-      {user && <SystemOverlay />}
     </div>
   );
 }
 
-function NavButton({ icon: Icon, label, active, onClick }: { icon: any, label: string, active: boolean, onClick: () => void }) {
+function StatsCard({ label, value, icon, trend }: { label: string, value: any, icon: any, trend?: string }) {
+  return (
+    <div className="card-smart group hover:-translate-y-2 transition-all duration-700 relative overflow-hidden bg-white/80 backdrop-blur-xl border-white/60">
+      <div className="absolute top-0 right-0 w-32 h-32 bg-brand-500/5 blur-[50px] rounded-full translate-x-1/2 -translate-y-1/2 group-hover:bg-brand-500/15 transition-colors" />
+      <div className="flex items-center justify-between mb-10 relative z-10">
+        <div className="w-14 h-14 rounded-3xl flex items-center justify-center bg-slate-50 text-slate-400 group-hover:bg-brand-600 group-hover:text-white transition-all duration-500 shadow-xl border border-white group-hover:rotate-[10deg] group-hover:scale-110">
+          {icon}
+        </div>
+        {trend && (
+          <div className={cn(
+            "px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] font-mono",
+            trend.startsWith('+') ? "bg-emerald-50/80 text-emerald-600 border border-emerald-100/50" : 
+            trend.startsWith('-') ? "bg-rose-50/80 text-rose-600 border border-rose-100/50" : "bg-slate-50/80 text-slate-400 border border-slate-100/50"
+          )}>
+            {trend}
+          </div>
+        )}
+      </div>
+      <div className="space-y-1.5 relative z-10">
+        <div className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] font-display italic">{label}</div>
+        <div className="text-4xl font-black text-slate-950 tracking-tighter font-display italic leading-none">
+          {value}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function QuickLink({ title, desc, icon, onClick }: { title: string, desc: string, icon: any, onClick: () => void }) {
   return (
     <button 
       onClick={onClick}
-      className={cn(
-        "w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-500 relative group mb-2",
-        active 
-          ? "bg-gradient-to-r from-[#FACC15] to-[#fbbf24] text-black font-black shadow-[0_8px_32px_rgba(250,204,21,0.2)] scale-[1.02]" 
-          : "text-white/30 hover:bg-white/[0.04] hover:text-white"
-      )}
+      className="card-smart p-10 flex flex-col text-left group bg-white border-slate-100 hover:border-brand-500/20 shadow-xl hover:shadow-2xl transition-all duration-500"
     >
-      <Icon size={20} className={cn("transition-all duration-300", active ? "text-black" : "opacity-40 group-hover:opacity-100 group-hover:scale-110")} />
-      <span className="text-[11px] font-mono font-black uppercase tracking-[0.3em] hidden lg:inline">{label}</span>
-      {active && (
-         <motion.div 
-           layoutId="nav-indicator"
-           className="absolute right-4 w-1.5 h-1.5 bg-black rounded-full shadow-lg" 
-         />
-      )}
+      <div className="w-14 h-14 bg-slate-950 text-white flex items-center justify-center rounded-[1.5rem] mb-10 shadow-2xl shadow-slate-950/20 group-hover:bg-brand-600 group-hover:rotate-[15deg] group-hover:scale-110 transition-all duration-500 hvr-pulse-shrink">
+        {React.cloneElement(icon as React.ReactElement, { size: 24, strokeWidth: 2.5 })}
+      </div>
+      <h3 className="text-xl font-black text-slate-950 mb-3 tracking-tight font-display italic italic">{title}</h3>
+      <p className="text-sm text-slate-400 font-bold leading-relaxed tracking-tight group-hover:text-slate-500 transition-colors">{desc}</p>
+      
+      <div className="mt-10 flex items-center gap-3 text-brand-600 font-black text-[10px] uppercase tracking-[0.4em] opacity-0 group-hover:opacity-100 transition-all group-hover:translate-x-2">
+        EXECUTE PROTOCOL <ArrowRight size={14} strokeWidth={3} />
+      </div>
     </button>
-  );
-}
-
-function StatsCard({ label, value, icon, color, status, pulse }: { label: string, value: any, icon: any, color: string, status: string, pulse?: boolean }) {
-  return (
-    <motion.div 
-      whileHover={{ y: -5 }}
-      className="bg-white/[0.05] border border-white/10 rounded-[32px] p-8 group hover:bg-white/[0.08] hover:border-white/20 transition-all duration-500 backdrop-blur-3xl relative overflow-hidden"
-    >
-       <div className="absolute top-0 right-0 w-32 h-32 blur-[60px] opacity-0 group-hover:opacity-15 transition-opacity duration-700" style={{ backgroundColor: color }} />
-       <div className="flex justify-between items-center mb-10 relative z-10">
-          <span className="text-[11px] font-mono font-black text-white/30 uppercase tracking-[0.4em]">{label}</span>
-          <div className="p-3 rounded-2xl bg-white/[0.05] border border-white/10 group-hover:scale-125 transition-transform duration-700 shadow-xl" style={{ color }}>
-             {icon}
-          </div>
-       </div>
-       <div className="text-6xl font-display font-black text-white tracking-tighter mb-5 relative z-10">{value}</div>
-       <div className="flex items-center gap-3 relative z-10">
-          <div className={`w-2 h-2 rounded-full ${pulse ? 'animate-pulse' : ''} shadow-lg`} style={{ backgroundColor: color, boxShadow: `0 0 10px ${color}` }} />
-          <span className="text-[11px] font-mono font-black uppercase tracking-widest opacity-60 text-white/80">{status}</span>
-       </div>
-    </motion.div>
-  );
-}
-
-function SystemOverlay() {
-  return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-4xl h-12 bg-slate-950/80 backdrop-blur-3xl border border-white/5 rounded-2xl z-[200] flex items-center px-8 gap-10 shadow-2xl overflow-hidden group">
-       {/* Background accent */}
-       <div className="absolute inset-0 bg-[#FACC15]/[0.02] opacity-0 group-hover:opacity-100 transition-opacity" />
-       
-       <div className="flex items-center gap-3 shrink-0">
-          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-          <span className="text-[10px] font-mono font-black text-white/40 uppercase tracking-[0.2em]">CORE_STABLE</span>
-       </div>
-       
-       <div className="h-4 w-[1px] bg-white/10" />
-       
-       <div className="flex-1 overflow-hidden">
-          <motion.div 
-            animate={{ x: [0, -400] }}
-            transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
-            className="flex gap-12 whitespace-nowrap"
-          >
-             {[
-               "NODE_05::SYNC_OK", "CPU_LOAD::24%", "MEM_USAGE::1.4GB", "LATENCY::12MS", 
-               "ENCRYPT_ACTIVE::AES-256", "HỆ_THỐNG_BẢO_MẬT::SẴN_SÀNG", "UPLINK::STABLE", 
-               "DỮ_LIỆU_THỜI_GIAN_THỰC::ON", "PHIÊN_BẢN::v3.5.0", "HẠ_TẦNG::ELITE"
-             ].map((stat, i) => (
-                <span key={i} className="text-[9px] font-mono text-white/20 uppercase tracking-[0.1em]">{stat}</span>
-             ))}
-          </motion.div>
-       </div>
-       
-       <div className="h-4 w-[1px] bg-white/10 hidden md:block" />
-       
-       <div className="flex items-center gap-6 hidden md:flex shrink-0">
-          <div className="flex items-center gap-3">
-             <div className="text-[8px] font-mono text-white/20 uppercase">Network</div>
-             <div className="w-16 h-1 bg-white/5 rounded-full overflow-hidden">
-                <div className="h-full bg-[#FACC15] w-[75%] rounded-full opacity-60" />
-             </div>
-          </div>
-          <div className="flex items-center gap-3">
-             <div className="text-[8px] font-mono text-white/20 uppercase">Load</div>
-             <div className="w-16 h-1 bg-white/5 rounded-full overflow-hidden">
-                <div className="h-full bg-indigo-500 w-[30%] rounded-full opacity-60" />
-             </div>
-          </div>
-       </div>
-    </div>
   );
 }

@@ -115,16 +115,14 @@ service cloud.firestore {
       allow get: if isSignedIn() && isProjectMember(existing().projectId);
       
       allow list: if isSignedIn() && (
-        resource.data.projectId != null && (
-          resource.data.creatorId == request.auth.uid || 
-          isProjectMember(resource.data.projectId)
-        )
+        resource.data.projectId != null && isProjectMember(resource.data.projectId)
       );
       
       allow create: if isSignedIn() && isValidBug(incoming()) && incoming().createdAt == request.time &&
         isProjectMember(incoming().projectId);
       
       allow update: if isSignedIn() && 
+        isProjectMember(existing().projectId) &&
         incoming().creatorId == existing().creatorId && 
         incoming().projectId == existing().projectId &&
         incoming().createdAt == existing().createdAt && (
@@ -144,17 +142,18 @@ service cloud.firestore {
 
     // 4. Comments Collection
     match /comments/{commentId} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn() && isValidComment(incoming()) && incoming().createdAt == request.time;
+      allow list: if isSignedIn() && isProjectMember(get(/databases/$(database)/documents/bugs/$(resource.data.bugId)).data.projectId);
+      allow get: if isSignedIn() && isProjectMember(get(/databases/$(database)/documents/bugs/$(existing().bugId)).data.projectId);
+      allow create: if isSignedIn() && isValidComment(incoming()) && 
+        isProjectMember(get(/databases/$(database)/documents/bugs/$(incoming().bugId)).data.projectId) &&
+        incoming().createdAt == request.time;
       allow delete: if isSignedIn() && (existing().userId == request.auth.uid || isAdmin());
     }
 
     // 5. Activity Logs Collection
     match /activity_logs/{logId} {
       allow list: if isSignedIn() && (
-        resource.data.projectId != null || 
-        resource.data.userId == request.auth.uid ||
-        resource.data.bugId != null
+        resource.data.projectId != null && isProjectMember(resource.data.projectId)
       );
       allow get: if isSignedIn() && (
         (existing().projectId != null && isProjectMember(existing().projectId)) ||
@@ -165,6 +164,12 @@ service cloud.firestore {
         (incoming().projectId == null || isProjectMember(incoming().projectId));
       
       allow update, delete: if false;
+    }
+
+    // 6. Metrics Collection (Public)
+    match /metrics/global {
+      allow read: if true;
+      allow write: if isAdmin();
     }
   }
 }
