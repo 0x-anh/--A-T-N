@@ -18,19 +18,19 @@
   --color-brand-900: #4c1d95;
   --color-brand-950: #2e1065;
 
-  --color-surface: #0A0A0A;
-  --color-border: rgba(255, 255, 255, 0.08);
+  --color-surface: #FFFFFF;
+  --color-border: rgba(0, 0, 0, 0.08);
   --color-ink-muted: #64748b;
 }
 
 @layer base {
   body {
-    @apply antialiased text-white bg-[#050505] selection:bg-brand-500 selection:text-white overflow-x-hidden;
+    @apply antialiased text-slate-900 bg-[#F8FAFC] selection:bg-brand-500 selection:text-white overflow-x-hidden;
     font-family: var(--font-sans);
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply tracking-tight font-bold text-white font-sans;
+    @apply tracking-tight font-bold text-slate-900 font-sans;
   }
 }
 
@@ -49,25 +49,29 @@
   }
 
   .nav-link-active {
-    @apply bg-white/10 text-white border border-white/10;
+    @apply bg-brand-50 text-brand-600 shadow-sm border border-brand-100/50;
   }
 
   .nav-link-inactive {
-    @apply text-slate-500 hover:text-slate-200 hover:bg-white/5;
+    @apply text-slate-500 hover:text-slate-900 hover:bg-slate-50;
   }
 
   /* Precision Surface */
   .surface-precision {
-    @apply bg-[#0D0D0D] border border-white/5 rounded-xl shadow-2xl relative overflow-hidden;
+    @apply bg-white border border-slate-200 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden;
   }
 
   .surface-precision::before {
     content: '';
-    @apply absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent;
+    @apply absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-slate-200 to-transparent;
+  }
+  
+  .glow-subtle {
+    box-shadow: 0 0 80px rgba(139, 92, 246, 0.05);
   }
 
   .btn-precision {
-    @apply h-11 px-6 bg-white text-black rounded-lg text-[12px] font-bold uppercase tracking-wider hover:bg-brand-500 hover:text-white transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50;
+    @apply h-11 px-6 bg-slate-900 text-white rounded-xl text-[12px] font-bold uppercase tracking-wider hover:bg-brand-600 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-slate-200/50;
   }
 
   .micro-label {
@@ -76,10 +80,6 @@
 
   .data-value {
     @apply font-mono tracking-tighter;
-  }
-
-  .serif-header {
-    @apply font-serif italic font-bold;
   }
 }
 

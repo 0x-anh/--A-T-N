@@ -37,7 +37,7 @@ const BugCard: React.FC<{ bug: Bug, index: number, userProfiles: UserProfile[], 
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           className={cn(
-            "mb-6 outline-none transition-all",
+            "mb-4 outline-none transition-all",
             snapshot.isDragging ? "z-[210] scale-[1.05]" : ""
           )}
           style={{ ...provided.draggableProps.style }}
@@ -45,57 +45,52 @@ const BugCard: React.FC<{ bug: Bug, index: number, userProfiles: UserProfile[], 
           <div 
             onClick={() => !snapshot.isDragging && onSelect(bug)}
             className={cn(
-               "bg-white border border-slate-200/60 rounded-[2rem] p-8 transition-all duration-700 cursor-grab active:cursor-grabbing hover:border-brand-500/20 group select-none relative overflow-hidden",
-               snapshot.isDragging ? "shadow-[0_40px_80px_rgba(0,0,0,0.1)] ring-2 ring-brand-500/10 border-transparent rotate-[1deg]" : "hover:shadow-[0_20px_40px_rgba(0,0,0,0.04)]"
+               "surface-precision p-6 bg-white hover:bg-slate-50 transition-all duration-300 cursor-grab active:cursor-grabbing border-slate-200 hover:border-brand-500/20 group select-none relative overflow-hidden",
+               snapshot.isDragging ? "shadow-2xl border-brand-500/40 rotate-[1deg]" : ""
             )}
           >
-            {/* PRIORITY ACCENT BAR */}
-            <div className={cn(
-              "absolute top-0 right-0 bottom-0 w-2",
-              bug.priority === 'critical' ? "bg-rose-500 shadow-[-4px_0_15px_rgba(244,63,94,0.3)]" : bug.priority === 'high' ? "bg-amber-500 shadow-[-4px_0_15px_rgba(245,158,11,0.2)]" : "bg-brand-500 shadow-[-4px_0_15px_rgba(124,58,237,0.2)]"
-            )} />
-
-            <div className="space-y-6">
+            <div className="space-y-4">
               <div className="flex items-center justify-between gap-3">
-                 <div className="flex items-center gap-3">
-                    <div className="flex flex-col">
-                       <span className="text-[9px] font-black text-slate-300 uppercase tracking-[0.3em] font-mono leading-none">Node Hash</span>
-                       <span className="text-[10px] font-black text-slate-950 uppercase tracking-[0.1em] font-mono leading-none mt-1">{bug.id.slice(-6).toUpperCase()}</span>
-                    </div>
+                 <div className="flex items-center gap-2">
+                    <div className={cn(
+                      "w-1.5 h-1.5 rounded-full",
+                      bug.priority === 'critical' ? "bg-rose-500" : 
+                      bug.priority === 'high' ? "bg-amber-500" : "bg-brand-500"
+                    )} />
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono">#{bug.id.slice(-4).toUpperCase()}</span>
                  </div>
-                 <div className="flex -space-x-2">
+                 <div className="flex -space-x-1.5">
                    {bug.assigneeId ? (
                      <img 
                        src={userProfiles.find(u => u.userId === bug.assigneeId)?.photoURL || `https://api.dicebear.com/7.x/notionists/svg?seed=${bug.assigneeId}`} 
-                       className="w-10 h-10 rounded-xl border-4 border-white bg-white shadow-xl transition-transform group-hover:scale-110" 
+                       className="w-7 h-7 rounded-lg border-2 border-white bg-slate-50 shadow-sm" 
                        alt=""
                      />
                    ) : (
-                     <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-300 group-hover:bg-brand-50 group-hover:text-brand-600 transition-colors">
-                        <UserPlus size={16} />
+                     <div className="w-7 h-7 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400">
+                        <UserPlus size={12} />
                      </div>
                    )}
                  </div>
               </div>
-
-              <h4 className="text-[17px] font-black text-slate-900 leading-[1.35] tracking-tight font-display italic group-hover:text-brand-600 transition-colors">
+ 
+              <h4 className="text-sm font-bold text-slate-900 leading-relaxed tracking-tight group-hover:text-brand-600 transition-colors">
                 {bug.title}
               </h4>
-
-              <div className="flex items-center justify-between pt-2 border-t border-slate-50/50">
-                 <div className="flex items-center gap-6 text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] font-mono">
+ 
+              <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+                  <div className="flex items-center gap-4 text-[10px] text-slate-400 font-bold uppercase tracking-widest font-mono">
                     {bug.comments?.length > 0 && (
-                      <div className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 rounded-lg text-slate-500">
-                        <MessageSquare size={14} className="text-slate-400" strokeWidth={2.5} />
+                      <div className="flex items-center gap-1.5">
+                        <MessageSquare size={12} className="text-slate-300" />
                         <span>{bug.comments.length}</span>
                       </div>
                     )}
                     <div className="flex items-center gap-1.5">
-                      <Clock size={14} className="text-slate-300" strokeWidth={2.5} />
+                      <Clock size={12} className="text-slate-300" />
                       <span>{bug.updatedAt ? new Date((bug.updatedAt as any).toDate()).toLocaleDateString([], { month: 'short', day: 'numeric' }) : 'NOW'}</span>
                     </div>
-                 </div>
-                 <MoreHorizontal size={18} className="text-slate-200 group-hover:text-slate-400 transition-colors cursor-pointer" />
+                  </div>
               </div>
             </div>
           </div>
@@ -107,22 +102,19 @@ const BugCard: React.FC<{ bug: Bug, index: number, userProfiles: UserProfile[], 
 
 const KanbanColumn: React.FC<ColumnProps> = ({ title, tasks, status, userProfiles, onSelect, isAdding, setIsAdding, newBugTitle, setNewBugTitle, handleAddBug }) => {
    return (
-    <div className="w-[360px] shrink-0 h-full flex flex-col px-4">
-      <div className="py-10 flex items-center justify-between group">
-        <div className="flex items-center gap-5">
-          <div className="w-3 h-3 rounded-full bg-brand-500 shadow-[0_0_15px_rgba(124,58,237,0.5)]" />
-          <div>
-             <h3 className="text-[12px] font-black text-slate-950 uppercase tracking-[0.4em] font-display italic leading-none">{title}</h3>
-             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1.5 font-mono">Channel {status.toUpperCase()}</p>
-          </div>
+    <div className="w-[340px] shrink-0 h-full flex flex-col px-3">
+      <div className="py-8 flex items-center justify-between group">
+        <div className="flex items-center gap-3">
+          <div className="w-2 h-2 rounded-full bg-brand-500/40" />
+           <h3 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">{title}</h3>
         </div>
-        <div className="flex items-center gap-4">
-           <span className="text-[11px] font-black text-brand-600 bg-brand-50 border border-brand-100 px-3 py-1 rounded-xl shadow-inner">{tasks.length} Nodes</span>
+        <div className="flex items-center gap-3">
+           <span className="text-[10px] font-bold text-slate-500 bg-slate-50 px-2 py-0.5 rounded-lg border border-slate-100">{tasks.length}</span>
            <button 
              onClick={() => setIsAdding(status)}
-             className={cn("w-12 h-12 flex items-center justify-center rounded-2xl border border-slate-100 bg-white text-slate-400 hover:text-brand-600 hover:border-brand-200 hover:shadow-2xl transition-all", isAdding && "bg-brand-600 text-white border-transparent")}
+             className={cn("w-8 h-8 flex items-center justify-center rounded-lg border border-slate-100 bg-white text-slate-400 hover:text-slate-900 hover:border-slate-300 transition-all shadow-sm", isAdding && "bg-brand-500 text-white border-transparent")}
            >
-             <Plus size={20} strokeWidth={3} />
+             <Plus size={14} />
            </button>
         </div>
       </div>
@@ -133,28 +125,30 @@ const KanbanColumn: React.FC<ColumnProps> = ({ title, tasks, status, userProfile
             {...provided.droppableProps}
             ref={provided.innerRef}
             className={cn(
-              "flex-1 overflow-y-auto custom-scrollbar transition-all bg-slate-50/50 rounded-[3rem] p-6 border border-slate-200/40 shadow-inner",
-              snapshot.isDraggingOver && "bg-brand-50/30 border-brand-500/20 shadow-2xl shadow-brand-500/5"
+              "flex-1 overflow-y-auto custom-scrollbar transition-all bg-white/50 rounded-2xl p-4 border border-slate-100 shadow-inner",
+              snapshot.isDraggingOver && "bg-brand-50/50 border-brand-200"
             )}
           >
             <AnimatePresence>
               {isAdding && (
-                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="bg-white border border-brand-500/20 rounded-[2.5rem] p-8 shadow-2xl shadow-brand-500/10 mb-10">
-                  <div className="text-[10px] font-black text-brand-600 uppercase tracking-widest mb-4 font-mono">Khởi tạo Packet mới</div>
-                  <input
-                    autoFocus
-                    className="w-full bg-transparent border-none p-0 text-lg font-black text-slate-950 outline-none placeholder:text-slate-300 mb-10 font-display italic"
-                    placeholder="Định danh vụ việc..."
-                    value={newBugTitle}
-                    onChange={(e) => setNewBugTitle(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') handleAddBug(status);
-                      if (e.key === 'Escape') setIsAdding(null);
-                    }}
-                  />
-                  <div className="flex gap-4">
-                    <button onClick={() => handleAddBug(status)} className="flex-1 h-14 bg-slate-950 text-white rounded-2xl text-[11px] font-black shadow-2xl shadow-slate-950/20 active:scale-95 transition-all uppercase tracking-widest">Deploy Node</button>
-                    <button onClick={() => setIsAdding(null)} className="h-14 px-6 text-[11px] font-black text-slate-400 hover:text-slate-950 transition-all uppercase tracking-widest">Abort</button>
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="p-1 bg-brand-500/10 border border-brand-500/20 rounded-2xl mb-6 shadow-xl shadow-brand-500/5">
+                  <div className="p-5 bg-white rounded-xl border border-slate-100">
+                    <div className="text-[10px] font-bold text-brand-600 uppercase tracking-widest mb-4 font-mono">Initialize Entry</div>
+                    <input
+                      autoFocus
+                      className="w-full bg-transparent border-none p-0 text-sm font-bold text-slate-900 outline-none placeholder:text-slate-300 mb-6"
+                      placeholder="Title..."
+                      value={newBugTitle}
+                      onChange={(e) => setNewBugTitle(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleAddBug(status);
+                        if (e.key === 'Escape') setIsAdding(null);
+                      }}
+                    />
+                    <div className="flex gap-2">
+                      <button onClick={() => handleAddBug(status)} className="flex-1 h-9 bg-brand-500 text-white rounded-lg text-[10px] font-bold hover:bg-brand-600 transition-all uppercase tracking-widest">Deploy</button>
+                      <button onClick={() => setIsAdding(null)} className="h-9 px-4 text-[10px] font-bold text-slate-400 hover:text-slate-900 transition-all uppercase tracking-widest">Abort</button>
+                    </div>
                   </div>
                 </motion.div>
               )}
@@ -255,9 +249,9 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs }: K
         status: newStatus as BugStatus,
         updatedAt: serverTimestamp()
       });
-      await logActivity(draggableId, 'STATUS_UPDATE', `Thay đổi trạng thái từ ${oldStatus} sang ${newStatus}`);
-      toast.success("Đã đồng bộ cập nhật bảng");
-    } catch (error) { toast.error("Cập nhật thất bại"); }
+      await logActivity(draggableId, 'STATUS_UPDATE', `Status changed from ${oldStatus} to ${newStatus}`);
+      toast.success("Board synchronized");
+    } catch (error) { toast.error("Update failed"); }
   };
 
   const handleAddBug = async (status: BugStatus) => {
@@ -272,11 +266,11 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs }: K
         createdAt: serverTimestamp(),
         creatorId: auth.currentUser.uid
       });
-      await logActivity(docRef.id, 'CREATE', 'Đã khởi tạo vụ việc mới.');
-      toast.success("Đã khởi tạo Node");
+      await logActivity(docRef.id, 'CREATE', 'New entry initialized.');
+      toast.success("Node initialized");
       setNewBugTitle('');
       setIsAdding(null);
-    } catch (error) { toast.error("Khởi tạo thất bại"); }
+    } catch (error) { toast.error("Initialization failed"); }
   };
 
   const handleUpdateBugDetails = async (id: string, updates: Partial<Bug>) => {
@@ -289,12 +283,12 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs }: K
   };
 
   const handleDeleteBug = async (id: string) => {
-    if (!confirm("Xác nhận tiêu hủy vụ việc này?")) return;
+    if (!confirm("Confirm destruction of this entry?")) return;
     try {
       await deleteDoc(doc(db, 'bugs', id));
       if (selectedBug?.id === id) setSelectedBug(null);
-      toast.info("Node đã được giải phóng");
-    } catch (error) { toast.error("Giải phóng thất bại"); }
+      toast.info("Node released");
+    } catch (error) { toast.error("Release failed"); }
   };
 
   const handleAddComment = async () => {
@@ -307,7 +301,7 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs }: K
         content: newComment,
         createdAt: serverTimestamp()
       });
-      await logActivity(selectedBug.id, 'COMMENT', 'Đã ghi nhận phản hồi.');
+      await logActivity(selectedBug.id, 'COMMENT', 'Feedback recorded.');
       setNewComment('');
     } catch (error) { console.error(error); }
   };
@@ -318,31 +312,31 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs }: K
 
   if (!enabled) return null;
 
-  return (
-    <div className="flex-1 w-full flex flex-col overflow-hidden bg-[#FBFBFE]">
-      <div className="h-24 px-12 flex items-center justify-between border-b border-slate-100 bg-white/50 backdrop-blur-3xl shrink-0">
+   return (
+    <div className="flex-1 w-full flex flex-col overflow-hidden bg-slate-50">
+      <div className="h-24 px-12 flex items-center justify-between border-b border-slate-200 bg-white/50 backdrop-blur-md shrink-0">
         <div className="flex items-center gap-12">
-           <h2 className="text-2xl font-black text-slate-950 tracking-tight font-display italic">CHẾ ĐỘ MA TRẬN</h2>
+           <h2 className="text-xl font-bold text-slate-900 tracking-widest uppercase">Workspace View</h2>
            <div className="relative group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-brand-600 transition-colors" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 group-focus-within:text-brand-600 transition-colors" />
               <input 
-                type="text" placeholder="Tìm kiếm trong ma trận..." value={searchTerm}
+                type="text" placeholder="Search entries..." value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="h-12 bg-slate-50/50 border border-slate-100 rounded-2xl pl-12 pr-6 text-sm font-black text-slate-900 focus:bg-white focus:ring-8 focus:ring-brand-500/5 transition-all w-96 outline-none placeholder:text-slate-300 font-mono"
+                className="h-11 bg-white border border-slate-200 rounded-xl pl-12 pr-6 text-xs font-bold text-slate-900 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all w-80 outline-none placeholder:text-slate-300 font-mono"
               />
            </div>
         </div>
 
         <button 
-          onClick={() => setIsAdding('todo')}
-          className="h-12 px-8 bg-slate-950 text-white rounded-2xl text-[10px] font-black hover:bg-brand-600 transition-all flex items-center gap-3 shadow-2xl shadow-slate-950/20 active:scale-95 uppercase tracking-widest"
+          onClick={() => setIsAdding('backlog')}
+          className="h-11 px-8 bg-brand-500 text-white rounded-xl text-[10px] font-bold hover:bg-brand-600 transition-all flex items-center gap-2 shadow-2xl shadow-brand-500/20 active:scale-95 uppercase tracking-widest"
         >
-           <Plus size={18} strokeWidth={3} /> Đăng vụ việc
+           <Plus size={16} /> New Entry
         </button>
       </div>
 
       <div className="flex-1 overflow-x-auto custom-scrollbar">
-        <div className="flex h-full p-12 gap-10">
+        <div className="flex h-full p-8 gap-8">
           <DragDropContext onDragEnd={onDragEnd}>
             {STATUS_COLUMNS.map(col => (
                <KanbanColumn 
@@ -369,124 +363,121 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs }: K
             <motion.div 
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setSelectedBug(null)}
-              className="absolute inset-0 bg-slate-950/40 backdrop-blur-2xl"
+              className="absolute inset-0 bg-slate-200/60 backdrop-blur-sm"
             />
             <motion.div 
               initial={{ x: '100%', opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: '100%', opacity: 0 }} transition={{ type: 'spring', damping: 30, stiffness: 200 }}
-              className="relative w-full max-w-2xl h-full bg-white rounded-[4rem] shadow-4xl flex flex-col overflow-hidden border border-white/20"
+              className="relative w-full max-w-2xl h-full bg-white rounded-[2.5rem] shadow-4xl flex flex-col overflow-hidden border border-slate-200"
             >
-              <div className="px-12 h-28 border-b border-slate-50 flex items-center justify-between bg-white shrink-0">
-                <div className="flex items-center gap-8">
-                   <div className="text-[11px] font-black text-brand-600 uppercase tracking-[0.4em] bg-brand-50 px-4 py-1.5 rounded-xl font-mono">MÃ-{selectedBug.id.slice(-4).toUpperCase()}</div>
-                   <div className="h-6 w-px bg-slate-100" />
-                   <span className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] italic font-display">TRUNG TÂM CHI TIẾT</span>
+              <div className="px-10 h-24 border-b border-slate-100 flex items-center justify-between bg-slate-50/30 shrink-0">
+                <div className="flex items-center gap-6">
+                   <div className="text-[10px] font-bold text-brand-600 uppercase tracking-widest bg-brand-50 px-3 py-1 rounded-lg font-mono border border-brand-100">ID-{selectedBug.id.slice(-4).toUpperCase()}</div>
+                   <div className="h-4 w-px bg-slate-200" />
+                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Detail View</span>
                 </div>
                 <button 
                   onClick={() => setSelectedBug(null)}
-                  className="w-14 h-14 flex items-center justify-center rounded-3xl hover:bg-slate-50 text-slate-300 hover:text-slate-950 transition-all border border-transparent hover:border-slate-100"
+                  className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-900 transition-all border border-transparent hover:border-slate-200"
                 >
-                  <X size={28} strokeWidth={2.5} />
+                  <X size={20} strokeWidth={2} />
                 </button>
               </div>
-
-              <div className="flex-1 overflow-y-auto p-12 lg:p-16 space-y-16 custom-scrollbar">
-                <div className="space-y-12">
+ 
+              <div className="flex-1 overflow-y-auto p-10 lg:p-12 space-y-12 custom-scrollbar">
+                <div className="space-y-8">
                    <textarea 
                      rows={2}
-                     className="w-full text-5xl font-black text-slate-950 outline-none border-none p-0 bg-transparent tracking-tight font-display italic leading-tight resize-none"
-                     placeholder="Định danh..."
+                     className="w-full text-4xl font-bold text-slate-900 outline-none border-none p-0 bg-transparent tracking-tight leading-tight resize-none placeholder:text-slate-200"
+                     placeholder="Title..."
                      value={selectedBug.title}
                      onChange={(e) => handleUpdateBugDetails(selectedBug.id, { title: e.target.value })}
                    />
                    
-                   <div className="grid grid-cols-2 gap-12">
-                      <div className="space-y-5">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1 font-display italic">MA TRẬN ƯU TIÊN</label>
+                   <div className="grid grid-cols-2 gap-8">
+                      <div className="space-y-3">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Priority</label>
                         <div className="relative">
                           <select 
                             value={selectedBug.priority}
                             onChange={(e) => handleUpdateBugDetails(selectedBug.id, { priority: e.target.value as BugPriority })}
-                            className="w-full h-16 bg-slate-50/50 border border-slate-100 rounded-[1.5rem] px-8 text-sm font-black text-slate-900 outline-none hover:border-brand-300 transition-all appearance-none cursor-pointer uppercase tracking-widest font-mono"
+                            className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 text-xs font-bold text-slate-900 outline-none hover:border-brand-500/30 transition-all appearance-none cursor-pointer uppercase tracking-widest"
                           >
                             {(Object.entries(PRIORITY_CONFIG) as [BugPriority, any][]).map(([key, cfg]) => (
-                              <option key={key} value={key}>{cfg.label === 'Critical' ? 'KHẨN CẤP' : cfg.label === 'High' ? 'CAO' : 'TRUNG BÌNH'}</option>
+                               <option key={key} value={key} className="bg-white">{cfg.label.toUpperCase()}</option>
                             ))}
                           </select>
                         </div>
                       </div>
-                      <div className="space-y-5">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1 font-display italic">NÚT VẬN HÀNH</label>
+                      <div className="space-y-3">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Assignee</label>
                         <div className="relative">
                           <select 
                             value={selectedBug.assigneeId || ''}
                             onChange={(e) => handleUpdateBugDetails(selectedBug.id, { assigneeId: e.target.value })}
-                            className="w-full h-16 bg-slate-50/50 border border-slate-100 rounded-[1.5rem] px-8 text-sm font-black text-slate-900 outline-none hover:border-brand-300 transition-all appearance-none cursor-pointer uppercase tracking-widest"
+                            className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 text-xs font-bold text-slate-900 outline-none hover:border-brand-500/30 transition-all appearance-none cursor-pointer uppercase tracking-widest"
                           >
-                            <option value="">CHƯA CHỈ ĐỊNH</option>
-                            {userProfiles.map(u => <option key={u.userId} value={u.userId}>{u.displayName.toUpperCase()}</option>)}
+                            <option value="" className="bg-white">UNASSIGNED</option>
+                            {userProfiles.map(u => <option key={u.userId} value={u.userId} className="bg-white">{u.displayName.toUpperCase()}</option>)}
                           </select>
                         </div>
                       </div>
                    </div>
                 </div>
-
-                <div className="space-y-6">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1 font-display italic">BẢO MẬT GIAO THỨC</label>
+ 
+                <div className="space-y-4">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Protocol Details</label>
                   <textarea 
-                    placeholder="Nhập thông tin chi tiết vào bản ghi viễn thám..."
-                    className="w-full h-64 bg-slate-50/50 border border-slate-100 rounded-[2.5rem] p-10 text-base text-slate-600 outline-none focus:bg-white focus:border-brand-200 focus:ring-12 focus:ring-brand-500/5 transition-all leading-relaxed font-medium"
+                    placeholder="Enter technical details..."
+                    className="w-full h-48 bg-slate-50 border border-slate-100 rounded-2xl p-6 text-sm text-slate-600 outline-none focus:bg-white focus:border-brand-500/20 transition-all leading-relaxed placeholder:text-slate-300"
                     value={selectedBug.description || ''}
                     onChange={(e) => handleUpdateBugDetails(selectedBug.id, { description: e.target.value })}
                   />
                 </div>
-
-                <div className="space-y-12 pt-12 border-t border-slate-50">
-                  <h3 className="text-sm font-black text-slate-950 uppercase tracking-[0.3em] flex items-center gap-4 font-display italic">
-                    <div className="w-2 h-2 rounded-full bg-brand-500 shadow-[0_0_10px_rgba(124,58,237,0.5)]" /> SỔ CÁI TƯƠNG TÁC
+ 
+                <div className="space-y-10 pt-10 border-t border-slate-100">
+                  <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-3">
+                    <div className="w-1.5 h-1.5 rounded-full bg-brand-600" /> Interaction Ledger
                   </h3>
-
-                  <div className="space-y-12">
-                    <div className="space-y-10">
+ 
+                  <div className="space-y-8">
+                    <div className="space-y-8">
                       {comments.map((c) => (
-                        <div key={c.id} className="flex gap-8 group/comment">
+                        <div key={c.id} className="flex gap-6 group/comment">
                           <div className="relative shrink-0">
-                            <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${c.userId}`} className="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-100 shadow-sm" alt="" />
-                            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-white rounded-lg flex items-center justify-center border border-slate-100">
-                              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                            </div>
+                            <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${c.userId}`} className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100" alt="" />
                           </div>
-                          <div className="flex-1 space-y-3">
+                          <div className="flex-1 space-y-2">
                             <div className="flex items-baseline justify-between gap-4">
-                              <span className="text-sm font-black text-slate-950 italic font-display">{c.userName}</span>
-                              <span className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em] font-mono">{c.createdAt?.toDate ? new Date(c.createdAt.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'VỪA XONG'}</span>
+                              <span className="text-xs font-bold text-slate-900">{c.userName}</span>
+                              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest font-mono">{c.createdAt?.toDate ? new Date(c.createdAt.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'NOW'}</span>
                             </div>
-                            <div className="text-sm text-slate-600 font-medium leading-[1.6] bg-slate-50/50 p-8 rounded-[2rem] border border-transparent group-hover:bg-white group-hover:border-slate-100 transition-all">
+                            <div className="text-sm text-slate-600 leading-relaxed bg-slate-50 p-5 rounded-2xl border border-transparent group-hover:border-slate-100 transition-all shadow-sm">
                                {c.content}
                             </div>
                           </div>
                         </div>
                       ))}
                     </div>
-
-                    <div className="flex flex-col gap-8 pt-12 border-t border-slate-50">
+ 
+                    <div className="flex flex-col gap-6 pt-10 border-t border-slate-100">
                         <textarea 
-                          placeholder="Ghi nhận tương tác mới vào ledger..."
-                          className="w-full bg-slate-50/40 border border-slate-100 rounded-[2rem] p-8 text-sm text-slate-950 outline-none focus:bg-white focus:border-brand-200 transition-all h-36 font-medium shadow-inner"
+                          placeholder="Record new entry..."
+                          className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-6 text-sm text-slate-900 outline-none focus:bg-white focus:border-brand-500/20 transition-all h-28 placeholder:text-slate-300"
                           value={newComment} onChange={(e) => setNewComment(e.target.value)}
                         />
                         <div className="flex items-center justify-between">
                           <button 
                             onClick={handleAddComment} 
                             disabled={!newComment.trim()}
-                            className="h-14 px-12 bg-slate-950 text-white rounded-2xl text-[10px] font-black shadow-2xl shadow-slate-950/20 hover:bg-brand-600 transition-all disabled:opacity-30 active:scale-95 uppercase tracking-[0.2em]"
+                            className="h-10 px-8 bg-brand-500 text-white rounded-lg text-[10px] font-bold hover:bg-brand-600 transition-all disabled:opacity-30 active:scale-95 uppercase tracking-widest"
                           >
-                            ĐĂNG BẢN GHI
+                            Post Entry
                           </button>
                           <button 
                             onClick={() => handleDeleteBug(selectedBug.id)}
-                            className="flex items-center gap-2 text-[10px] font-black text-rose-300 hover:text-rose-500 transition-all uppercase tracking-[0.3em] font-display italic"
+                            className="flex items-center gap-2 text-[10px] font-bold text-rose-500/50 hover:text-rose-500 transition-all uppercase tracking-widest"
                           >
-                            <Trash2 size={16} /> TIÊU HỦY VỤ VIỆC
+                            <Trash2 size={14} /> Destroy Entry
                           </button>
                         </div>
                     </div>
