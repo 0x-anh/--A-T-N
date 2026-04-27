@@ -341,9 +341,6 @@ export default function App() {
                </div>
                <div className="flex items-center gap-8">
                  <button onClick={() => handleLogin()} className="text-[11px] font-bold text-slate-500 hover:text-brand-600 transition-colors uppercase tracking-widest">Sign In</button>
-                 <button onClick={() => handleLogin()} className="btn-precision h-11 px-8 rounded-full">
-                    Get Started <ArrowRight size={14} />
-                 </button>
                </div>
             </nav>
 
@@ -401,25 +398,79 @@ export default function App() {
                  </motion.div>
                </div>
 
-               <div className="mt-40 w-full grid grid-cols-1 md:grid-cols-3 gap-8">
-                  {[
-                    { label: "Sync Latency", value: "0.04ms", desc: "Real-time protocol relay.", icon: Zap },
-                    { label: "Node Health", value: "Optimal", desc: "Always-on telemetric pulse.", icon: Activity },
-                    { label: "Matrix Parity", value: "Locked", desc: "Encrypted state-sync.", icon: ShieldCheck }
-                  ].map((stat, i) => (
-                    <div key={i} className="surface-precision p-10 space-y-6 hover:bg-slate-50 transition-all group">
-                       <div className="w-10 h-10 bg-slate-50 flex items-center justify-center rounded-lg text-slate-500 group-hover:text-brand-500 transition-colors">
-                          <stat.icon size={20} />
-                       </div>
-                       <div className="space-y-1">
-                          <span className="micro-label text-slate-500">{stat.label}</span>
-                          <div className="text-4xl font-bold text-slate-900 tracking-tighter">{stat.value}</div>
-                       </div>
-                       <p className="text-sm font-medium text-slate-500 leading-relaxed">{stat.desc}</p>
+
+
+                <footer className="mt-60 pt-32 pb-20 border-t border-slate-200/60 relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-brand-500/20 to-transparent" />
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-20 mb-32">
+                    <div className="lg:col-span-1 space-y-10">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-brand-500 text-white flex items-center justify-center rounded-xl shadow-2xl shadow-brand-500/20">
+                          <Orbit size={20} strokeWidth={2.5} />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-bold text-slate-900 tracking-widest uppercase font-mono">Linebase</span>
+                          <span className="text-[10px] font-bold text-brand-500/40 uppercase tracking-[0.2em] font-mono leading-none">Global_Node</span>
+                        </div>
+                      </div>
+                      <p className="text-[15px] text-slate-500 leading-relaxed font-medium tracking-tight pr-10">
+                        The autonomous workspace engine for high-velocity teams. Orchestrating parity across the matrix with zero-latency synchronization.
+                      </p>
+                      <div className="flex items-center gap-5 text-slate-400">
+                        <button onClick={() => toast.info("Relay source active")} className="w-10 h-10 rounded-xl border border-slate-100 flex items-center justify-center hover:text-brand-500 hover:bg-slate-50 hover:border-brand-500/20 transition-all"><Code2 size={18} /></button>
+                        <button onClick={() => toast.info("Comms channel established")} className="w-10 h-10 rounded-xl border border-slate-100 flex items-center justify-center hover:text-brand-500 hover:bg-slate-50 hover:border-brand-500/20 transition-all"><Mail size={18} /></button>
+                        <button onClick={() => toast.info("Telemetry frequency locked")} className="w-10 h-10 rounded-xl border border-slate-100 flex items-center justify-center hover:text-brand-500 hover:bg-slate-50 hover:border-brand-500/20 transition-all"><Activity size={18} /></button>
+                      </div>
                     </div>
-                  ))}
-               </div>
-            </main>
+
+                    {[
+                      { title: "Platform", links: ["Task Matrix", "Telemetry", "Audit Logs", "Operators"] },
+                      { title: "Network", links: ["System Status", "Documentation", "API Reference", "Security Protocol"] },
+                      { title: "Resources", links: ["Community", "Changelog", "Support", "Status"] }
+                    ].map((col, i) => (
+                      <div key={i} className="space-y-8">
+                        <h4 className="micro-label text-slate-900 font-bold tracking-[0.3em] font-mono">{col.title}</h4>
+                        <ul className="space-y-5">
+                          {col.links.map(link => (
+                            <li key={link}>
+                              <button 
+                                onClick={() => {
+                                  if (link === "Documentation") setShowDocsModal(true);
+                                  else if (link === "Task Matrix") handleLogin('board');
+                                  else if (link === "Telemetry") handleLogin('metrics');
+                                  else if (link === "Operators") handleLogin('members');
+                                  else toast.info(`${link} relay initialized.`);
+                                }}
+                                className="text-[13px] font-semibold text-slate-500 hover:text-brand-600 transition-all tracking-tight flex items-center gap-3 group"
+                              >
+                                <div className="w-1.5 h-1.5 bg-slate-200 group-hover:bg-brand-500 group-hover:scale-125 transition-all rounded-full" />
+                                {link}
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex flex-col md:flex-row items-center justify-between pt-12 border-t border-slate-100 gap-8">
+                    <div className="flex items-center gap-8">
+                      <span className="text-[11px] font-bold text-slate-300 font-mono tracking-[0.2em] uppercase">© 2026 LINEBASE_SYS</span>
+                      <div className="h-4 w-px bg-slate-100 hidden sm:block" />
+                      <span className="text-[11px] font-bold text-slate-300 font-mono tracking-[0.2em] uppercase hidden sm:block">BUILD_HASH: 0x8F2E7DC2</span>
+                    </div>
+                    <div className="flex items-center gap-10">
+                      <button onClick={() => toast.info("Privacy protocol active")} className="text-[11px] font-bold text-slate-400 hover:text-slate-900 uppercase tracking-widest transition-colors font-mono">Privacy</button>
+                      <button onClick={() => toast.info("Terms of engagement accepted")} className="text-[11px] font-bold text-slate-400 hover:text-slate-900 uppercase tracking-widest transition-colors font-mono">Terms</button>
+                      <button onClick={() => toast.info("Global parity active")} className="flex items-center gap-3 px-5 py-2 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-bold uppercase tracking-widest border border-emerald-100 shadow-sm shadow-emerald-500/10">
+                        <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                        System_Operational
+                      </button>
+                    </div>
+                  </div>
+                </footer>
+             </main>
           </motion.div>
         ) : (
           <div className="flex-1 flex h-screen overflow-hidden bg-slate-50">
@@ -522,8 +573,8 @@ export default function App() {
                        <Settings size={14} />
                     </button>
                     <div className="h-4 w-px bg-white/10" />
-                    <button onClick={() => setShowProjectModal(true)} className="btn-precision h-8 px-4 text-[9px]">
-                       <Plus size={12} /> New Operator
+                    <button onClick={() => setShowInviteModal(true)} className="btn-precision h-8 px-4 text-[9px]">
+                       <UserPlus size={12} /> Add Operator
                     </button>
                   </div>
                </header>
