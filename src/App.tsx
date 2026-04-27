@@ -235,22 +235,25 @@ export default function App() {
       <AnimatePresence mode="wait">
         {!user ? (
           <motion.div key="landing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="w-full min-h-screen bg-[#FBFBFE]">
-            <nav className="fixed top-0 left-0 right-0 h-20 flex items-center justify-between px-10 lg:px-14 z-[100] bg-white/50 backdrop-blur-md border-b border-white/20">
-               <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-brand-600 text-white flex items-center justify-center rounded-xl shadow-lg shadow-brand-500/20">
+            <nav className="fixed top-0 left-0 right-0 h-20 flex items-center justify-between px-10 lg:px-20 z-[100] bg-[#0A0A0A]/50 backdrop-blur-xl border-b border-white/5">
+               <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 bg-white text-black flex items-center justify-center rounded">
                      <Code2 size={20} strokeWidth={2.5} />
                   </div>
-                  <span className="text-xl font-bold tracking-tight text-slate-900 font-display italic">Linebase</span>
+                  <div className="flex flex-col">
+                     <span className="text-sm font-bold text-white tracking-widest uppercase font-mono">Linebase</span>
+                     <span className="text-[9px] font-bold text-slate-600 uppercase tracking-[0.2em] font-mono italic">SYSLINK.PRO</span>
+                  </div>
                </div>
-               <div className="flex items-center gap-8">
-                 <button onClick={() => handleLogin()} className="text-[11px] font-bold text-slate-400 uppercase tracking-widest hover:text-brand-600 transition-colors">Đăng nhập</button>
-                 <button onClick={() => handleLogin()} className="h-11 px-6 bg-slate-900 text-white rounded-xl text-sm font-bold shadow-lg shadow-slate-900/10 hover:bg-brand-600 transition-all flex items-center gap-3 group">
-                   Khởi tạo Node <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+               <div className="flex items-center gap-10">
+                 <button onClick={() => handleLogin()} className="micro-label text-slate-500 hover:text-white transition-colors">Access_Kernel</button>
+                 <button onClick={() => handleLogin()} className="btn-precision h-10 px-6">
+                   Initialize_Node <ArrowRight size={14} />
                  </button>
                </div>
             </nav>
 
-            <main className="pt-40 lg:pt-52 pb-32 px-10 lg:px-14 max-w-7xl mx-auto flex flex-col min-h-screen">
+            <main className="pt-40 lg:pt-52 px-10 lg:px-20 max-w-7xl mx-auto flex flex-col items-center text-center technical-grid min-h-screen">
                <div className="grid grid-cols-1 lg:grid-cols-12 gap-20 items-center">
                  <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }} className="lg:col-span-7 space-y-10">
                     <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-brand-50 border border-brand-100/50">
@@ -302,101 +305,99 @@ export default function App() {
                  </motion.div>
                </div>
 
-               <div className="mt-32 w-full grid grid-cols-1 md:grid-cols-3 gap-12 pt-20 border-t border-slate-100">
+               <div className="mt-40 w-full grid grid-cols-1 md:grid-cols-3 gap-px bg-white/5 border border-white/5">
                   {[
-                    { label: "Sync Latency", value: "0.04ms", desc: "Real-time protocol relay." },
-                    { label: "Node Health", value: "Optimal", desc: "Always-on telemetric pulse." },
-                    { label: "Matrix Flux", value: "Stable", desc: "Network parity maintained." }
+                    { label: "Sync_Latency", value: "0.04ms", desc: "Real-time protocol relay." },
+                    { label: "Node_Health", value: "Optimal", desc: "Always-on telemetric pulse." },
+                    { label: "Matrix_Parity", value: "Locked", desc: "Encrypted state-sync." }
                   ].map((stat, i) => (
-                    <div key={i} className="space-y-4 px-4 border-l border-slate-50 first:border-none">
-                       <span className="text-[11px] font-black text-brand-600 uppercase tracking-[0.2em]">{stat.label}</span>
-                       <div className="text-4xl font-black text-slate-950 font-display italic">{stat.value}</div>
-                       <p className="text-sm font-bold text-slate-400 tracking-tight leading-relaxed">{stat.desc}</p>
+                    <div key={i} className="p-12 text-left space-y-6 bg-surface hover:bg-white/[0.02] transition-colors relative group">
+                       <span className="micro-label text-slate-700 group-hover:text-brand-400 transition-colors">{stat.label}</span>
+                       <div className="text-5xl font-sans font-bold text-white italic tracking-tighter">{stat.value}</div>
+                       <p className="text-sm font-medium text-slate-500 tracking-tight leading-relaxed italic">{stat.desc}</p>
                     </div>
                   ))}
                </div>
             </main>
           </motion.div>
         ) : (
-          <div className="flex-1 flex h-screen overflow-hidden bg-[#FBFBFE]">
-            {/* BACKGROUND GLOWS */}
-            <div className="bg-glow top-[-10%] left-[-10%] w-[40%] h-[40%]" />
-            <div className="bg-glow bottom-[-10%] right-[-10%] w-[50%] h-[50%]" />
-            
-            {/* PREMIUM SIDEBAR */}
-            <aside className="w-64 h-full flex flex-col bg-[#0F1115] border-r border-white/5 relative z-50">
-               <div className="p-6 h-24 flex items-center gap-4">
-                  <div className="w-11 h-11 bg-brand-600 text-white rounded-xl flex items-center justify-center shadow-2xl shadow-brand-500/40">
-                     <Code2 size={22} strokeWidth={2.5} />
+          <div className="flex-1 flex h-screen overflow-hidden bg-[#050505]">
+            {/* PRECISION SIDEBAR */}
+            <aside className="w-64 h-full flex flex-col bg-[#0A0A0A] border-r border-white/5 relative z-50">
+               <div className="p-8 flex items-center gap-4">
+                  <div className="w-10 h-10 bg-white text-black rounded-lg flex items-center justify-center shadow-2xl">
+                     <Code2 size={20} strokeWidth={2.5} />
                   </div>
                   <div className="flex flex-col">
-                     <span className="text-lg font-black text-white tracking-tight font-display italic leading-none">Linebase</span>
-                     <span className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] mt-1.5 font-mono">Kernel v2.04</span>
+                     <span className="text-sm font-bold text-white tracking-widest uppercase font-mono">Linebase</span>
+                     <span className="text-[9px] font-bold text-slate-600 uppercase tracking-[0.2em] font-mono italic">SYSLINK.PRO</span>
                   </div>
                </div>
 
-               <div className="flex-1 py-12 px-4 space-y-1.5 overflow-y-auto custom-scrollbar">
+               <div className="flex-1 py-12 px-4 space-y-1 overflow-y-auto custom-scrollbar">
+                  <div className="px-5 mb-4 micro-label">Nav_Protocols</div>
                   {[
-                    { id: 'dashboard', icon: LayoutGrid, label: 'Tổng quan' },
-                    { id: 'board', icon: FolderKanban, label: 'Ma trận công việc' },
-                    { id: 'metrics', icon: PieChart, label: 'Phân tích' },
-                    { id: 'members', icon: Users, label: 'Nhân sự' },
-                    { id: 'logs', icon: Activity, label: 'Nhật ký' },
+                    { id: 'dashboard', icon: LayoutGrid, label: 'Overview' },
+                    { id: 'board', icon: FolderKanban, label: 'Work_Matrix' },
+                    { id: 'metrics', icon: PieChart, label: 'Analytics' },
+                    { id: 'members', icon: Users, label: 'Operators' },
+                    { id: 'logs', icon: Activity, label: 'System_Logs' },
                   ].map(item => (
                     <button 
                       key={item.id}
                       onClick={() => setActiveTab(item.id as any)}
                       className={cn(
-                        "w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl text-[13px] font-bold transition-all duration-300",
+                        "nav-link",
                         activeTab === item.id 
-                          ? "bg-white/10 text-white shadow-xl shadow-black/20 ring-1 ring-white/10" 
-                          : "text-slate-500 hover:text-slate-200 hover:bg-white/5"
+                          ? "nav-link-active" 
+                          : "nav-link-inactive"
                       )}
                     >
-                      <item.icon size={18} strokeWidth={activeTab === item.id ? 2.5 : 2} />
-                      <span className="tracking-tight">{item.label}</span>
+                      <item.icon size={16} strokeWidth={activeTab === item.id ? 2.5 : 2} />
+                      <span className="tracking-tighter">{item.label}</span>
                     </button>
                   ))}
                </div>
 
-               <div className="p-6 pt-0">
-                  <div className="bg-white/5 border border-white/5 p-4 rounded-3xl flex items-center gap-3 backdrop-blur-sm">
-                    <img className="w-10 h-10 rounded-2xl border border-white/10" src={user.photoURL || `https://api.dicebear.com/7.x/notionists/svg?seed=${user.uid}`} alt="" />
+               <div className="p-6 border-t border-white/5">
+                  <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors cursor-pointer">
+                    <img className="w-8 h-8 rounded border border-white/10" src={user.photoURL || `https://api.dicebear.com/7.x/notionists/svg?seed=${user.uid}`} alt="" />
                     <div className="min-w-0 flex-1">
-                       <div className="text-[11px] font-black text-white truncate mb-0.5">{user.displayName || 'Quản trị viên'}</div>
-                       <button onClick={handleLogout} className="text-[9px] font-black text-slate-500 uppercase tracking-widest hover:text-brand-400 transition-colors">Đăng xuất hệ thống</button>
+                       <div className="text-[11px] font-bold text-white truncate font-mono">{user.displayName?.toUpperCase()}</div>
+                       <button onClick={handleLogout} className="text-[9px] font-bold text-slate-500 uppercase tracking-widest hover:text-white transition-colors">Terminate_Session</button>
                     </div>
                   </div>
                </div>
             </aside>
 
-            <main className="flex-1 overflow-hidden flex flex-col">
-               {/* TOP HEADER */}
-               <header className="h-20 px-10 flex items-center justify-between bg-white/50 backdrop-blur-md relative z-40 border-b border-white/20">
-                  <div className="flex items-center gap-6">
+            <main className="flex-1 overflow-hidden flex flex-col technical-grid">
+               {/* PRECISION HEADER */}
+               <header className="h-16 px-10 flex items-center justify-between bg-[#0A0A0A]/50 backdrop-blur-xl relative z-40 border-b border-white/10">
+                  <div className="flex items-center gap-8">
                     <div className="relative">
                       <button 
                         onClick={() => setShowProjectDropdown(!showProjectDropdown)}
-                        className="flex items-center gap-2.5 h-11 px-4 rounded-xl bg-white border border-slate-100 shadow-sm hover:shadow-md transition-all active:scale-[0.98] group"
+                        className="flex items-center gap-3 text-sm font-bold text-white hover:text-brand-400 transition-all group"
                       >
-                         <div className="w-1.5 h-1.5 rounded-full bg-brand-500" />
-                         <span className="text-sm font-bold text-slate-900 font-display">{selectedProject?.name || 'Loading...'}</span>
-                         <ChevronDown size={14} className={cn("text-slate-400 transition-transform group-hover:text-slate-950", showProjectDropdown && "rotate-180")} />
+                         <span className="font-mono text-slate-500">Node:</span>
+                         <span className="underline underline-offset-4 decoration-border">{selectedProject?.name || 'SYNCING...'}</span>
+                         <ChevronDown size={14} className={cn("text-slate-500 transition-transform", showProjectDropdown && "rotate-180")} />
                       </button>
                       
                       <AnimatePresence>
                          {showProjectDropdown && (
-                           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="absolute top-14 left-0 w-72 z-[110] p-2 bg-white border border-slate-100 rounded-2xl shadow-2xl">
-                             <div className="space-y-1">
+                           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="absolute top-12 left-0 w-72 z-[110] p-1 bg-[#0D0D0D] border border-white/10 rounded-lg shadow-3xl">
+                             <div className="p-2 micro-label">AVAILABLE_NODES</div>
+                             <div className="p-1 space-y-0.5">
                                {projects.map(p => (
-                                 <button key={p.id} onClick={() => { setSelectedProject(p); setShowProjectDropdown(false); }} className={cn("w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold transition-all", selectedProject?.id === p.id ? "bg-brand-50 text-brand-600" : "text-slate-500 hover:bg-slate-50 hover:text-slate-950")}>
+                                 <button key={p.id} onClick={() => { setSelectedProject(p); setShowProjectDropdown(false); }} className={cn("w-full flex items-center justify-between px-4 py-2 rounded text-[13px] font-medium transition-all", selectedProject?.id === p.id ? "bg-white/10 text-white" : "text-slate-500 hover:bg-white/5 hover:text-white")}>
                                    {p.name}
-                                   {selectedProject?.id === p.id && <Check size={14} strokeWidth={3} />}
+                                   {selectedProject?.id === p.id && <Check size={14} />}
                                  </button>
                                ))}
-                               <div className="h-px bg-slate-50 my-2" />
-                               <button onClick={() => { setShowProjectModal(true); setShowProjectDropdown(false); }} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-slate-900 font-bold hover:bg-slate-50">
-                                 <Plus size={16} /> New Node
+                               <div className="h-px bg-white/5 my-2" />
+                               <button onClick={() => { setShowProjectModal(true); setShowProjectDropdown(false); }} className="w-full flex items-center gap-3 px-4 py-2 rounded text-[13px] text-brand-400 font-bold hover:bg-brand-500/10">
+                                 <Plus size={16} /> INITIALIZE_NEW_NODE
                                </button>
                              </div>
                            </motion.div>
@@ -404,27 +405,26 @@ export default function App() {
                       </AnimatePresence>
                     </div>
 
-                    <div className="h-4 w-px bg-slate-200" />
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active Hub Sync</span>
+                    <div className="h-4 w-px bg-white/10" />
+                    <div className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse" />
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] font-mono">Status: Optimal</span>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-4">
+                    <button className="w-9 h-9 rounded-lg flex items-center justify-center text-slate-500 hover:text-white hover:bg-white/5 transition-all">
+                       <Bell size={16} />
+                    </button>
                     <button 
                       onClick={() => setShowSettingsModal(true)}
-                      className="w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 hover:text-brand-600 hover:bg-brand-50 transition-all"
+                      className="w-9 h-9 rounded-lg flex items-center justify-center text-slate-500 hover:text-white hover:bg-white/5 transition-all"
                     >
-                       <Settings size={18} />
+                       <Settings size={16} />
                     </button>
-                    <button className="w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 hover:text-brand-600 hover:bg-brand-50 transition-all relative">
-                       <Bell size={18} />
-                       <span className="absolute top-3 right-3 w-1.5 h-1.5 bg-brand-500 rounded-full border-2 border-white" />
-                    </button>
-                    <div className="h-4 w-px bg-slate-200" />
-                    <button onClick={() => setShowProjectModal(true)} className="h-11 px-5 bg-slate-900 text-white rounded-xl text-sm font-bold shadow-lg shadow-slate-900/10 hover:bg-brand-600 transition-all flex items-center gap-2">
-                       <Plus size={18} /> New Event
+                    <div className="h-4 w-px bg-white/10" />
+                    <button onClick={() => setShowProjectModal(true)} className="btn-precision h-9 px-4">
+                       <Plus size={16} /> New Node
                     </button>
                   </div>
                </header>
@@ -439,8 +439,8 @@ export default function App() {
                                 <div className="h-0.5 w-12 bg-brand-500/30 rounded-full" />
                                 <span className="text-[10px] font-black text-brand-600 uppercase tracking-[0.4em] font-mono">Kernel Core v2.04</span>
                               </div>
-                              <h2 className="text-6xl font-black text-slate-950 tracking-tighter font-display italic leading-none">
-                                Hệ thống <span className="text-slate-400">Điều phối</span>
+                              <h2 className="text-7xl font-sans font-bold tracking-tighter italic">
+                                SYSTEM_<span className="text-slate-700">CORE</span>
                               </h2>
                            </div>
                            <div className="flex items-center gap-4">
@@ -539,14 +539,14 @@ export default function App() {
                               <div className="h-0.5 w-12 bg-brand-500/30 rounded-full" />
                               <span className="text-[10px] font-black text-brand-600 uppercase tracking-[0.5em] font-mono">Telemetry Analytics</span>
                            </div>
-                           <h2 className="text-7xl font-black text-slate-950 tracking-tighter font-display italic leading-none">Phân tích <span className="text-slate-400">Hiệu năng</span></h2>
-                           <p className="text-lg text-slate-400 font-medium tracking-tight max-w-2xl">Trực quan hóa hiệu quả vận hành hệ thống và phân phối giao thức truyền thông đa kênh.</p>
+                           <h2 className="text-7xl font-sans font-bold tracking-tighter italic">Operational_<span className="text-slate-700">Metrics</span></h2>
+                           <p className="text-lg text-slate-500 font-medium tracking-tight max-w-2xl">High-fidelity visualization of system throughput and multi-channel protocol distribution.</p>
                         </div>
  
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-                           <StatsCard label="Tỉ lệ xử lý" value="94%" icon={<CheckCircle2 size={24} strokeWidth={2.5} />} trend="Ổn định" />
-                           <StatsCard label="Vận tốc Node" value="12.4" icon={<Rocket size={24} strokeWidth={2.5} />} trend="+0.8" />
-                           <StatsCard label="Thời gian Phục hồi" value="2.4h" icon={<Clock size={24} strokeWidth={2.5} />} trend="-15m" />
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-white/5 border border-white/5">
+                           <StatsCard label="PRECISION_YIELD" value="94%" icon={<CheckCircle2 size={16} />} trend="STABLE" />
+                           <StatsCard label="NODE_VELOCITY" value="12.4" icon={<Rocket size={16} />} trend="+0.8" />
+                           <StatsCard label="MEAN_RECOVERY" value="2.4h" icon={<Clock size={16} />} trend="-15m" />
                         </div>
  
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -606,11 +606,11 @@ export default function App() {
                                   <div className="h-0.5 w-12 bg-brand-500/30 rounded-full" />
                                   <span className="text-[10px] font-black text-brand-600 uppercase tracking-[0.4em] font-mono">Operator Deployment Registry</span>
                                </div>
-                               <h2 className="text-6xl font-black text-slate-950 tracking-tighter font-display italic leading-none">Mạng lưới <span className="text-slate-400">Nhân sự</span></h2>
-                               <p className="text-lg text-slate-400 font-medium tracking-tight max-w-xl">Hợp tác điều phối hệ thống giữa các Engine Operator được ủy nhiệm cho mạng lưới Node này.</p>
+                               <h2 className="text-7xl font-sans font-bold tracking-tighter italic">Network_<span className="text-slate-700">Operators</span></h2>
+                               <p className="text-lg text-slate-500 font-medium tracking-tight max-w-xl">Comprehensive directory of authorized engine operators assigned to this matrix node.</p>
                             </div>
-                            <button className="h-16 px-10 bg-slate-950 text-white rounded-2xl font-black text-[12px] uppercase tracking-[0.3em] flex items-center gap-4 shadow-2xl shadow-slate-950/20 hover:bg-brand-600 transition-all active:scale-95">
-                               <UserPlus size={20} strokeWidth={3} /> Mời thành viên
+                            <button className="btn-precision h-12 px-8">
+                               <UserPlus size={16} /> Deploy_Member
                             </button>
                         </div>
   
@@ -661,32 +661,32 @@ export default function App() {
                            <p className="text-lg text-slate-400 font-medium tracking-tight max-w-xl">Lịch sử toàn diện về các thay đổi và chuyển đổi trạng thái mạng lưới.</p>
                          </div>
 
-                         <div className="card-smart p-0 overflow-hidden border-slate-100 shadow-3xl bg-white">
+                         <div className="surface-precision overflow-hidden">
                            <table className="w-full text-left">
                              <thead>
-                               <tr className="bg-slate-50/50 border-b border-slate-100">
-                                 <th className="px-12 py-8 text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono">Thời điểm</th>
-                                 <th className="px-12 py-8 text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono">Giao thức</th>
-                                 <th className="px-12 py-8 text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono">Người vận hành</th>
-                                 <th className="px-12 py-8 text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono">Nội dung Alpha</th>
+                               <tr className="bg-white/[0.02] border-b border-white/5">
+                                 <th className="px-8 py-6 micro-label">TIMESTAMP</th>
+                                 <th className="px-8 py-6 micro-label">PROTOCOL</th>
+                                 <th className="px-8 py-6 micro-label">OPERATOR</th>
+                                 <th className="px-8 py-6 micro-label">AUDIT_DETAILS</th>
                                </tr>
                              </thead>
-                             <tbody className="divide-y divide-slate-50">
+                             <tbody className="divide-y divide-white/5">
                                {projectLogs.map((log) => (
-                                 <tr key={log.id} className="hover:bg-slate-50/30 transition-colors group/row">
-                                   <td className="px-12 py-8 font-mono text-[11px] text-slate-400 font-bold group-hover/row:text-slate-600 transition-colors">{log.createdAt?.toDate ? new Date(log.createdAt.toDate()).toLocaleString() : 'Đang xử lý...'}</td>
-                                   <td className="px-12 py-8">
-                                     <span className="px-5 py-2 bg-slate-950 text-white rounded-xl text-[9px] font-black uppercase tracking-[0.2em] shadow-lg shadow-slate-900/10 group-hover/row:bg-brand-600 transition-all">{log.action || 'THAY ĐỔI'}</span>
+                                 <tr key={log.id} className="hover:bg-white/[0.01] transition-colors group/row">
+                                   <td className="px-8 py-6 font-mono text-[11px] text-slate-500">{log.createdAt?.toDate ? new Date(log.createdAt.toDate()).toLocaleString() : 'PENDING...'}</td>
+                                   <td className="px-8 py-6">
+                                     <span className="px-2 py-1 bg-white/5 rounded text-[10px] font-mono font-bold text-slate-400 group-hover/row:bg-white group-hover/row:text-black transition-all">{log.action?.toUpperCase() || 'MOD'}</span>
                                    </td>
-                                   <td className="px-12 py-8">
-                                      <div className="flex items-center gap-4">
-                                         <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-[10px] font-black border border-slate-100 group-hover/row:border-brand-200 transition-colors uppercase italic font-display">
-                                            {userProfiles.find(u => u.userId === log.userId)?.displayName?.slice(0, 2) || 'SY'}
+                                   <td className="px-8 py-6">
+                                      <div className="flex items-center gap-3">
+                                         <div className="w-6 h-6 rounded bg-white/5 flex items-center justify-center text-[10px] font-mono border border-white/10 italic">
+                                            {userProfiles.find(u => u.userId === log.userId)?.displayName?.slice(0, 2).toUpperCase() || 'SY'}
                                          </div>
-                                         <span className="font-bold text-slate-900 text-sm group-hover/row:text-brand-600 transition-colors italic font-display">{userProfiles.find(u => u.userId === log.userId)?.displayName || 'System Relay'}</span>
+                                         <span className="font-bold text-white text-[13px] italic font-serif ">{userProfiles.find(u => u.userId === log.userId)?.displayName || 'SYSTEM_DAEMON'}</span>
                                       </div>
                                    </td>
-                                   <td className="px-12 py-8 text-slate-500 font-bold text-sm truncate max-w-md italic font-display">{log.details}</td>
+                                   <td className="px-8 py-6 text-slate-400 font-medium text-[13px] max-w-md italic">{log.details}</td>
                                  </tr>
                                ))}
                              </tbody>
@@ -702,91 +702,92 @@ export default function App() {
       </AnimatePresence>
 
       <AnimatePresence>
-        {showSettingsModal && selectedProject && (
+         {showSettingsModal && (
           <div className="fixed inset-0 z-[500] flex items-center justify-center p-6">
-             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowSettingsModal(false)} className="absolute inset-0 bg-slate-950/60 backdrop-blur-3xl" />
-             <motion.div initial={{ scale: 0.9, opacity: 0, rotateX: 10 }} animate={{ scale: 1, opacity: 1, rotateX: 0 }} exit={{ scale: 0.9, opacity: 0 }} className="bg-white rounded-[3.5rem] w-full max-w-2xl relative z-[510] shadow-[0_40px_100px_rgba(0,0,0,0.4)] overflow-hidden">
-                <div className="bg-slate-50 px-12 py-10 flex items-center justify-between border-b border-slate-100">
+             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowSettingsModal(false)} className="absolute inset-0 bg-[#050505]/90 backdrop-blur-3xl" />
+             <div className="surface-precision w-full max-w-2xl relative z-[510] overflow-hidden bg-surface">
+                <div className="px-12 py-10 flex items-center justify-between border-b border-white/5">
                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-slate-950 text-white flex items-center justify-center rounded-2xl shadow-xl">
-                         <Settings size={22} className="animate-spin-slow" />
+                      <div className="w-10 h-10 bg-white text-black flex items-center justify-center rounded shadow-xl">
+                         <Settings size={20} />
                       </div>
                       <div>
-                        <h3 className="text-xl font-black text-slate-900 font-display italic tracking-tight uppercase">Cốt lõi hệ thống</h3>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Ghi đè nút toàn cầu</p>
+                        <h3 className="serif-header text-2xl italic tracking-tight">System_Protocol_Override</h3>
+                        <p className="micro-label">Node authorization level: Root</p>
                       </div>
                    </div>
-                   <button onClick={() => setShowSettingsModal(false)} className="w-12 h-12 rounded-2xl hover:bg-white transition-all flex items-center justify-center text-slate-400 hover:text-slate-950">
-                      <X size={24} />
+                   <button onClick={() => setShowSettingsModal(false)} className="w-10 h-10 rounded hover:bg-white/5 transition-all flex items-center justify-center text-slate-500 hover:text-white">
+                      <X size={20} />
                    </button>
                 </div>
                 <div className="p-12 space-y-12">
                    <div className="space-y-4">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] ml-2">Tên định danh Node</label>
+                      <label className="micro-label ml-2">Node_Designation</label>
                       <input 
-                        className="w-full h-16 bg-slate-50 border border-slate-100 rounded-[2rem] px-8 text-xl font-black text-slate-900 outline-none focus:bg-white focus:ring-8 focus:ring-brand-500/5 focus:border-brand-200 transition-all"
-                        value={selectedProject.name} 
-                        onChange={(e) => setSelectedProject({...selectedProject, name: e.target.value})} 
-                        disabled={user.uid !== selectedProject.ownerId}
+                        className="w-full h-14 bg-white/5 border border-white/10 rounded px-6 text-xl font-bold text-white outline-none focus:bg-white/10 focus:border-brand-500 transition-all placeholder:text-slate-700 font-mono"
+                        value={selectedProject?.name} 
+                        onChange={(e) => setSelectedProject(selectedProject ? {...selectedProject, name: e.target.value} : null)} 
+                        disabled={user.uid !== selectedProject?.ownerId}
                       />
                    </div>
 
                    <div className="grid grid-cols-2 gap-8">
-                      <div className="card-smart p-8 space-y-2 border-slate-50 bg-slate-50/20">
-                         <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Loại giao thức</span>
-                         <div className="text-base font-black text-slate-900 italic font-display">Node Tiêu chuẩn</div>
+                      <div className="p-6 space-y-2 bg-white/[0.02] border border-white/5 rounded">
+                         <span className="micro-label opacity-40 text-[9px]">ENCRYPTION_PROTOCOL</span>
+                         <div className="text-sm font-bold text-white italic font-mono uppercase">AES-256-GCM</div>
                       </div>
-                      <div className="card-smart p-8 space-y-2 border-slate-50 bg-slate-50/20">
-                         <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Mức độ an ninh</span>
-                         <div className="text-base font-black text-emerald-500 italic font-display flex items-center gap-2">
-                            <Lock size={16} /> Xác thực cấp 4
+                      <div className="p-6 space-y-2 bg-white/[0.02] border border-white/5 rounded">
+                         <span className="micro-label opacity-40 text-[9px]">SECURITY_VECTOR</span>
+                         <div className="text-sm font-bold text-emerald-500 italic font-mono flex items-center gap-2">
+                            <Lock size={14} /> LEVEL_4_AUTH
                          </div>
                       </div>
                    </div>
 
                    <div className="pt-10 flex items-center justify-between gap-6">
-                      {user.uid === selectedProject.ownerId && (
+                      {user.uid === selectedProject?.ownerId && (
                         <button 
-                          onClick={() => { if(confirm("Thực thi giao thức hủy diệt?")) handleDeleteProject()}}
-                          className="text-[11px] font-bold text-rose-300 hover:text-rose-600 uppercase tracking-[0.2em] transition-all"
+                          onClick={() => { if(confirm("EXECUTE_DESTRUCTION_PROTOCOL?")) handleDeleteProject()}}
+                          className="micro-label text-rose-500 hover:text-rose-400 transition-colors"
                         >
-                          Xóa bỏ Nút mạng
+                          Terminate_Node
                         </button>
                       )}
+                      <div className="flex-1" />
                       <button 
                         onClick={() => { handleUpdateProject(); setShowSettingsModal(false); }}
-                        className="h-14 px-12 bg-slate-950 text-white rounded-[2rem] font-black text-base shadow-2xl shadow-slate-950/20 hover:bg-brand-600 transition-all active:scale-95"
+                        className="btn-precision h-12 px-12"
                       >
-                         Đồng bộ tham số
+                         Sync_Parameters
                       </button>
                    </div>
                 </div>
-             </motion.div>
+             </div>
           </div>
         )}
 
-        {showProjectModal && (
+         {showProjectModal && (
           <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowProjectModal(false)} className="absolute inset-0 bg-slate-950/40 backdrop-blur-3xl" />
-            <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }} className="bg-white rounded-[3rem] w-full max-w-lg p-12 relative z-[210] shadow-2xl">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowProjectModal(false)} className="absolute inset-0 bg-[#050505]/90 backdrop-blur-3xl" />
+            <div className="surface-precision w-full max-w-lg p-12 relative z-[210] bg-surface">
               <div className="flex flex-col text-center space-y-4 mb-10">
-                <div className="w-20 h-20 bg-slate-950 text-white flex items-center justify-center rounded-[2.5rem] mx-auto shadow-2xl shadow-slate-950/20 mb-2">
-                   <FolderPlus size={32} strokeWidth={2.5} />
+                <div className="w-16 h-16 bg-white text-black flex items-center justify-center rounded mx-auto shadow-2xl mb-4">
+                   <FolderPlus size={24} />
                 </div>
-                <h3 className="text-4xl font-black text-slate-950 font-display italic tracking-tight">Initialize Workspace</h3>
-                <p className="text-slate-400 font-bold text-lg">Define the parameters of your new engineering node.</p>
+                <h3 className="serif-header text-4xl italic tracking-tight underline underline-offset-8 decoration-white/10">Initialize_Node</h3>
+                <p className="text-slate-500 font-medium text-sm">Define the telemetry parameters for the new matrix node.</p>
               </div>
               <div className="space-y-8">
                 <div className="space-y-3">
-                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] ml-2">Node Designation</label>
-                  <input autoFocus placeholder="e.g. Project Overdrive" className="input-premium h-16 text-lg text-center" value={newProjectName} onChange={(e) => setNewProjectName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleCreateProject()} />
+                  <label className="micro-label ml-2">Node_Designation</label>
+                  <input autoFocus placeholder="e.g. PROJECT_OVERDRIVE" className="w-full h-14 bg-white/5 border border-white/10 rounded px-6 text-lg text-center font-bold text-white outline-none focus:bg-white/10 focus:border-brand-500 transition-all placeholder:text-slate-700 font-mono" value={newProjectName} onChange={(e) => setNewProjectName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleCreateProject()} />
                 </div>
                 <div className="flex gap-4">
-                  <button onClick={handleCreateProject} disabled={!newProjectName.trim()} className="flex-1 btn-premium bg-slate-950 text-white disabled:opacity-50">Create Node</button>
-                  <button onClick={() => setShowProjectModal(false)} className="px-8 font-black text-slate-400 hover:text-slate-950 transition-colors uppercase tracking-widest text-[11px]">Abort</button>
+                  <button onClick={handleCreateProject} disabled={!newProjectName.trim()} className="flex-1 btn-precision h-12 disabled:opacity-50">Create_Node</button>
+                  <button onClick={() => setShowProjectModal(false)} className="px-6 micro-label text-slate-500 hover:text-white transition-colors">Abort</button>
                 </div>
               </div>
-            </motion.div>
+            </div>
           </div>
         )}
       </AnimatePresence>
@@ -796,25 +797,20 @@ export default function App() {
 
 function StatsCard({ label, value, icon, trend }: { label: string, value: any, icon: any, trend?: string }) {
   return (
-    <div className="card-smart group hover:-translate-y-2 transition-all duration-700 relative overflow-hidden bg-white/80 backdrop-blur-xl border-white/60">
-      <div className="absolute top-0 right-0 w-32 h-32 bg-brand-500/5 blur-[50px] rounded-full translate-x-1/2 -translate-y-1/2 group-hover:bg-brand-500/15 transition-colors" />
-      <div className="flex items-center justify-between mb-10 relative z-10">
-        <div className="w-14 h-14 rounded-3xl flex items-center justify-center bg-slate-50 text-slate-400 group-hover:bg-brand-600 group-hover:text-white transition-all duration-500 shadow-xl border border-white group-hover:rotate-[10deg] group-hover:scale-110">
+    <div className="surface-precision p-8 space-y-10 group relative overflow-hidden">
+      <div className="flex items-center justify-between relative z-10">
+        <div className="w-10 h-10 rounded bg-white/5 flex items-center justify-center text-slate-500 group-hover:text-white transition-all border border-white/5">
           {icon}
         </div>
         {trend && (
-          <div className={cn(
-            "px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] font-mono",
-            trend.startsWith('+') ? "bg-emerald-50/80 text-emerald-600 border border-emerald-100/50" : 
-            trend.startsWith('-') ? "bg-rose-50/80 text-rose-600 border border-rose-100/50" : "bg-slate-50/80 text-slate-400 border border-slate-100/50"
-          )}>
+          <div className="text-[10px] font-mono font-bold text-slate-600">
             {trend}
           </div>
         )}
       </div>
-      <div className="space-y-1.5 relative z-10">
-        <div className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] font-display italic">{label}</div>
-        <div className="text-4xl font-black text-slate-950 tracking-tighter font-display italic leading-none">
+      <div className="space-y-2 relative z-10">
+        <div className="micro-label opacity-50">{label}</div>
+        <div className="text-4xl font-sans font-bold tracking-tighter italic">
           {value}
         </div>
       </div>
