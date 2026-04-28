@@ -150,11 +150,11 @@ export default function App() {
       // Logic: Find user by email (in a real app you'd do a query, here we search in our synced profiles)
       const targetUser = userProfiles.find(u => u.email === inviteUserEmail.trim());
       if (!targetUser) {
-        toast.error("Operator not found in registry.");
+        toast.error("Không tìm thấy nhân sự trong hệ thống.");
         return;
       }
       if (selectedProject.members.includes(targetUser.userId)) {
-        toast.error("Operator already assigned to this node.");
+        toast.error("Nhân sự này đã được gán vào nút này.");
         return;
       }
 
@@ -162,18 +162,18 @@ export default function App() {
       const updatedMembers = [...selectedProject.members, targetUser.userId];
       await setDoc(projectRef, { members: updatedMembers }, { merge: true });
       
-      toast.success(`Operator ${targetUser.displayName} deployed to node.`);
+      toast.success(`Nhân sự ${targetUser.displayName} đã được triển khai vào nút.`);
       setInviteUserEmail('');
       setShowInviteModal(false);
     } catch (e) {
-      toast.error("Authorization check failed.");
+      toast.error("Kiểm tra xác thực thất bại.");
     }
   };
 
   const handleRemoveMember = async (memberId: string) => {
     if (!user || !selectedProject || memberId === selectedProject.ownerId) return;
     if (user.uid !== selectedProject.ownerId) {
-      toast.error("Administrator authorization required.");
+      toast.error("Yêu cầu quyền quản trị viên.");
       return;
     }
 
@@ -181,9 +181,9 @@ export default function App() {
       const projectRef = doc(db, 'projects', selectedProject.id);
       const updatedMembers = selectedProject.members.filter(id => id !== memberId);
       await setDoc(projectRef, { members: updatedMembers }, { merge: true });
-      toast.success("Operator access revoked.");
+      toast.success("Quyền truy cập của nhân sự đã bị thu hồi.");
     } catch (e) {
-      toast.error("Operation failed.");
+      toast.error("Thao tác thất bại.");
     }
   };
 
@@ -197,10 +197,10 @@ export default function App() {
     try {
       await signInWithPopup(auth, provider);
       if (startTab) setActiveTab(startTab);
-      toast.success("Welcome back");
+      toast.success("Chào mừng trở lại");
     } catch (error: any) {
       if (error.code === 'auth/popup-closed-by-user') return;
-      toast.error("Authentication failed");
+      toast.error("Xác thực thất bại");
     } finally {
       setIsLoggingIn(false);
     }
@@ -273,8 +273,8 @@ export default function App() {
       });
       setNewProjectName('');
       setShowProjectModal(false);
-      toast.success("Workspace created");
-    } catch (error) { toast.error("Failed to create workspace."); }
+      toast.success("Không gian làm việc đã được tạo");
+    } catch (error) { toast.error("Không thể tạo không gian làm việc."); }
   };
 
   const handleCreateEvent = async () => {
@@ -290,8 +290,8 @@ export default function App() {
       });
       setNewEventTitle('');
       setShowEventModal(false);
-      toast.success("Operational event dispatched");
-    } catch (e) { toast.error("Deployment failure"); }
+      toast.success("Sự kiện vận hành đã được truyền tin");
+    } catch (e) { toast.error("Triển khai thất bại"); }
   };
 
   const handleUpdateProject = async () => {
@@ -300,15 +300,17 @@ export default function App() {
     try {
       const projectRef = doc(db, 'projects', selectedProject.id);
       await setDoc(projectRef, { name: selectedProject.name, description: selectedProject.description || '' }, { merge: true });
-      toast.success("Project updated.");
+      toast.success("Cập nhật dự án thành công.");
     } catch (error) { handleFirestoreError(error, 'update', 'projects'); } finally { setIsUpdatingProject(false); }
   };
 
   const handleDeleteProject = async () => {
     if (!user || !selectedProject) return;
     try {
-      await deleteDoc(doc(db, 'projects', selectedProject.id)); 
-      toast.success("Project archive finalized.");
+      const projectId = selectedProject.id;
+      await deleteDoc(doc(db, 'projects', projectId)); 
+      toast.success("Lưu trữ dự án đã hoàn tất.");
+      setShowSettingsModal(false);
       setSelectedProject(null);
       setActiveTab('dashboard');
     } catch (error) { handleFirestoreError(error, 'delete', 'projects'); }
@@ -340,7 +342,7 @@ export default function App() {
                   </div>
                </div>
                <div className="flex items-center gap-8">
-                 <button onClick={() => handleLogin()} className="text-[11px] font-bold text-slate-500 hover:text-brand-600 transition-colors uppercase tracking-widest">Sign In</button>
+                 <button onClick={() => handleLogin()} className="text-[11px] font-bold text-slate-500 hover:text-brand-600 transition-colors uppercase tracking-widest">Đăng nhập</button>
                </div>
             </nav>
 
@@ -349,24 +351,24 @@ export default function App() {
                  <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }} className="lg:col-span-7 space-y-12 text-left">
                     <div className="inline-flex items-center gap-3">
                       <div className="h-2 w-2 rounded-full bg-brand-500 shadow-[0_0_10px_rgba(139,92,246,0.5)]" />
-                      <span className="text-[11px] font-bold text-brand-400 uppercase tracking-[0.3em] font-mono">Autonomous_Workspace_Engine</span>
+                      <span className="text-[11px] font-bold text-brand-400 uppercase tracking-[0.3em] font-mono">Công_cụ_không_gian_tự_trị</span>
                     </div>
                     
                     <h1 className="text-7xl lg:text-[7.5rem] font-bold tracking-tighter text-slate-900 leading-[0.9] font-sans">
-                      Command <br />
-                      <span className="text-brand-500 italic">the Matrix.</span>
+                      Điều hành <br />
+                      <span className="text-brand-500 italic">Ma trận.</span>
                     </h1>
                     
                     <p className="text-xl lg:text-2xl text-slate-500 max-w-xl font-medium leading-relaxed tracking-tight border-l-2 border-brand-500/20 pl-8">
-                      Synchronize your source, tasks, and telemetry in a single, high-fidelity command center designed for high-velocity teams.
+                      Đồng bộ hóa nguồn, nhiệm vụ và telemetry của bạn trong một trung tâm điều khiển độ trung thực cao duy nhất, được thiết kế cho các nhóm tốc độ cao.
                     </p>
 
                     <div className="flex flex-wrap items-center gap-6 pt-6">
                        <button onClick={() => handleLogin()} className="btn-precision h-16 px-12 text-base rounded-full hover:scale-105 active:scale-95 transition-all">
-                          Initialize Workspace
+                          Khởi tạo không gian
                        </button>
                        <button onClick={() => setShowDocsModal(true)} className="h-16 px-10 border border-slate-200 bg-white text-slate-900 text-[12px] font-bold uppercase tracking-[0.2em] hover:bg-slate-50 transition-all rounded-full flex items-center gap-3">
-                          <Terminal size={16} /> Documentation
+                          <Terminal size={16} /> Tài liệu
                        </button>
                     </div>
                  </motion.div>
@@ -378,7 +380,7 @@ export default function App() {
                              <div className="w-12 h-12 bg-brand-500 text-white flex items-center justify-center rounded-2xl shadow-2xl shadow-brand-500/20">
                                 <Activity size={24} />
                              </div>
-                             <h3 className="text-4xl font-bold text-slate-900 leading-tight tracking-tighter">System Metrics Live</h3>
+                             <h3 className="text-4xl font-bold text-slate-900 leading-tight tracking-tighter">Số liệu hệ thống trực tiếp</h3>
                           </div>
                           <div className="space-y-8">
                              <div className="h-[4px] w-full bg-slate-100 rounded-full overflow-hidden">
@@ -386,8 +388,8 @@ export default function App() {
                              </div>
                              <div className="flex justify-between items-end">
                                 <div className="space-y-1">
-                                   <div className="micro-label opacity-40">Status: Active</div>
-                                   <div className="text-slate-500 text-[10px] font-mono tracking-widest">RELAY_PROTOCOL_OK</div>
+                                   <div className="micro-label opacity-40">Trạng thái: Hoạt động</div>
+                                   <div className="text-slate-500 text-[10px] font-mono tracking-widest">GIAO_THỨC_TRUYỀN_TIN_OK</div>
                                 </div>
                                 <div className="text-slate-900 text-7xl font-sans font-bold tracking-tighter italic">100<span className="text-2xl text-brand-500">%</span></div>
                              </div>
@@ -411,11 +413,11 @@ export default function App() {
                         </div>
                         <div className="flex flex-col">
                           <span className="text-sm font-bold text-slate-900 tracking-widest uppercase font-mono">Linebase</span>
-                          <span className="text-[10px] font-bold text-brand-500/40 uppercase tracking-[0.2em] font-mono leading-none">Global_Node</span>
+                          <span className="text-[10px] font-bold text-brand-500/40 uppercase tracking-[0.2em] font-mono leading-none">Nút_Toàn_Cầu</span>
                         </div>
                       </div>
                       <p className="text-[15px] text-slate-500 leading-relaxed font-medium tracking-tight pr-10">
-                        The autonomous workspace engine for high-velocity teams. Orchestrating parity across the matrix with zero-latency synchronization.
+                        Công cụ không gian làm việc tự động cho các nhóm tốc độ cao. Điều phối sự đồng nhất trên toàn ma trận với độ trễ bằng không.
                       </p>
                       <div className="flex items-center gap-5 text-slate-400">
                         <button onClick={() => toast.info("Relay source active")} className="w-10 h-10 rounded-xl border border-slate-100 flex items-center justify-center hover:text-brand-500 hover:bg-slate-50 hover:border-brand-500/20 transition-all"><Code2 size={18} /></button>
@@ -425,9 +427,9 @@ export default function App() {
                     </div>
 
                     {[
-                      { title: "Platform", links: ["Task Matrix", "Telemetry", "Audit Logs", "Operators"] },
-                      { title: "Network", links: ["System Status", "Documentation", "API Reference", "Security Protocol"] },
-                      { title: "Resources", links: ["Community", "Changelog", "Support", "Status"] }
+                      { title: "Nền tảng", links: ["Ma trận nhiệm vụ", "Telemetry", "Nhật ký kiểm tra", "Nhân sự"] },
+                      { title: "Mạng lưới", links: ["Trạng thái hệ thống", "Tài liệu hướng dẫn", "Tham chiếu API", "Giao thức bảo mật"] },
+                      { title: "Tài nguyên", links: ["Cộng đồng", "Lịch sử thay đổi", "Hỗ trợ", "Trạng thái"] }
                     ].map((col, i) => (
                       <div key={i} className="space-y-8">
                         <h4 className="micro-label text-slate-900 font-bold tracking-[0.3em] font-mono">{col.title}</h4>
@@ -436,11 +438,11 @@ export default function App() {
                             <li key={link}>
                               <button 
                                 onClick={() => {
-                                  if (link === "Documentation") setShowDocsModal(true);
-                                  else if (link === "Task Matrix") handleLogin('board');
+                                  if (link === "Tài liệu hướng dẫn") setShowDocsModal(true);
+                                  else if (link === "Ma trận nhiệm vụ") handleLogin('board');
                                   else if (link === "Telemetry") handleLogin('metrics');
-                                  else if (link === "Operators") handleLogin('members');
-                                  else toast.info(`${link} relay initialized.`);
+                                  else if (link === "Nhân sự") handleLogin('members');
+                                  else toast.info(`Đang khởi tạo truyền tin ${link}.`);
                                 }}
                                 className="text-[13px] font-semibold text-slate-500 hover:text-brand-600 transition-all tracking-tight flex items-center gap-3 group"
                               >
@@ -461,11 +463,11 @@ export default function App() {
                       <span className="text-[11px] font-bold text-slate-300 font-mono tracking-[0.2em] uppercase hidden sm:block">BUILD_HASH: 0x8F2E7DC2</span>
                     </div>
                     <div className="flex items-center gap-10">
-                      <button onClick={() => toast.info("Privacy protocol active")} className="text-[11px] font-bold text-slate-400 hover:text-slate-900 uppercase tracking-widest transition-colors font-mono">Privacy</button>
-                      <button onClick={() => toast.info("Terms of engagement accepted")} className="text-[11px] font-bold text-slate-400 hover:text-slate-900 uppercase tracking-widest transition-colors font-mono">Terms</button>
-                      <button onClick={() => toast.info("Global parity active")} className="flex items-center gap-3 px-5 py-2 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-bold uppercase tracking-widest border border-emerald-100 shadow-sm shadow-emerald-500/10">
+                      <button onClick={() => toast.info("Giao thức riêng tư đang hoạt động")} className="text-[11px] font-bold text-slate-400 hover:text-slate-900 uppercase tracking-widest transition-colors font-mono">Quyền riêng tư</button>
+                      <button onClick={() => toast.info("Điều khoản tham gia đã được chấp nhận")} className="text-[11px] font-bold text-slate-400 hover:text-slate-900 uppercase tracking-widest transition-colors font-mono">Điều khoản</button>
+                      <button onClick={() => toast.info("Đồng bộ hóa toàn cầu đang hoạt động")} className="flex items-center gap-3 px-5 py-2 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-bold uppercase tracking-widest border border-emerald-100 shadow-sm shadow-emerald-500/10">
                         <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                        System_Operational
+                        Hệ_Thống_Vận_Hành
                       </button>
                     </div>
                   </div>
@@ -489,11 +491,11 @@ export default function App() {
                <div className="flex-1 py-10 px-4 space-y-1 overflow-y-auto custom-scrollbar">
                   <div className="px-5 mb-6 micro-label opacity-40">System Access</div>
                   {[
-                    { id: 'dashboard', icon: LayoutGrid, label: 'Overview' },
-                    { id: 'board', icon: FolderKanban, label: 'Task Matrix' },
-                    { id: 'metrics', icon: PieChart, label: 'Telemetry' },
-                    { id: 'members', icon: Users, label: 'Operators' },
-                    { id: 'logs', icon: Activity, label: 'Audit Log' },
+                    { id: 'dashboard', icon: LayoutGrid, label: 'Tổng quan' },
+                    { id: 'board', icon: FolderKanban, label: 'Ma trận nhiệm vụ' },
+                    { id: 'metrics', icon: PieChart, label: 'Đo lường' },
+                    { id: 'members', icon: Users, label: 'Nhân sự' },
+                    { id: 'logs', icon: Activity, label: 'Lịch sử hệ thống' },
                   ].map(item => (
                     <button 
                       key={item.id}
@@ -514,7 +516,7 @@ export default function App() {
                     <img className="w-7 h-7 rounded-sm grayscale group-hover:grayscale-0 transition-all border border-slate-200" src={user.photoURL || `https://api.dicebear.com/7.x/notionists/svg?seed=${user.uid}`} alt="" />
                     <div className="min-w-0 flex-1">
                        <div className="text-[10px] font-bold text-slate-700 group-hover:text-slate-900 truncate font-mono uppercase tracking-tighter transition-colors">{user.displayName}</div>
-                       <button onClick={handleLogout} className="text-[8px] font-bold text-slate-400 uppercase tracking-widest hover:text-rose-600 transition-colors">Terminate Session</button>
+                       <button onClick={handleLogout} className="text-[8px] font-bold text-slate-400 uppercase tracking-widest hover:text-rose-600 transition-colors">Kết thúc phiên làm việc</button>
                     </div>
                   </div>
                </div>
@@ -529,15 +531,15 @@ export default function App() {
                         onClick={() => setShowProjectDropdown(!showProjectDropdown)}
                         className="flex items-center gap-3 text-[11px] font-bold text-slate-500 hover:text-slate-900 transition-all group tracking-widest uppercase font-mono"
                       >
-                         <span className="text-brand-600 opacity-50">Node:</span>
-                         <span className="text-slate-900 border-b border-slate-200 pb-0.5">{selectedProject?.name || 'SYNCING...'}</span>
+                         <span className="text-brand-600 opacity-50">Nút:</span>
+                         <span className="text-slate-900 border-b border-slate-200 pb-0.5">{selectedProject?.name || 'ĐANG ĐỒNG BỘ...'}</span>
                          <ChevronDown size={12} className={cn("text-slate-400 transition-transform", showProjectDropdown && "rotate-180")} />
                       </button>
                       
                       <AnimatePresence>
                          {showProjectDropdown && (
                            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute top-10 left-0 w-64 z-[110] bg-white border border-slate-200 shadow-2xl rounded-xl">
-                             <div className="p-3 micro-label opacity-30 text-[8px]">Active_Matrix_Nodes</div>
+                             <div className="p-3 micro-label opacity-30 text-[8px]">Các_nút_đang_hoạt_động</div>
                              <div className="p-1 space-y-0.5">
                                {projects.map(p => (
                                  <button key={p.id} onClick={() => { setSelectedProject(p); setShowProjectDropdown(false); }} className={cn("w-full flex items-center justify-between px-4 py-2 text-[10px] font-mono font-bold tracking-widest uppercase transition-all rounded-lg", selectedProject?.id === p.id ? "bg-slate-900 text-white" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900")}>
@@ -547,7 +549,7 @@ export default function App() {
                                ))}
                                <div className="h-px bg-slate-100 my-1" />
                                <button onClick={() => { setShowProjectModal(true); setShowProjectDropdown(false); }} className="w-full flex items-center gap-3 px-4 py-2 text-[10px] text-brand-600 font-bold tracking-widest uppercase hover:bg-brand-50 rounded-lg">
-                                 <Plus size={12} /> Init New Node
+                                 <Plus size={12} /> Khởi tạo nút mới
                                </button>
                              </div>
                            </motion.div>
@@ -558,12 +560,12 @@ export default function App() {
                     <div className="h-4 w-px bg-slate-200" />
                     <div className="flex items-center gap-2">
                       <div className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse" />
-                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] font-mono">Status: Optimal</span>
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] font-mono">Trạng thái: Hoạt động tốt</span>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-4">
-                    <button onClick={() => toast.info("Encryption relay active. Zero pending alerts.")} className="w-8 h-8 flex items-center justify-center text-slate-600 hover:text-white transition-all">
+                    <button onClick={() => toast.info("Mã hóa truyền tải đang hoạt động. Không có cảnh báo.")} className="w-8 h-8 flex items-center justify-center text-slate-600 hover:text-white transition-all">
                        <Bell size={14} />
                     </button>
                     <button 
@@ -574,7 +576,7 @@ export default function App() {
                     </button>
                     <div className="h-4 w-px bg-white/10" />
                     <button onClick={() => setShowInviteModal(true)} className="btn-precision h-8 px-4 text-[9px]">
-                       <UserPlus size={12} /> Add Operator
+                       <UserPlus size={12} /> Thêm nhân sự
                     </button>
                   </div>
                </header>
@@ -587,91 +589,96 @@ export default function App() {
                            <div className="space-y-4">
                               <div className="flex items-center gap-3">
                                 <div className="h-[1px] w-8 bg-brand-500/40" />
-                                <span className="text-[9px] font-bold text-brand-500 uppercase tracking-[0.5em] font-mono">Platform_Command_Directives</span>
+                                <span className="text-[9px] font-bold text-brand-500 uppercase tracking-[0.5em] font-mono">Chỉ_thị_điều_hành_hệ_thống</span>
                               </div>
                               <h2 className="text-8xl font-sans font-bold tracking-tighter italic leading-none text-slate-900">
-                                System Overview
+                                Tổng quan hệ thống
                               </h2>
-                              <p className="text-slate-500 font-mono text-[10px] tracking-wider uppercase">Protocol parity: synchronized</p>
+                              <p className="text-slate-500 font-mono text-[10px] tracking-wider uppercase">Đồng bộ giao thức: hoàn tất</p>
                            </div>
                               <div className="flex items-center gap-3">
                                  <button onClick={() => setShowProjectModal(true)} className="btn-precision h-12 px-8">
-                                    <Plus size={14} /> Initialize Node
+                                    <Plus size={14} /> Khởi tạo nút
                                  </button>
                                  <button onClick={() => setShowSettingsModal(true)} className="h-12 px-8 border border-slate-200 text-[10px] font-bold uppercase tracking-widest hover:bg-slate-50 transition-all">
-                                    Parameters
+                                    Tham số
                                  </button>
                               </div>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                           <StatsCard label="System Integrity" value={`${appStats.resolutionRate}%`} icon={<Cpu size={14} />} trend="PARITY" />
-                           <StatsCard label="Active Nodes" value={appStats.open} icon={<Activity size={14} />} trend="PROCESSING" />
-                           <StatsCard label="Critical Vectors" value={appStats.critical} icon={<Zap size={14} />} trend={appStats.critical > 3 ? "WARNING" : "STABLE"} />
-                           <StatsCard label="Deployment Flux" value={appStats.activeEvents} icon={<Orbit size={14} />} trend="ACTIVE" />
+                           <StatsCard label="Chất lượng hệ thống" value={`${appStats.resolutionRate}%`} icon={<Cpu size={14} />} trend="ĐỒNG BỘ" />
+                           <StatsCard label="Nút đang xử lý" value={appStats.open} icon={<Activity size={14} />} trend="ĐANG XỬ LÝ" />
+                           <StatsCard label="Chỉ số quan trọng" value={appStats.critical} icon={<Zap size={14} />} trend={appStats.critical > 3 ? "CẢNH BÁO" : "ỔN ĐỊNH"} />
+                           <StatsCard label="Sự kiện hoạt động" value={appStats.activeEvents} icon={<Orbit size={14} />} trend="ĐANG HOẠT ĐỘNG" />
                         </div>
 
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                            <div className="lg:col-span-2 surface-precision p-10">
                               <div className="flex items-center justify-between mb-12">
                                  <div className="space-y-1">
-                                    <h3 className="text-xl font-bold tracking-tight text-slate-900">Active Operations</h3>
-                                    <p className="micro-label opacity-40">Matrix node priority queue</p>
+                                    <h3 className="text-xl font-bold tracking-tight text-slate-900">Lịch trình hệ thống</h3>
+                                    <p className="micro-label opacity-40">Đồng bộ hóa thời gian thực của ma trận</p>
                                  </div>
-                                 <button onClick={() => setShowEventModal(true)} className="btn-precision h-9 px-4 text-[10px]">
-                                    <Plus size={14} /> Add Event
-                                 </button>
+                                 <div className="flex items-center gap-4">
+                                    <div className="px-4 py-1.5 bg-slate-50 border border-slate-100 rounded-lg text-[10px] font-bold text-slate-400 font-mono italic">SYNC_STATUS: OK</div>
+                                 </div>
                               </div>
 
-                              <div className="space-y-px">
-                                 {events.length === 0 ? (
-                                    <div className="py-20 text-center border border-dashed border-slate-200 rounded">
-                                       <div className="micro-label text-slate-400">Awaiting system events...</div>
-                                    </div>
-                                 ) : (
-                                    events.map((event) => (
-                                       <div 
-                                          key={event.id} 
-                                          className="flex items-center justify-between p-6 bg-white hover:bg-slate-50 border border-slate-100 transition-all group cursor-pointer"
-                                       >
-                                          <div className="flex items-center gap-6">
-                                             <div className={cn(
-                                                "w-2 h-2 rounded-full",
-                                                event.status === 'completed' ? "bg-brand-500" :
-                                                event.status === 'in-progress' ? "bg-amber-500 animate-pulse" : "bg-slate-300"
-                                             )} />
-                                             <div>
-                                                <h4 className="text-[14px] font-bold text-slate-900 tracking-widest uppercase font-mono group-hover:text-brand-600 transition-colors">{event.title}</h4>
-                                                <div className="flex items-center gap-4 mt-2">
-                                                   <span className="micro-label text-slate-400 border-r border-slate-200 pr-4">{event.type || 'PROTOCOL'}</span>
-                                                   <span className="text-[10px] font-mono text-slate-400 italic opacity-60">ID: {event.id.slice(0, 8)}</span>
-                                                </div>
+                              <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm">
+                                 <div className="grid grid-cols-7 border-b border-slate-100">
+                                    {['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map(day => (
+                                       <div key={day} className="py-4 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono">{day}</div>
+                                    ))}
+                                 </div>
+                                 <div className="grid grid-cols-7 bg-slate-50/30">
+                                    {Array.from({ length: 35 }).map((_, i) => {
+                                       const dayNum = i - 2; 
+                                       const isToday = dayNum === 28; 
+                                       const isCurrentMonth = dayNum > 0 && dayNum <= 30;
+                                       const dateString = `2026-04-${String(dayNum).padStart(2, '0')}`;
+                                       const dayBugs = bugs.filter(b => b.dueDate === dateString);
+                                       
+                                       return (
+                                          <div key={i} className={cn(
+                                             "h-32 p-3 border-r border-b border-slate-100 transition-all hover:bg-white group relative overflow-y-auto custom-scrollbar",
+                                             !isCurrentMonth && "opacity-20 bg-slate-50/50"
+                                          )}>
+                                             <span className={cn(
+                                                "text-[10px] font-bold font-mono",
+                                                isToday ? "w-6 h-6 rounded-full bg-brand-500 text-white flex items-center justify-center -ml-1 -mt-1 shadow-lg shadow-brand-500/30" : "text-slate-400"
+                                             )}>
+                                                {dayNum > 0 && dayNum <= 30 ? dayNum : (dayNum <= 0 ? 31 + dayNum : dayNum - 30)}
+                                             </span>
+                                             
+                                             <div className="mt-2 space-y-1.5">
+                                               {dayBugs.map(bug => (
+                                                 <div 
+                                                   key={bug.id} 
+                                                   onClick={() => setActiveTab('board')}
+                                                   className={cn(
+                                                     "p-2 rounded-lg text-[9px] font-bold uppercase tracking-tighter truncate border cursor-pointer hover:scale-[1.02] transition-transform shadow-sm",
+                                                     bug.priority === 'critical' ? "bg-red-50 border-red-100 text-red-600" :
+                                                     bug.priority === 'high' ? "bg-orange-50 border-orange-100 text-orange-600" :
+                                                     bug.priority === 'medium' ? "bg-blue-50 border-blue-100 text-blue-600" :
+                                                     "bg-emerald-50 border-emerald-100 text-emerald-600"
+                                                   )}
+                                                 >
+                                                   {bug.title}
+                                                 </div>
+                                                ))}
                                              </div>
                                           </div>
-                                          <div className="flex items-center gap-8">
-                                             <div className="text-right hidden sm:block">
-                                                <div className="text-[10px] font-bold text-slate-500 font-mono tracking-tighter uppercase">{event.time}</div>
-                                                <div className="text-[9px] font-semibold text-slate-400 font-mono mt-1 uppercase">ESTIMATED COMPLETION</div>
-                                             </div>
-                                             <div className="flex items-center gap-2">
-                                               <button onClick={(e) => { e.stopPropagation(); deleteDoc(doc(db, 'events', event.id)); }} className="w-8 h-8 rounded flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all opacity-0 group-hover:opacity-100">
-                                                  <Trash2 size={12} />
-                                               </button>
-                                               <div className="w-7 h-7 rounded bg-slate-900 text-white flex items-center justify-center">
-                                                  <ChevronRight size={12} strokeWidth={3} />
-                                               </div>
-                                             </div>
-                                          </div>
-                                       </div>
-                                    ))
-                                 )}
+                                       );
+                                    })}
+                                 </div>
                               </div>
                            </div>
 
                            <div className="surface-precision p-10 flex flex-col">
                               <div className="mb-12">
-                                 <h3 className="text-xl font-bold tracking-tight text-slate-900">System Feed</h3>
-                                 <p className="micro-label opacity-40 mt-1">Audit stream monitor</p>
+                                 <h3 className="text-xl font-bold tracking-tight text-slate-900">Dòng tin hệ thống</h3>
+                                 <p className="micro-label opacity-40 mt-1">Giám sát luồng kiểm tra</p>
                               </div>
                               <div className="flex-1 space-y-6">
                                  {projectLogs.slice(0, 6).map((log, i) => (
@@ -689,7 +696,7 @@ export default function App() {
                                  ))}
                               </div>
                               <button onClick={() => setActiveTab('logs')} className="w-full h-10 border border-slate-100 text-[9px] font-bold uppercase tracking-[0.3em] text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all mt-8">
-                                 Full Audit Log
+                                 Toàn bộ nhật ký kiểm tra
                               </button>
                            </div>
                         </div>
@@ -701,22 +708,22 @@ export default function App() {
                         <div className="space-y-6">
                            <div className="flex items-center gap-4">
                               <div className="h-0.5 w-12 bg-brand-500/30 rounded-full" />
-                              <span className="text-[10px] font-black text-brand-600 uppercase tracking-[0.5em] font-mono">Telemetry Analytics</span>
+                              <span className="text-[10px] font-black text-brand-600 uppercase tracking-[0.5em] font-mono">Phân tích Telemetry</span>
                            </div>
-                           <h2 className="text-6xl font-bold tracking-tighter text-slate-900">System Performance</h2>
-                           <p className="text-lg text-slate-500 font-medium tracking-tight max-w-2xl">High-fidelity visualization of system throughput and multi-channel protocol distribution.</p>
+                           <h2 className="text-6xl font-bold tracking-tighter text-slate-900">Hiệu suất hệ thống</h2>
+                           <p className="text-lg text-slate-500 font-medium tracking-tight max-w-2xl">Trực quan hóa độ trung thực cao của lưu lượng hệ thống và phân phối giao thức đa kênh.</p>
                         </div>
  
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-slate-200 border border-slate-200">
-                           <StatsCard label="Precision Yield" value={`${appStats.resolutionRate}%`} icon={<CheckCircle2 size={16} />} trend="SYNCED" />
-                           <StatsCard label="Node Volume" value={appStats.total} icon={<Rocket size={16} />} trend="LINEAR" />
-                           <StatsCard label="Operational Events" value={events.length} icon={<Globe size={16} />} trend="LOGGED" />
+                           <StatsCard label="Hiệu suất chính xác" value={`${appStats.resolutionRate}%`} icon={<CheckCircle2 size={16} />} trend="ĐỒNG BỘ" />
+                           <StatsCard label="Khối lượng nút" value={appStats.total} icon={<Rocket size={16} />} trend="TUYẾN TÍNH" />
+                           <StatsCard label="Sự kiện vận hành" value={events.length} icon={<Globe size={16} />} trend="ĐÃ GHI LẠI" />
                         </div>
  
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                            <div className="card-smart h-[520px] flex flex-col bg-white border border-slate-200 p-12 rounded-3xl overflow-hidden shadow-sm">
                              <div className="flex items-center justify-between mb-12">
-                                <h3 className="text-[11px] font-bold text-slate-900 uppercase tracking-[0.3em] font-mono">Resolution Velocity</h3>
+                                <h3 className="text-[11px] font-bold text-slate-900 uppercase tracking-[0.3em] font-mono">Tốc độ giải quyết</h3>
                                 <div className="px-4 py-1.5 bg-slate-50 rounded-xl text-[9px] font-black text-brand-600 tracking-widest border border-slate-100">ALPHA-CHART</div>
                              </div>
                              <div className="flex-1 w-full translate-x-[-15px]">
@@ -732,7 +739,7 @@ export default function App() {
                            </div>
  
                            <div className="card-smart h-[520px] flex flex-col items-center p-12 bg-white border border-slate-200 rounded-3xl shadow-sm">
-                             <h3 className="text-[11px] font-bold text-slate-900 uppercase tracking-[0.3em] font-mono mb-10 self-start">Priority Distribution</h3>
+                             <h3 className="text-[11px] font-bold text-slate-900 uppercase tracking-[0.3em] font-mono mb-10 self-start">Phân bổ ưu tiên</h3>
                              <div className="flex-1 w-full flex items-center justify-center relative">
                                 <ResponsiveContainer width="100%" height="100%">
                                   <RePieChart>
@@ -839,7 +846,7 @@ export default function App() {
                              <tbody className="divide-y divide-slate-100">
                                {projectLogs.length === 0 ? (
                                  <tr>
-                                   <td colSpan={4} className="px-8 py-20 text-center micro-label text-slate-300">No activity recorded in current state_cycle</td>
+                                   <td colSpan={4} className="px-8 py-20 text-center micro-label text-slate-300">Không có hoạt động nào được ghi lại trong chu kỳ hiện tại</td>
                                  </tr>
                                ) : projectLogs.map((log) => (
                                  <tr key={log.id} className="hover:bg-slate-50 transition-colors group/row">
@@ -881,8 +888,8 @@ export default function App() {
                          <Settings size={20} />
                       </div>
                       <div>
-                        <h3 className="text-xl font-bold text-slate-900 tracking-tight">Project Settings</h3>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Workspace configuration</p>
+                        <h3 className="text-xl font-bold text-slate-900 tracking-tight">Cài đặt dự án</h3>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Cấu hình không gian làm việc</p>
                       </div>
                    </div>
                    <button onClick={() => setShowSettingsModal(false)} className="w-10 h-10 rounded hover:bg-slate-100 transition-all flex items-center justify-center text-slate-500 hover:text-slate-900">
@@ -891,7 +898,7 @@ export default function App() {
                 </div>
                 <div className="p-12 space-y-12">
                    <div className="space-y-4">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Workspace Name</label>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Tên không gian làm việc</label>
                       <input 
                         className="w-full h-14 bg-slate-50 border border-slate-200 rounded-xl px-6 text-xl font-bold text-slate-900 outline-none focus:bg-white focus:border-brand-500 transition-all placeholder:text-slate-300 font-mono"
                         value={selectedProject?.name} 
@@ -902,13 +909,13 @@ export default function App() {
 
                    <div className="grid grid-cols-2 gap-8">
                       <div className="p-6 space-y-2 bg-slate-50 border border-slate-100 rounded">
-                         <span className="micro-label opacity-40 text-[9px]">ENCRYPTION_PROTOCOL</span>
+                         <span className="micro-label opacity-40 text-[9px]">GIAO_THỨC_MÃ_HÓA</span>
                          <div className="text-sm font-bold text-slate-700 italic font-mono uppercase">AES-256-GCM</div>
                       </div>
                       <div className="p-6 space-y-2 bg-slate-50 border border-slate-100 rounded">
-                         <span className="micro-label opacity-40 text-[9px]">SECURITY_VECTOR</span>
+                         <span className="micro-label opacity-40 text-[9px]">VÉC-TƠ_BẢO_MẬT</span>
                          <div className="text-sm font-bold text-emerald-600 italic font-mono flex items-center gap-2">
-                            <Lock size={14} /> LEVEL_4_AUTH
+                            <Lock size={14} /> XÁC_THỰC_CẤP_4
                          </div>
                       </div>
                    </div>
@@ -916,10 +923,10 @@ export default function App() {
                    <div className="pt-10 flex items-center justify-between gap-6">
                       {user.uid === selectedProject?.ownerId && (
                         <button 
-                          onClick={() => { if(confirm("EXECUTE_DESTRUCTION_PROTOCOL?")) handleDeleteProject()}}
+                          onClick={() => handleDeleteProject()}
                           className="micro-label text-rose-500 hover:text-rose-400 transition-colors"
                         >
-                          Delete Workspace
+                          Xóa không gian làm việc
                         </button>
                       )}
                       <div className="flex-1" />
@@ -927,7 +934,7 @@ export default function App() {
                         onClick={() => { handleUpdateProject(); setShowSettingsModal(false); }}
                         className="btn-precision h-12 px-12"
                       >
-                         Save Changes
+                         Lưu thay đổi
                       </button>
                    </div>
                 </div>
@@ -943,17 +950,17 @@ export default function App() {
                 <div className="w-16 h-16 bg-brand-500 text-white flex items-center justify-center rounded mx-auto shadow-2xl mb-4">
                    <FolderPlus size={24} />
                 </div>
-                <h3 className="text-2xl font-bold text-slate-900 tracking-tight">Create Workspace</h3>
-                <p className="text-slate-500 font-medium text-sm">Define the name for your new collaborative matrix node.</p>
+                <h3 className="text-2xl font-bold text-slate-900 tracking-tight">Tạo không gian làm việc</h3>
+                <p className="text-slate-500 font-medium text-sm">Đặt tên cho nút ma trận cộng tác mới của bạn.</p>
               </div>
               <div className="space-y-8">
                 <div className="space-y-3">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Workspace Name</label>
-                  <input autoFocus placeholder="e.g. PROJECT_OVERDRIVE" className="w-full h-14 bg-slate-50 border border-slate-200 rounded-xl px-6 text-lg text-center font-bold text-slate-900 outline-none focus:bg-white focus:border-brand-500 transition-all placeholder:text-slate-200 font-mono" value={newProjectName} onChange={(e) => setNewProjectName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleCreateProject()} />
+                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Tên không gian làm việc</label>
+                   <input autoFocus placeholder="VD: DỰ_ÁN_TỐI_ƯU" className="w-full h-14 bg-slate-50 border border-slate-200 rounded-xl px-6 text-lg text-center font-bold text-slate-900 outline-none focus:bg-white focus:border-brand-500 transition-all placeholder:text-slate-200 font-mono" value={newProjectName} onChange={(e) => setNewProjectName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleCreateProject()} />
                 </div>
                 <div className="flex gap-4">
-                  <button onClick={handleCreateProject} disabled={!newProjectName.trim()} className="flex-1 btn-precision h-12 disabled:opacity-50">Create Workspace</button>
-                  <button onClick={() => setShowProjectModal(false)} className="px-6 text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors">Cancel</button>
+                  <button onClick={handleCreateProject} disabled={!newProjectName.trim()} className="flex-1 btn-precision h-12 disabled:opacity-50">Tạo không gian</button>
+                  <button onClick={() => setShowProjectModal(false)} className="px-6 text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors">Hủy bỏ</button>
                 </div>
               </div>
             </div>
@@ -968,17 +975,17 @@ export default function App() {
                  <div className="w-12 h-12 bg-brand-500 text-white flex items-center justify-center rounded-none mx-auto mb-6">
                     <Activity size={20} />
                  </div>
-                 <h3 className="text-2xl font-bold text-slate-900 tracking-tight">Add New Event</h3>
-                 <p className="micro-label opacity-40">Matrix level authorization required for manual override.</p>
+                 <h3 className="text-2xl font-bold text-slate-900 tracking-tight">Thêm sự kiện mới</h3>
+                 <p className="micro-label opacity-40">Yêu cầu xác thực cấp Matrix để ghi đè thủ công.</p>
               </div>
               <div className="space-y-8">
                  <div className="space-y-4">
-                    <label className="micro-label ml-2">Event_Designation</label>
-                    <input autoFocus placeholder="OP_NAME_..." className="w-full h-14 bg-slate-50 border border-slate-200 rounded-none px-6 text-lg text-center font-bold text-slate-900 outline-none focus:bg-white focus:border-brand-500 transition-all placeholder:text-slate-200 font-mono" value={newEventTitle} onChange={(e) => setNewEventTitle(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleCreateEvent()} />
+                    <label className="micro-label ml-2">Định_danh_sự_kiện</label>
+                    <input autoFocus placeholder="TÊN_SỰ_KIỆN_..." className="w-full h-14 bg-slate-50 border border-slate-200 rounded-none px-6 text-lg text-center font-bold text-slate-900 outline-none focus:bg-white focus:border-brand-500 transition-all placeholder:text-slate-200 font-mono" value={newEventTitle} onChange={(e) => setNewEventTitle(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleCreateEvent()} />
                  </div>
                  <div className="flex gap-4">
-                    <button onClick={handleCreateEvent} disabled={!newEventTitle.trim()} className="flex-1 btn-precision h-12 disabled:opacity-50">Execute Dispatch</button>
-                    <button onClick={() => setShowEventModal(false)} className="micro-label px-6 text-slate-500 hover:text-slate-900 transition-colors">Cancel</button>
+                    <button onClick={handleCreateEvent} disabled={!newEventTitle.trim()} className="flex-1 btn-precision h-12 disabled:opacity-50">Thực thi truyền tin</button>
+                    <button onClick={() => setShowEventModal(false)} className="micro-label px-6 text-slate-500 hover:text-slate-900 transition-colors">Hủy bỏ</button>
                  </div>
               </div>
             </div>
@@ -993,17 +1000,17 @@ export default function App() {
                  <div className="w-12 h-12 bg-brand-500 text-white flex items-center justify-center rounded-2xl mx-auto mb-6">
                     <UserPlus size={20} />
                  </div>
-                 <h3 className="text-2xl font-bold text-slate-900 tracking-tight">Add Operator</h3>
-                 <p className="micro-label opacity-40">Expand the matrix node membership registry.</p>
+                 <h3 className="text-2xl font-bold text-slate-900 tracking-tight">Thêm nhân sự</h3>
+                 <p className="micro-label opacity-40">Mở rộng danh sách thành viên của nút ma trận.</p>
               </div>
               <div className="space-y-8">
                  <div className="space-y-4">
-                    <label className="micro-label ml-2">Registry Email</label>
-                    <input autoFocus placeholder="operator@linebase.sys" className="w-full h-14 bg-slate-50 border border-slate-200 rounded-xl px-6 text-lg text-center font-bold text-slate-900 outline-none focus:bg-white focus:border-brand-500 transition-all placeholder:text-slate-200 font-mono" value={inviteUserEmail} onChange={(e) => setInviteUserEmail(e.target.value)} />
+                    <label className="micro-label ml-2">Email đăng ký</label>
+                    <input autoFocus placeholder="nhansu@linebase.sys" className="w-full h-14 bg-slate-50 border border-slate-200 rounded-xl px-6 text-lg text-center font-bold text-slate-900 outline-none focus:bg-white focus:border-brand-500 transition-all placeholder:text-slate-200 font-mono" value={inviteUserEmail} onChange={(e) => setInviteUserEmail(e.target.value)} />
                  </div>
                  <div className="flex gap-4">
-                    <button onClick={handleInviteMember} disabled={!inviteUserEmail.trim()} className="flex-1 btn-precision h-12 disabled:opacity-50">Assign Operator</button>
-                    <button onClick={() => setShowInviteModal(false)} className="micro-label px-6 text-slate-500 hover:text-slate-900 transition-colors">Terminate</button>
+                    <button onClick={handleInviteMember} disabled={!inviteUserEmail.trim()} className="flex-1 btn-precision h-12 disabled:opacity-50">Gán nhân sự</button>
+                    <button onClick={() => setShowInviteModal(false)} className="micro-label px-6 text-slate-500 hover:text-slate-900 transition-colors">Kết thúc</button>
                  </div>
               </div>
             </div>
@@ -1019,7 +1026,7 @@ export default function App() {
                   <div className="w-10 h-10 bg-brand-500 text-white flex items-center justify-center rounded-xl">
                     <Terminal size={20} />
                   </div>
-                  <h3 className="text-3xl font-bold text-slate-900 tracking-tighter italic">System_Core v2</h3>
+                  <h3 className="text-3xl font-bold text-slate-900 tracking-tighter italic">Lõi_Hệ_Thống v2</h3>
                 </div>
                 <button onClick={() => setShowDocsModal(false)} className="w-10 h-10 rounded hover:bg-slate-100 transition-all flex items-center justify-center text-slate-400">
                   <X size={24} />
@@ -1029,27 +1036,27 @@ export default function App() {
               <div className="prose prose-slate max-w-none space-y-10">
                 <section className="space-y-4">
                   <h4 className="text-xl font-bold text-slate-900 uppercase tracking-widest font-mono flex items-center gap-3">
-                    <div className="w-1 h-1 bg-brand-500" /> 0x01_Overview
+                    <div className="w-1 h-1 bg-brand-500" /> 0x01_Tổng_Quan
                   </h4>
-                  <p className="text-slate-500 leading-relaxed italic">Linebase is an autonomous workspace engine. Every interaction is synchronized via telemetric relays to Firestore for real-time parity across all connected operators.</p>
+                  <p className="text-slate-500 leading-relaxed italic">Linebase là một công cụ không gian làm việc tự động. Mọi tương tác được đồng bộ hóa thông qua các rơ-le telemetry tới Firestore để có sự đồng nhất trong thời gian thực giữa tất cả các nhân sự được kết nối.</p>
                 </section>
 
                 <section className="space-y-4">
                   <h4 className="text-xl font-bold text-slate-900 uppercase tracking-widest font-mono flex items-center gap-3">
-                    <div className="w-1 h-1 bg-brand-500" /> 0x02_Task_Matrix
+                    <div className="w-1 h-1 bg-brand-500" /> 0x02_Ma_Trận_Nhiệm_Vụ
                   </h4>
-                  <p className="text-slate-500 leading-relaxed italic">Use the Task Matrix to manage nodes (issues). Drag and drop between columns to update protocol status. Clicking an entry allows for deep state manipulation including priority shifts and assignee deployment.</p>
+                  <p className="text-slate-500 leading-relaxed italic">Sử dụng Ma trận nhiệm vụ để quản lý các nút (vấn đề). Kéo và thả giữa các cột để cập nhật trạng thái giao thức. Nhấp vào một mục cho phép thao tác sâu vào trạng thái bao gồm thay đổi độ ưu tiên và phân bổ nhân sự.</p>
                 </section>
 
                 <section className="space-y-4">
                   <h4 className="text-xl font-bold text-slate-900 uppercase tracking-widest font-mono flex items-center gap-3">
-                    <div className="w-1 h-1 bg-brand-500" /> 0x03_Security
+                    <div className="w-1 h-1 bg-brand-500" /> 0x03_Bảo_Mật
                   </h4>
-                  <p className="text-slate-500 leading-relaxed italic">All data is hardened with AES-256 equivalent security rules. Members must be explicitly assigned to project nodes to gain read/write authority.</p>
+                  <p className="text-slate-500 leading-relaxed italic">Tất cả dữ liệu được bảo vệ bằng các quy tắc bảo mật tương đương AES-256. Thành viên phải được chỉ định rõ ràng vào các nút dự án để có quyền đọc/ghi.</p>
                 </section>
 
                 <div className="pt-10 flex justify-center">
-                  <button onClick={() => setShowDocsModal(false)} className="btn-precision h-12 px-12">Acknowledge_Directives</button>
+                  <button onClick={() => setShowDocsModal(false)} className="btn-precision h-12 px-12">Chấp_Nhận_Chỉ_Thị</button>
                 </div>
               </div>
             </div>

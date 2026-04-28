@@ -48,18 +48,19 @@ export interface Bug {
   updatedAt?: any;
   creatorId: string;
   assigneeId?: string;
+  dueDate?: any;
 }
 
 export const STATUS_COLUMNS: { id: BugStatus, label: string }[] = [
-  { id: 'backlog', label: 'Backlog / Idle' },
-  { id: 'in-progress', label: 'Processing' },
-  { id: 'in-review', label: 'Verification' },
-  { id: 'done', label: 'Resolved' }
+  { id: 'backlog', label: 'Hàng Đợi / Nghỉ' },
+  { id: 'in-progress', label: 'Đang Xử Lý' },
+  { id: 'in-review', label: 'Đang Xác Minh' },
+  { id: 'done', label: 'Đã Giải Quyết' }
 ];
 
 export const PRIORITY_CONFIG: Record<BugPriority, { label: string, color: string, icon: any }> = {
-  low: { label: 'P-04 / Routine', color: 'text-slate-400', icon: Zap },
-  medium: { label: 'P-03 / Normal', color: 'text-blue-400', icon: ChevronUp },
-  high: { label: 'P-02 / Elevated', color: 'text-orange-400', icon: AlertTriangle },
-  critical: { label: 'P-01 / Critical', color: 'text-red-400', icon: AlertCircle }
+  low: { label: 'P-04 / Thường Nhật', color: 'text-slate-400', icon: Zap },
+  medium: { label: 'P-03 / Bình Thường', color: 'text-blue-400', icon: ChevronUp },
+  high: { label: 'P-02 / Ưu Tiên Cao', color: 'text-orange-400', icon: AlertTriangle },
+  critical: { label: 'P-01 / Nghiêm Trọng', color: 'text-red-400', icon: AlertCircle }
 };

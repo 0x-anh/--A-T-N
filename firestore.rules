@@ -57,7 +57,8 @@ service cloud.firestore {
         && data.projectId is string && isValidId(data.projectId)
         && data.status in ["backlog", "in-progress", "in-review", "done"]
         && data.priority in ["low", "medium", "high", "critical"]
-        && data.creatorId == request.auth.uid;
+        && data.creatorId == request.auth.uid
+        && (!data.keys().hasAny(['dueDate']) || (data.dueDate is string && data.dueDate.size() <= 20));
     }
 
     function isValidComment(data) {
@@ -126,11 +127,11 @@ service cloud.firestore {
         incoming().creatorId == existing().creatorId && 
         incoming().projectId == existing().projectId &&
         incoming().createdAt == existing().createdAt && (
-          // Action: Quick Status Update
-          (incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt', 'assigneeId']) && incoming().updatedAt == request.time) ||
+          // Action: Quick Status Update/Assign/DueDate
+          (incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt', 'assigneeId', 'dueDate']) && incoming().updatedAt == request.time) ||
           // Action: Edit bug (Creator only)
           (existing().creatorId == request.auth.uid && isValidBug(incoming()) && 
-           incoming().diff(existing()).affectedKeys().hasOnly(['title', 'description', 'priority', 'updatedAt']) &&
+           incoming().diff(existing()).affectedKeys().hasOnly(['title', 'description', 'priority', 'updatedAt', 'dueDate']) &&
            incoming().updatedAt == request.time)
         );
       
