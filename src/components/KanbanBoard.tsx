@@ -43,6 +43,8 @@ const BugCard: React.FC<{ bug: Bug, index: number, userProfiles: UserProfile[], 
     return STATUS_COLUMNS.some(col => col.id !== bug.status && canUserMoveTo(currentUser.roles, col.id));
   }, [currentUser?.roles, bug.status, isAdmin]);
 
+  const isOverdue = useMemo(() => bug.status !== 'done' && bug.dueDate && new Date(bug.dueDate) < new Date(), [bug.status, bug.dueDate]);
+
   return (
     <DraggableAny key={bug.id} draggableId={bug.id} index={index} isDragDisabled={!canMove}>
       {(provided: any, snapshot: any) => (
@@ -66,13 +68,18 @@ const BugCard: React.FC<{ bug: Bug, index: number, userProfiles: UserProfile[], 
             className={cn(
                "relative overflow-hidden group p-5 bg-white border border-slate-100 rounded-[1.75rem] transition-all duration-300",
                snapshot.isDragging ? "shadow-2xl shadow-brand-500/30 border-brand-500/40 rotate-[1deg] scale-[1.05] bg-white/95 backdrop-blur-md" : "shadow-sm hover:shadow-xl hover:shadow-slate-200/50 hover:border-brand-500/20 active:scale-[0.98]",
-               !canMove && "opacity-80 grayscale-[0.2] cursor-default"
+               !canMove && "opacity-80 grayscale-[0.2] cursor-default",
+               isOverdue && !snapshot.isDragging && "ring-2 ring-rose-500/20 bg-rose-50/10 border-rose-200"
             )}
           >
+            {isOverdue && (
+              <div className="absolute top-0 left-0 w-full h-1 bg-rose-500 animate-pulse" />
+            )}
+
             {/* Background Accent */}
             <div className={cn(
               "absolute top-0 right-0 w-32 h-32 -mr-16 -mt-16 rounded-full opacity-[0.03] transition-transform group-hover:scale-150 duration-700",
-              bug.priority === 'critical' ? "bg-rose-500" : 
+              bug.priority === 'critical' || isOverdue ? "bg-rose-500" : 
               bug.priority === 'high' ? "bg-amber-500" : "bg-brand-500"
             )} />
 
@@ -87,10 +94,14 @@ const BugCard: React.FC<{ bug: Bug, index: number, userProfiles: UserProfile[], 
                  <div className="flex items-center gap-2.5">
                     <div className={cn(
                       "w-2 h-2 rounded-full",
+                      isOverdue ? "bg-rose-600 shadow-[0_0_12px_rgba(225,29,72,0.8)]" :
                       bug.priority === 'critical' ? "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.4)]" : 
                       bug.priority === 'high' ? "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]" : "bg-brand-500 shadow-[0_0_8px_rgba(99,102,241,0.4)]"
                     )} />
                     <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] font-mono">#{bug.id.slice(-4).toUpperCase()}</span>
+                    {isOverdue && (
+                      <span className="bg-rose-600 text-white text-[7px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter shadow-sm">Overdue</span>
+                    )}
                  </div>
                  
                  {bug.assigneeId && (
@@ -247,6 +258,7 @@ const KanbanColumn: React.FC<ColumnProps & { isAdmin: boolean }> = ({ title, tas
 export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isProjectOwner }: KanbanBoardProps & { key?: any }) {
   const [enabled, setEnabled] = useState(false);
   const [viewMode, setViewMode] = useState<'board' | 'list'>('board');
+  const [showOverdueOnly, setShowOverdueOnly] = useState(false);
   const [isAdding, setIsAdding] = useState<BugStatus | null>(null);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [quickAddStatus, setQuickAddStatus] = useState<BugStatus>('backlog');
@@ -335,9 +347,11 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
 
   const filteredBugs = useMemo(() => {
     return bugs.filter(bug => {
-      return bug.title.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearch = bug.title.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesOverdue = !showOverdueOnly || (bug.status !== 'done' && bug.dueDate && new Date(bug.dueDate) < new Date());
+      return matchesSearch && matchesOverdue;
     });
-  }, [bugs, searchTerm]);
+  }, [bugs, searchTerm, showOverdueOnly]);
 
   const logActivity = async (bugId: string, action: string, details: string) => {
     if (!auth.currentUser) return;
@@ -362,7 +376,7 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
     const currentUserProfile = userProfiles.find(u => u.userId === userId);
     const newStatus = destination.droppableId as BugStatus;
 
-    if (!canUserMoveTo(currentUserProfile?.roles, newStatus)) {
+    if (!isAdmin && !canUserMoveTo(currentUserProfile?.roles, newStatus)) {
       toast.error("Truy cập bị từ chối: Bạn không có quyền chuyển sang trạng thái này");
       return;
     }
@@ -491,6 +505,19 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
            </div>
            
            <div className="flex items-center gap-5">
+              <button 
+                onClick={() => setShowOverdueOnly(!showOverdueOnly)}
+                className={cn(
+                  "h-11 px-6 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-3 border",
+                  showOverdueOnly 
+                    ? "bg-rose-600 text-white border-transparent shadow-lg shadow-rose-600/30 animate-pulse" 
+                    : "bg-white text-slate-400 border-slate-100 hover:border-rose-200 hover:text-rose-600"
+                )}
+              >
+                <Clock size={14} className={showOverdueOnly ? "text-white" : "text-rose-400"} />
+                <span>Cảnh báo quá hạn {bugs.filter(b => b.status !== 'done' && b.dueDate && new Date(b.dueDate) < new Date()).length > 0 && `(${bugs.filter(b => b.status !== 'done' && b.dueDate && new Date(b.dueDate) < new Date()).length})`}</span>
+              </button>
+
               <div className="relative group">
                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within:text-indigo-600 transition-colors" />
                  <input 
@@ -581,27 +608,31 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
                            </div>
                            
                            <div className="flex-1 flex flex-wrap gap-3">
-                             {(Object.keys(ROLE_CONFIG) as UserRole[]).map(role => {
-                               const isAssigned = profile.roles?.includes(role);
-                               const isDisabled = isGlobalAdmin && role === 'admin'; // Cannot remove admin from global owner
-
-                               return (
-                                 <button
-                                   key={role}
-                                   disabled={isDisabled}
-                                   onClick={() => handleUpdateUserRoles(profile.userId, profile.roles || [], role)}
-                                   className={cn(
-                                     "px-5 h-11 rounded-[1.25rem] text-[10px] font-black uppercase tracking-[0.15em] flex items-center gap-2 transition-all border outline-none active:scale-95 disabled:opacity-50",
-                                     isAssigned 
-                                       ? cn(ROLE_CONFIG[role].color, "text-white border-transparent shadow-xl shadow-current/20")
-                                       : "bg-slate-50 text-slate-400 border-slate-100 hover:border-indigo-300 hover:text-indigo-600 hover:bg-white"
-                                   )}
-                                 >
-                                   {isAssigned ? <Check size={14} strokeWidth={3} /> : <div className="w-1 h-1 rounded-full bg-slate-300" />}
-                                   {ROLE_CONFIG[role].label.split(' / ')[0]}
-                                 </button>
-                               );
-                             })}
+                             {isGlobalAdmin ? (
+                               <div className="flex items-center gap-3 px-6 py-3 bg-amber-50 border border-amber-100 rounded-2xl">
+                                 <Shield size={16} className="text-amber-500" />
+                                 <span className="text-[10px] font-black text-amber-700 uppercase tracking-[0.2em]">Cấp quyền tối cao (System Root)</span>
+                               </div>
+                             ) : (
+                               (Object.keys(ROLE_CONFIG) as UserRole[]).map(role => {
+                                 const isAssigned = profile.roles?.includes(role);
+                                 return (
+                                   <button
+                                     key={role}
+                                     onClick={() => handleUpdateUserRoles(profile.userId, profile.roles || [], role)}
+                                     className={cn(
+                                       "px-5 h-11 rounded-[1.25rem] text-[10px] font-black uppercase tracking-[0.15em] flex items-center gap-2 transition-all border outline-none active:scale-95",
+                                       isAssigned 
+                                         ? cn(ROLE_CONFIG[role].color, "text-white border-transparent shadow-xl shadow-current/20")
+                                         : "bg-slate-50 text-slate-400 border-slate-100 hover:border-indigo-300 hover:text-indigo-600 hover:bg-white"
+                                     )}
+                                   >
+                                     {isAssigned ? <Check size={14} strokeWidth={3} /> : <div className="w-1 h-1 rounded-full bg-slate-300" />}
+                                     {ROLE_CONFIG[role].label.split(' / ')[0]}
+                                   </button>
+                                 );
+                               })
+                             )}
                            </div>
 
                            <div className="w-40 text-right opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-x-4 group-hover:translate-x-0">
@@ -919,7 +950,7 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
                           </div>
                           <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">Priority Segment</span>
                         </div>
-                        {canDeleteBug(userProfiles.find(u => u.userId === userId)?.roles) && (
+                        {(isAdmin || canDeleteBug(userProfiles.find(u => u.userId === userId)?.roles)) && (
                           <button 
                             onClick={async () => {
                               if (confirm('Bạn có chắc chắn muốn xóa thẻ này?')) {
@@ -944,10 +975,10 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
                           className="w-full text-4xl font-black text-slate-900 outline-none border-none p-0 bg-transparent tracking-tight leading-tight resize-none placeholder:text-slate-100 disabled:cursor-not-allowed"
                           placeholder="Nội dung tiêu đề..."
                           value={selectedBug.title}
-                          disabled={!canEditBug(userProfiles.find(u => u.userId === userId)?.roles, selectedBug.status)}
+                          disabled={!isAdmin && !canEditBug(userProfiles.find(u => u.userId === userId)?.roles, selectedBug.status)}
                           onChange={(e) => handleUpdateBugDetails(selectedBug.id, { title: e.target.value })}
                         />
-                        {!canEditBug(userProfiles.find(u => u.userId === userId)?.roles, selectedBug.status) && (
+                        {!isAdmin && !canEditBug(userProfiles.find(u => u.userId === userId)?.roles, selectedBug.status) && (
                           <div className="absolute -left-6 top-2 text-slate-300 opacity-20 group-hover/title:opacity-100 transition-opacity">
                             <Lock size={14} />
                           </div>
@@ -963,7 +994,7 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
                           onChange={(e) => {
                             const newStatus = e.target.value as BugStatus;
                             const currentUserProfile = userProfiles.find(u => u.userId === userId);
-                            if (!canUserMoveTo(currentUserProfile?.roles, newStatus)) {
+                            if (!isAdmin && !canUserMoveTo(currentUserProfile?.roles, newStatus)) {
                               toast.error("Truy cập bị từ chối: Bạn không có quyền chuyển sang trạng thái này");
                               return;
                             }
@@ -981,15 +1012,15 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
                       <div className="space-y-3">
                         <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
                           Độ ưu tiên
-                          {!canEditBug(userProfiles.find(u => u.userId === userId)?.roles, selectedBug.status) && <Lock size={8} className="text-slate-300" />}
+                          {!isAdmin && !canEditBug(userProfiles.find(u => u.userId === userId)?.roles, selectedBug.status) && <Lock size={8} className="text-slate-300" />}
                         </label>
                         <select 
                           value={selectedBug.priority}
                           onChange={(e) => handleUpdateBugDetails(selectedBug.id, { priority: e.target.value as BugPriority })}
-                          disabled={!canEditBug(userProfiles.find(u => u.userId === userId)?.roles, selectedBug.status)}
+                          disabled={!isAdmin && !canEditBug(userProfiles.find(u => u.userId === userId)?.roles, selectedBug.status)}
                           className={cn(
                             "w-full h-11 bg-slate-50 border border-slate-100 rounded-xl px-4 text-xs font-bold text-slate-900 outline-none uppercase tracking-widest appearance-none transition-all",
-                            !canEditBug(userProfiles.find(u => u.userId === userId)?.roles, selectedBug.status) ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:border-brand-500"
+                            !isAdmin && !canEditBug(userProfiles.find(u => u.userId === userId)?.roles, selectedBug.status) ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:border-brand-500"
                           )}
                         >
                           {(Object.entries(PRIORITY_CONFIG) as [BugPriority, any][]).map(([key, cfg]) => (
@@ -1001,16 +1032,16 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
                       <div className="space-y-3">
                         <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
                           Nhân sự
-                          {!canEditBug(userProfiles.find(u => u.userId === userId)?.roles, selectedBug.status) && <Lock size={8} className="text-slate-300" />}
+                          {!isAdmin && !canEditBug(userProfiles.find(u => u.userId === userId)?.roles, selectedBug.status) && <Lock size={8} className="text-slate-300" />}
                         </label>
                         <div className="space-y-2">
                           <select 
                             value={selectedBug.assigneeId || ''}
                             onChange={(e) => handleUpdateBugDetails(selectedBug.id, { assigneeId: e.target.value })}
-                            disabled={!canEditBug(userProfiles.find(u => u.userId === userId)?.roles, selectedBug.status)}
+                            disabled={!isAdmin && !canEditBug(userProfiles.find(u => u.userId === userId)?.roles, selectedBug.status)}
                             className={cn(
                               "w-full h-11 bg-slate-50 border border-slate-100 rounded-xl px-4 text-xs font-bold text-slate-900 outline-none uppercase tracking-widest appearance-none transition-all",
-                              !canEditBug(userProfiles.find(u => u.userId === userId)?.roles, selectedBug.status) ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:border-brand-500"
+                              !isAdmin && !canEditBug(userProfiles.find(u => u.userId === userId)?.roles, selectedBug.status) ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:border-brand-500"
                             )}
                           >
                             <option value="">CHƯA GIAO</option>
@@ -1036,7 +1067,7 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
                       <div className="flex items-center justify-between border-b border-slate-50 pb-3">
                         <label className="text-[9px] font-black text-slate-900 uppercase tracking-[0.2em] flex items-center gap-2">
                           Chi tiết kỹ thuật
-                          {!canEditBug(userProfiles.find(u => u.userId === userId)?.roles, selectedBug.status) && <Lock size={10} className="text-slate-300" />}
+                          {!isAdmin && !canEditBug(userProfiles.find(u => u.userId === userId)?.roles, selectedBug.status) && <Lock size={10} className="text-slate-300" />}
                         </label>
                         <div className="flex gap-2">
                            <div className="w-1.5 h-1.5 rounded-full bg-slate-200" />
@@ -1047,7 +1078,7 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
                         placeholder="Mô tả chi tiết các thông số kỹ thuật và các bước tái hiện..."
                         className="w-full h-48 bg-transparent border-none p-0 text-sm text-slate-600 outline-none leading-relaxed placeholder:text-slate-200 resize-none custom-scrollbar disabled:opacity-60 disabled:cursor-not-allowed"
                         value={selectedBug.description || ''}
-                        disabled={!canEditBug(userProfiles.find(u => u.userId === userId)?.roles, selectedBug.status)}
+                        disabled={!isAdmin && !canEditBug(userProfiles.find(u => u.userId === userId)?.roles, selectedBug.status)}
                         onChange={(e) => handleUpdateBugDetails(selectedBug.id, { description: e.target.value })}
                       />
                     </div>

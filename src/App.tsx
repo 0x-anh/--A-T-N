@@ -10,7 +10,7 @@ import {
   Zap, LogIn, LogOut, ShieldAlert, Bug as BugIcon, Activity, Cpu, Globe, Database, 
   Terminal, FolderPlus, ChevronDown, ChevronRight, Users, Bell, Search, Plus, 
   Filter, MessageSquare, History, Settings, Lock, CheckCircle2, Check, Shield, ShieldCheck, X,
-  UserPlus, Clock, ArrowUpRight, Share2, MoreHorizontal, Orbit, Code2, Mail, Trash2
+  UserPlus, Clock, ArrowUpRight, Share2, MoreHorizontal, Orbit, Code2, Mail, Trash2, AlertTriangle
 } from "lucide-react";
 import { 
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, 
@@ -215,6 +215,19 @@ export default function App() {
   const handleLogout = () => auth.signOut();
 
   const [projectLogs, setProjectLogs] = useState<any[]>([]);
+
+  const overdueTasks = useMemo(() => {
+    return bugs.filter(b => b.status !== 'done' && b.dueDate && new Date(b.dueDate) < new Date());
+  }, [bugs]);
+
+  const urgentTasks = useMemo(() => {
+    if (!user) return [];
+    const profile = userProfiles.find(u => u.userId === user.uid);
+    const isAdminUser = profile?.roles?.includes('admin') || profile?.email === 'jokerducanh@gmail.com' || selectedProject?.ownerId === user.uid;
+    
+    if (isAdminUser) return overdueTasks;
+    return overdueTasks.filter(b => b.assigneeId === user.uid);
+  }, [overdueTasks, user, userProfiles, selectedProject]);
 
   const appStats = useMemo(() => {
     const total = bugs.length;
@@ -682,6 +695,84 @@ export default function App() {
                                  </button>
                               </div>
                         </div>
+
+                         {urgentTasks.length > 0 && (
+                            <motion.div 
+                              initial={{ opacity: 0, y: -20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="p-10 rounded-[3rem] bg-rose-50 border border-rose-100 relative overflow-hidden mb-12"
+                            >
+                              <div className="absolute top-0 right-0 p-16 opacity-[0.03] text-rose-500 transform translate-x-12 -translate-y-12">
+                                 <AlertTriangle size={280} />
+                              </div>
+                              
+                              <div className="relative space-y-10">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-6">
+                                    <div className="w-16 h-16 bg-rose-600 text-white rounded-[1.75rem] flex items-center justify-center shadow-2xl shadow-rose-600/30">
+                                      <Clock size={32} className="animate-pulse" strokeWidth={2.5} />
+                                    </div>
+                                    <div>
+                                      <h2 className="text-2xl font-black text-slate-900 uppercase tracking-[0.15em]">Giao thức khẩn cấp: {urgentTasks.length}</h2>
+                                      <p className="text-[10px] font-black text-rose-600 uppercase tracking-[0.3em] mt-1 opacity-80">Hệ thống phát hiện các nút xử lý đã quá thời hạn quy định_</p>
+                                    </div>
+                                  </div>
+                                  <div className="bg-white/50 backdrop-blur-sm border border-rose-100 rounded-2xl px-5 py-3 flex items-center gap-4">
+                                     <div className="w-2 h-2 rounded-full bg-rose-600 animate-ping" />
+                                     <span className="text-[10px] font-black text-rose-600 uppercase tracking-widest font-mono">Status: Priority_Conflict</span>
+                                  </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                  {urgentTasks.slice(0, 3).map(task => (
+                                    <div key={task.id} className="p-8 bg-white rounded-[2.5rem] border border-rose-100 shadow-2xl shadow-rose-600/5 group hover:border-rose-400 transition-all duration-500 transform hover:-translate-y-1">
+                                      <div className="flex items-center justify-between mb-6">
+                                        <div className="flex items-center gap-2">
+                                           <div className="w-8 h-8 rounded-xl bg-rose-50 flex items-center justify-center text-rose-600">
+                                              <Activity size={16} />
+                                           </div>
+                                           <span className="text-[10px] font-black text-slate-400 font-mono tracking-widest">#{task.id.slice(-4).toUpperCase()}</span>
+                                        </div>
+                                        <span className="text-[8px] font-black text-white bg-rose-600 px-3 py-1 rounded-full uppercase tracking-tighter shadow-lg shadow-rose-600/20">Quá hạn</span>
+                                      </div>
+                                      <h3 className="text-[15px] font-black text-slate-900 mb-8 line-clamp-2 leading-tight group-hover:text-rose-600 transition-colors">{task.title}</h3>
+                                      <div className="flex items-center justify-between pt-6 border-t border-rose-50">
+                                        <div className="flex items-center gap-3">
+                                           <img src={userProfiles.find(u => u.userId === task.assigneeId)?.photoURL} className="w-8 h-8 rounded-xl ring-4 ring-white shadow-md grayscale group-hover:grayscale-0 transition-all" alt="" />
+                                           <div className="flex flex-col">
+                                              <span className="text-[10px] font-black text-slate-900 uppercase tracking-tighter">{userProfiles.find(u => u.userId === task.assigneeId)?.displayName.split(' ')[0]}</span>
+                                              <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-none">Assignee</span>
+                                           </div>
+                                        </div>
+                                        <button 
+                                          onClick={() => {
+                                            setSelectedProject(projects.find(p => p.id === task.projectId) || null);
+                                            setActiveTab('board');
+                                          }}
+                                          className="h-10 px-6 bg-slate-900 text-white rounded-2xl text-[9px] font-black uppercase tracking-widest hover:bg-rose-600 transition-all shadow-xl shadow-slate-900/10 active:scale-95"
+                                        >
+                                           Xử lý ngay
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                  {urgentTasks.length > 3 && (
+                                    <div 
+                                      onClick={() => setActiveTab('board')}
+                                      className="p-8 bg-rose-100/30 border border-dashed border-rose-300/50 rounded-[2.5rem] flex flex-col items-center justify-center cursor-pointer hover:bg-rose-100/50 transition-all group overflow-hidden relative"
+                                    >
+                                       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(225,29,72,0.05),transparent)] opacity-0 group-hover:opacity-100 transition-opacity" />
+                                       <span className="text-2xl font-black text-rose-600 mb-2">+{urgentTasks.length - 3}</span>
+                                       <span className="text-[10px] font-black text-rose-600 uppercase tracking-[0.2em]">Danh bạ nhiệm vụ quá hạn</span>
+                                       <div className="flex items-center gap-2 mt-4 text-[9px] font-bold text-rose-400 group-hover:text-rose-700 transition-colors">
+                                          Xem tất cả <ArrowRight size={12} />
+                                       </div>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </motion.div>
+                         )}
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                            <StatsCard label="Chất lượng hệ thống" value={`${appStats.resolutionRate}%`} icon={<Cpu size={14} />} trend="ĐỒNG BỘ" />
