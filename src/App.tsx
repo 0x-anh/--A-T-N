@@ -21,7 +21,7 @@ import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged, User } from 'f
 import { collection, query, onSnapshot, doc, setDoc, addDoc, deleteDoc, serverTimestamp, where, orderBy, getDocFromServer, limit } from 'firebase/firestore';
 import KanbanBoard from './components/KanbanBoard';
 import { cn } from './lib/utils';
-import { Project, UserProfile, Bug } from './types';
+import { Project, UserProfile, Bug, UserRole, ROLE_CONFIG } from './types';
 
 import { Toaster, toast } from 'sonner';
 
@@ -42,9 +42,15 @@ export default function App() {
   const [showEventModal, setShowEventModal] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showDocsModal, setShowDocsModal] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
   const [events, setEvents] = useState<any[]>([]);
   const [newEventTitle, setNewEventTitle] = useState('');
   const [inviteUserEmail, setInviteUserEmail] = useState('');
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     testConnection();
@@ -225,6 +231,35 @@ export default function App() {
       activeEvents: events.filter(e => e.status === 'in-progress').length
     };
   }, [bugs, events]);
+
+  const isAdmin = useMemo(() => {
+    if (!user) return false;
+    const profile = userProfiles.find(u => u.userId === user.uid);
+    return profile?.roles?.includes('admin') || 
+           profile?.email === 'jokerducanh@gmail.com' ||
+           selectedProject?.ownerId === user.uid;
+  }, [user, userProfiles, selectedProject]);
+
+  const handleUpdateUserRoles = async (targetUserId: string, currentRoles: UserRole[], role: UserRole) => {
+    if (!isAdmin) return;
+    const newRoles = currentRoles.includes(role) 
+      ? currentRoles.filter(r => r !== role)
+      : [...currentRoles, role];
+    
+    if (targetUserId === user?.uid && role === 'admin' && currentRoles.includes('admin') && newRoles.length === 0) {
+      toast.error("Không thể gỡ bỏ vai trò quản trị cuối cùng của chính bạn");
+      return;
+    }
+
+    try {
+      await setDoc(doc(db, 'users', targetUserId), {
+        roles: newRoles
+      }, { merge: true });
+      toast.success("Cập nhật phân quyền thành công");
+    } catch (e) {
+      toast.error("Lỗi cập nhật quyền");
+    }
+  };
 
   const resolutionChartData = useMemo(() => {
     const last7Days = Array.from({ length: 7 }, (_, i) => {
@@ -477,79 +512,98 @@ export default function App() {
         ) : (
           <div className="flex-1 flex h-screen overflow-hidden bg-slate-50">
             {/* PRECISION SIDEBAR */}
-            <aside className="w-56 h-full flex flex-col bg-white border-r border-slate-200 relative z-50">
-               <div className="p-8 flex items-center gap-3">
-                  <div className="w-8 h-8 bg-slate-900 text-white flex items-center justify-center shadow-lg">
-                     <Code2 size={16} strokeWidth={3} />
+            <aside className="w-64 h-full flex flex-col bg-white border-r border-slate-100 relative z-50 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+               <div className="p-8 pb-12 flex items-center gap-4">
+                  <div className="w-10 h-10 bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-600/20 rounded-[1.25rem]">
+                     <Code2 size={20} strokeWidth={3} />
                   </div>
                   <div className="flex flex-col">
-                     <span className="text-lg font-bold text-slate-900 tracking-tighter leading-none">Linebase</span>
-                     <span className="text-[8px] font-bold text-slate-400 uppercase tracking-[0.3em] font-mono">v.1.0.4</span>
+                     <span className="text-xl font-black text-slate-900 tracking-tight leading-none italic uppercase">Zenith</span>
+                     <span className="text-[8px] font-black text-indigo-400 uppercase tracking-[0.4em] font-mono mt-1 opacity-70">Control_OS</span>
                   </div>
                </div>
 
-               <div className="flex-1 py-10 px-4 space-y-1 overflow-y-auto custom-scrollbar">
-                  <div className="px-5 mb-6 micro-label opacity-40">System Access</div>
+               <div className="flex-1 px-4 space-y-1.5 overflow-y-auto custom-scrollbar">
+                  <div className="px-6 mb-4 text-[9px] font-black text-slate-300 uppercase tracking-[0.2em]">Protocol Root</div>
                   {[
-                    { id: 'dashboard', icon: LayoutGrid, label: 'Tổng quan' },
+                    { id: 'dashboard', icon: LayoutGrid, label: 'Bảng điều hành' },
                     { id: 'board', icon: FolderKanban, label: 'Ma trận nhiệm vụ' },
-                    { id: 'metrics', icon: PieChart, label: 'Đo lường' },
-                    { id: 'members', icon: Users, label: 'Nhân sự' },
+                    { id: 'metrics', icon: PieChart, label: 'Trung tâm chỉ số' },
                     { id: 'logs', icon: Activity, label: 'Lịch sử hệ thống' },
                   ].map(item => (
                     <button 
                       key={item.id}
                       onClick={() => setActiveTab(item.id as any)}
                       className={cn(
-                        "nav-link",
-                        activeTab === item.id ? "nav-link-active" : "nav-link-inactive"
+                        "flex items-center gap-4 w-full px-6 py-4 rounded-[1.5rem] transition-all duration-300 group outline-none",
+                        activeTab === item.id 
+                          ? "bg-slate-900 text-white shadow-xl shadow-slate-900/10" 
+                          : "text-slate-400 hover:text-slate-900 hover:bg-slate-50"
                       )}
                     >
-                      <item.icon size={13} strokeWidth={activeTab === item.id ? 2.5 : 2} />
-                      <span className="tracking-[0.15em] uppercase text-[9px] font-bold font-mono">{item.label}</span>
+                      <item.icon 
+                        size={16} 
+                        strokeWidth={activeTab === item.id ? 3 : 2} 
+                        className={cn(
+                          "transition-transform duration-500",
+                          activeTab === item.id ? "scale-110" : "group-hover:scale-110"
+                        )}
+                      />
+                      <span className="tracking-[0.15em] uppercase text-[10px] font-black font-mono">{item.label}</span>
                     </button>
                   ))}
                </div>
 
-               <div className="p-6 border-t border-slate-100">
-                  <div className="flex items-center gap-3 p-2 group cursor-pointer transition-all">
-                    <img className="w-7 h-7 rounded-sm grayscale group-hover:grayscale-0 transition-all border border-slate-200" src={user.photoURL || `https://api.dicebear.com/7.x/notionists/svg?seed=${user.uid}`} alt="" />
+               <div className="p-8 border-t border-slate-50">
+                  <div className="flex items-center gap-4 p-3 bg-slate-50/50 hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 border border-transparent hover:border-slate-100 rounded-[2rem] group cursor-pointer transition-all duration-500">
+                    <div className="relative">
+                      <img className="w-10 h-10 rounded-2xl grayscale group-hover:grayscale-0 transition-all border-2 border-white shadow-md" src={user.photoURL || `https://api.dicebear.com/7.x/notionists/svg?seed=${user.uid}`} alt="" />
+                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full shadow-sm" />
+                    </div>
                     <div className="min-w-0 flex-1">
-                       <div className="text-[10px] font-bold text-slate-700 group-hover:text-slate-900 truncate font-mono uppercase tracking-tighter transition-colors">{user.displayName}</div>
-                       <button onClick={handleLogout} className="text-[8px] font-bold text-slate-400 uppercase tracking-widest hover:text-rose-600 transition-colors">Kết thúc phiên làm việc</button>
+                       <div className="text-[10px] font-black text-slate-800 group-hover:text-indigo-600 truncate font-mono uppercase tracking-tighter transition-colors">{user.displayName}</div>
+                       <button onClick={handleLogout} className="text-[8px] font-bold text-slate-400 hover:text-rose-600 transition-colors uppercase tracking-widest mt-0.5">Thoát protocol</button>
                     </div>
                   </div>
                </div>
             </aside>
 
-            <main className="flex-1 overflow-hidden flex flex-col technical-grid">
+            <main className="flex-1 overflow-hidden flex flex-col bg-[#FDFDFF]">
                {/* PRECISION HEADER */}
-               <header className="h-14 px-10 flex items-center justify-between bg-white/40 backdrop-blur-md relative z-40 border-b border-slate-200">
-                  <div className="flex items-center gap-8">
+               <header className="h-16 px-10 flex items-center justify-between bg-white/40 backdrop-blur-xl relative z-40 border-b border-slate-100">
+                  <div className="flex items-center gap-10">
                     <div className="relative">
                       <button 
                         onClick={() => setShowProjectDropdown(!showProjectDropdown)}
-                        className="flex items-center gap-3 text-[11px] font-bold text-slate-500 hover:text-slate-900 transition-all group tracking-widest uppercase font-mono"
+                        className="flex items-center gap-4 text-[10px] font-black text-slate-400 hover:text-slate-900 transition-all group tracking-[0.2em] uppercase font-mono"
                       >
-                         <span className="text-brand-600 opacity-50">Nút:</span>
-                         <span className="text-slate-900 border-b border-slate-200 pb-0.5">{selectedProject?.name || 'ĐANG ĐỒNG BỘ...'}</span>
-                         <ChevronDown size={12} className={cn("text-slate-400 transition-transform", showProjectDropdown && "rotate-180")} />
+                         <span className="text-indigo-600 opacity-40">Frequency:</span>
+                         <span className="text-slate-900 py-1.5 border-b-2 border-indigo-500/0 hover:border-indigo-500/100 transition-all">{selectedProject?.name || 'SYNCING...'}</span>
+                         <ChevronDown size={14} className={cn("text-slate-300 transition-transform duration-500", showProjectDropdown && "rotate-180")} />
                       </button>
                       
                       <AnimatePresence>
                          {showProjectDropdown && (
-                           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute top-10 left-0 w-64 z-[110] bg-white border border-slate-200 shadow-2xl rounded-xl">
-                             <div className="p-3 micro-label opacity-30 text-[8px]">Các_nút_đang_hoạt_động</div>
-                             <div className="p-1 space-y-0.5">
+                           <motion.div 
+                             initial={{ opacity: 0, y: 10, scale: 0.95 }} 
+                             animate={{ opacity: 1, y: 0, scale: 1 }} 
+                             exit={{ opacity: 0, y: 10, scale: 0.95 }} 
+                             className="absolute top-12 left-0 w-80 z-[110] bg-white border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-[2.5rem] overflow-hidden p-3"
+                           >
+                             <div className="px-5 py-4 text-[9px] font-black text-slate-300 uppercase tracking-[0.3em]">Authorized Channels</div>
+                             <div className="space-y-1">
                                {projects.map(p => (
-                                 <button key={p.id} onClick={() => { setSelectedProject(p); setShowProjectDropdown(false); }} className={cn("w-full flex items-center justify-between px-4 py-2 text-[10px] font-mono font-bold tracking-widest uppercase transition-all rounded-lg", selectedProject?.id === p.id ? "bg-slate-900 text-white" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900")}>
+                                 <button key={p.id} onClick={() => { setSelectedProject(p); setShowProjectDropdown(false); }} className={cn("w-full flex items-center justify-between px-6 py-4 text-[10px] font-mono font-black tracking-[0.1em] uppercase transition-all rounded-[1.5rem]", selectedProject?.id === p.id ? "bg-slate-900 text-white shadow-xl" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900")}>
                                    {p.name}
-                                   {selectedProject?.id === p.id && <Check size={10} />}
+                                   {selectedProject?.id === p.id && <div className="w-2 h-2 rounded-full bg-emerald-500" />}
                                  </button>
                                ))}
-                               <div className="h-px bg-slate-100 my-1" />
-                               <button onClick={() => { setShowProjectModal(true); setShowProjectDropdown(false); }} className="w-full flex items-center gap-3 px-4 py-2 text-[10px] text-brand-600 font-bold tracking-widest uppercase hover:bg-brand-50 rounded-lg">
-                                 <Plus size={12} /> Khởi tạo nút mới
+                               <div className="h-px bg-slate-50 my-3 mx-4" />
+                               <button 
+                                 onClick={() => { setShowProjectModal(true); setShowProjectDropdown(false); }} 
+                                 className="w-full flex items-center gap-4 px-6 py-4 text-[10px] text-indigo-600 font-black tracking-[0.2em] uppercase hover:bg-indigo-50 rounded-[1.5rem] transition-colors"
+                               >
+                                 <Plus size={14} strokeWidth={3} /> New Channel
                                </button>
                              </div>
                            </motion.div>
@@ -557,10 +611,12 @@ export default function App() {
                       </AnimatePresence>
                     </div>
 
-                    <div className="h-4 w-px bg-slate-200" />
-                    <div className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse" />
-                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] font-mono">Trạng thái: Hoạt động tốt</span>
+                    <div className="h-6 w-px bg-slate-100" />
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]" />
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono">Uptime 99.9%</span>
+                      </div>
                     </div>
                   </div>
 
@@ -581,10 +637,10 @@ export default function App() {
                   </div>
                </header>
 
-               <div className="flex-1 overflow-auto custom-scrollbar p-10 lg:p-14">
+               <div className="flex-1 overflow-auto custom-scrollbar p-6 lg:p-8">
                  <AnimatePresence mode="wait">
                     {activeTab === 'dashboard' && (
-                       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-16 max-w-7xl">
+                       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-12 w-full">
                         <div className="flex items-end justify-between gap-8">
                            <div className="space-y-4">
                               <div className="flex items-center gap-3">
@@ -594,7 +650,28 @@ export default function App() {
                               <h2 className="text-8xl font-sans font-bold tracking-tighter italic leading-none text-slate-900">
                                 Tổng quan hệ thống
                               </h2>
-                              <p className="text-slate-500 font-mono text-[10px] tracking-wider uppercase">Đồng bộ giao thức: hoàn tất</p>
+                              <div className="flex items-center gap-6">
+                                <div className="text-slate-500 font-mono text-[10px] tracking-wider uppercase flex items-center gap-2">
+                                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                  Đồng bộ giao thức: hoàn tất
+                                </div>
+                                <div className="h-4 w-[1px] bg-slate-200" />
+                                <div className="flex items-center gap-3 font-mono">
+                                   <div className="flex flex-col">
+                                      <span className="text-[10px] font-black text-slate-900 leading-none">
+                                         {currentTime.toLocaleTimeString('vi-VN', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                                      </span>
+                                      <span className="text-[7px] font-bold text-slate-400 tracking-widest uppercase">Thời_gian_thực</span>
+                                   </div>
+                                   <div className="h-6 w-[1px] bg-slate-100" />
+                                   <div className="flex flex-col">
+                                      <span className="text-[10px] font-black text-slate-900 leading-none">
+                                         {currentTime.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                                      </span>
+                                      <span className="text-[7px] font-bold text-slate-400 tracking-widest uppercase">Lịch_nhật_ấn</span>
+                                   </div>
+                                </div>
+                              </div>
                            </div>
                               <div className="flex items-center gap-3">
                                  <button onClick={() => setShowProjectModal(true)} className="btn-precision h-12 px-8">
@@ -613,15 +690,20 @@ export default function App() {
                            <StatsCard label="Sự kiện hoạt động" value={appStats.activeEvents} icon={<Orbit size={14} />} trend="ĐANG HOẠT ĐỘNG" />
                         </div>
 
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-                           <div className="lg:col-span-2 surface-precision p-10">
-                              <div className="flex items-center justify-between mb-12">
-                                 <div className="space-y-1">
-                                    <h3 className="text-xl font-bold tracking-tight text-slate-900">Lịch trình hệ thống</h3>
-                                    <p className="micro-label opacity-40">Đồng bộ hóa thời gian thực của ma trận</p>
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                           <div className="lg:col-span-2 surface-precision p-5">
+                              <div className="flex items-center justify-between mb-4">
+                                 <div className="space-y-0.5">
+                                    <h3 className="text-xs font-black tracking-widest text-slate-900 uppercase">Lịch trình</h3>
+                                    <p className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">Đồng bộ Ma trận</p>
                                  </div>
-                                 <div className="flex items-center gap-4">
-                                    <div className="px-4 py-1.5 bg-slate-50 border border-slate-100 rounded-lg text-[10px] font-bold text-slate-400 font-mono italic">SYNC_STATUS: OK</div>
+                                 <div className="flex items-center gap-2">
+                                    {bugs.filter(b => b.dueDate && b.status !== 'done' && new Date(b.dueDate) < new Date()).length > 0 && (
+                                      <div className="px-2 py-0.5 bg-rose-500 text-white rounded-[2px] text-[8px] font-black uppercase tracking-widest animate-pulse">
+                                        TRỄ ({bugs.filter(b => b.dueDate && b.status !== 'done' && new Date(b.dueDate) < new Date()).length})
+                                      </div>
+                                    )}
+                                    <div className="px-2 py-0.5 bg-slate-50 border border-slate-100 rounded-[2px] text-[8px] font-bold text-slate-400 font-mono italic">SYNC: OK</div>
                                  </div>
                               </div>
 
@@ -637,36 +719,46 @@ export default function App() {
                                        const isToday = dayNum === 28; 
                                        const isCurrentMonth = dayNum > 0 && dayNum <= 30;
                                        const dateString = `2026-04-${String(dayNum).padStart(2, '0')}`;
-                                       const dayBugs = bugs.filter(b => b.dueDate === dateString);
+                                       const dayBugs = bugs.filter(b => b.dueDate?.startsWith(dateString));
+                                       const hasOverdue = dayBugs.some(b => b.status !== 'done' && b.dueDate && new Date(b.dueDate) < new Date());
                                        
                                        return (
                                           <div key={i} className={cn(
-                                             "h-32 p-3 border-r border-b border-slate-100 transition-all hover:bg-white group relative overflow-y-auto custom-scrollbar",
-                                             !isCurrentMonth && "opacity-20 bg-slate-50/50"
+                                             "h-20 p-2 border-r border-b border-slate-100 transition-all hover:bg-white group relative overflow-y-auto custom-scrollbar flex flex-col",
+                                             !isCurrentMonth && "opacity-20 bg-slate-50/50",
+                                             hasOverdue && isCurrentMonth && "bg-rose-50/20 transition-colors"
                                           )}>
                                              <span className={cn(
-                                                "text-[10px] font-bold font-mono",
+                                                "text-[10px] font-bold font-mono shrink-0",
                                                 isToday ? "w-6 h-6 rounded-full bg-brand-500 text-white flex items-center justify-center -ml-1 -mt-1 shadow-lg shadow-brand-500/30" : "text-slate-400"
                                              )}>
                                                 {dayNum > 0 && dayNum <= 30 ? dayNum : (dayNum <= 0 ? 31 + dayNum : dayNum - 30)}
                                              </span>
                                              
-                                             <div className="mt-2 space-y-1.5">
-                                               {dayBugs.map(bug => (
-                                                 <div 
-                                                   key={bug.id} 
-                                                   onClick={() => setActiveTab('board')}
-                                                   className={cn(
-                                                     "p-2 rounded-lg text-[9px] font-bold uppercase tracking-tighter truncate border cursor-pointer hover:scale-[1.02] transition-transform shadow-sm",
-                                                     bug.priority === 'critical' ? "bg-red-50 border-red-100 text-red-600" :
-                                                     bug.priority === 'high' ? "bg-orange-50 border-orange-100 text-orange-600" :
-                                                     bug.priority === 'medium' ? "bg-blue-50 border-blue-100 text-blue-600" :
-                                                     "bg-emerald-50 border-emerald-100 text-emerald-600"
-                                                   )}
-                                                 >
-                                                   {bug.title}
-                                                 </div>
-                                                ))}
+                                             <div className="mt-2 space-y-1.5 flex-1">
+                                               {dayBugs.map(bug => {
+                                                  const isOverdue = bug.status !== 'done' && bug.dueDate && new Date(bug.dueDate) < new Date();
+                                                  const bugTime = bug.dueDate?.includes('T') ? new Date(bug.dueDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+                                                  return (
+                                                   <div 
+                                                     key={bug.id} 
+                                                     onClick={() => setActiveTab('board')}
+                                                     className={cn(
+                                                       "p-2 rounded-lg text-[9px] font-bold uppercase tracking-tighter truncate border cursor-pointer hover:scale-[1.02] transition-transform shadow-sm",
+                                                       isOverdue ? "bg-rose-500 border-rose-600 text-white shadow-rose-200" : (
+                                                         bug.priority === 'critical' ? "bg-red-50 border-red-100 text-red-600" :
+                                                         bug.priority === 'high' ? "bg-orange-50 border-orange-100 text-orange-600" :
+                                                         bug.priority === 'medium' ? "bg-blue-50 border-blue-100 text-blue-600" :
+                                                         "bg-emerald-50 border-emerald-100 text-emerald-600"
+                                                       )
+                                                     )}
+                                                   >
+                                                     {isOverdue && <span className="mr-1">⚠️</span>}
+                                                     {bugTime && <span className="mr-1 opacity-50">[{bugTime}]</span>}
+                                                     {bug.title}
+                                                   </div>
+                                                  );
+                                                })}
                                              </div>
                                           </div>
                                        );
@@ -675,28 +767,28 @@ export default function App() {
                               </div>
                            </div>
 
-                           <div className="surface-precision p-10 flex flex-col">
-                              <div className="mb-12">
-                                 <h3 className="text-xl font-bold tracking-tight text-slate-900">Dòng tin hệ thống</h3>
-                                 <p className="micro-label opacity-40 mt-1">Giám sát luồng kiểm tra</p>
+                           <div className="surface-precision p-5 flex flex-col">
+                              <div className="mb-4">
+                                 <h3 className="text-xs font-black tracking-widest text-slate-900 uppercase">Dòng tin</h3>
+                                 <p className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter mt-0.5">Giám sát luồng</p>
                               </div>
-                              <div className="flex-1 space-y-6">
-                                 {projectLogs.slice(0, 6).map((log, i) => (
-                                    <div key={log.id} className="flex gap-4 group">
+                              <div className="flex-1 space-y-2">
+                                 {projectLogs.slice(0, 5).map((log, i) => (
+                                    <div key={log.id} className="flex gap-2 group">
                                        <div className="flex flex-col items-center">
-                                          <div className="w-1.5 h-1.5 rounded-none bg-slate-200 group-hover:bg-brand-500 transition-colors" />
-                                          {i !== projectLogs.slice(0, 6).length - 1 && <div className="w-[1px] flex-1 bg-slate-100 my-2" />}
+                                          <div className="w-1 h-1 rounded-none bg-slate-200 group-hover:bg-brand-500 transition-colors" />
+                                          {i !== projectLogs.slice(0, 5).length - 1 && <div className="w-[1px] flex-1 bg-slate-100 my-0.5" />}
                                        </div>
-                                       <div className="space-y-1 pb-4">
-                                          <div className="text-[10px] font-bold text-slate-400 tracking-widest font-mono uppercase italic underline underline-offset-4 decoration-slate-100 transition-colors group-hover:text-slate-900">Op_{log.action}</div>
-                                          <p className="text-[11px] text-slate-600 font-medium leading-relaxed italic group-hover:text-slate-900 transition-colors">{log.details}</p>
-                                          <div className="text-[8px] font-bold text-slate-400 font-mono uppercase tracking-[0.2em]">{log.createdAt?.toDate ? new Date(log.createdAt.toDate()).toLocaleTimeString() : '...'}</div>
+                                       <div className="space-y-0 pb-1">
+                                          <div className="text-[7px] font-bold text-slate-400 tracking-widest font-mono uppercase group-hover:text-slate-900 leading-none">Op_{log.action}</div>
+                                          <p className="text-[10px] text-slate-600 font-medium leading-tight group-hover:text-slate-900 transition-colors line-clamp-1">{log.details}</p>
+                                          <div className="text-[6px] font-bold text-slate-300 font-mono uppercase leading-none">{log.createdAt?.toDate ? new Date(log.createdAt.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '...'}</div>
                                        </div>
                                     </div>
                                  ))}
                               </div>
-                              <button onClick={() => setActiveTab('logs')} className="w-full h-10 border border-slate-100 text-[9px] font-bold uppercase tracking-[0.3em] text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all mt-8">
-                                 Toàn bộ nhật ký kiểm tra
+                              <button onClick={() => setActiveTab('logs')} className="w-full h-7 border border-slate-100 text-[8px] font-bold uppercase tracking-[0.2em] text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all mt-4">
+                                 Mở rộng
                               </button>
                            </div>
                         </div>
@@ -704,7 +796,7 @@ export default function App() {
                   )}
 
                     {activeTab === 'metrics' && (
-                      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-20 max-w-7xl">
+                      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-20 w-full">
                         <div className="space-y-6">
                            <div className="flex items-center gap-4">
                               <div className="h-0.5 w-12 bg-brand-500/30 rounded-full" />
@@ -770,7 +862,7 @@ export default function App() {
                     )}
 
                     {activeTab === 'members' && (
-                      <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="space-y-16 max-w-7xl">
+                      <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="space-y-16 w-full">
                         <div className="flex flex-col md:flex-row md:items-end justify-between gap-10">
                             <div className="space-y-4">
                                <div className="flex items-center gap-4">
@@ -803,9 +895,34 @@ export default function App() {
                                        </div>
                                     </div>
                                  </div>
-                                 <div className="flex flex-col items-end gap-10">
-                                    <div className="px-4 py-1.5 bg-brand-50 text-brand-600 rounded-lg text-[9px] font-bold uppercase tracking-widest border border-brand-200">
-                                      {selectedProject?.ownerId === profile.userId ? 'Administrator' : 'Operator'}
+                                 <div className="flex flex-col items-end gap-4">
+                                    <div className="flex flex-wrap gap-2 justify-end">
+                                      {isAdmin ? (
+                                        (Object.keys(ROLE_CONFIG) as UserRole[]).map(role => {
+                                          const isAssigned = profile.roles?.includes(role);
+                                          return (
+                                            <button
+                                              key={role}
+                                              onClick={() => handleUpdateUserRoles(profile.userId, profile.roles || [], role)}
+                                              className={cn(
+                                                "px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-1 transition-all border",
+                                                isAssigned 
+                                                  ? cn(ROLE_CONFIG[role].color, "text-white border-transparent shadow-md shadow-current/10")
+                                                  : "bg-white text-slate-300 border-slate-100 hover:border-indigo-300 hover:text-indigo-600"
+                                              )}
+                                            >
+                                              {isAssigned && <Check size={10} />}
+                                              {ROLE_CONFIG[role].label.split(' / ')[0]}
+                                            </button>
+                                          );
+                                        })
+                                      ) : (
+                                        profile.roles?.map(role => (
+                                          <div key={role} className={cn("px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest text-white", ROLE_CONFIG[role].color)}>
+                                            {ROLE_CONFIG[role].label}
+                                          </div>
+                                        ))
+                                      )}
                                     </div>
                                     <div className="flex items-center gap-4 text-slate-300 group-hover:text-slate-500 transition-colors">
                                         <button onClick={() => toast.info(`Sharing node access for ${profile.displayName}...`)} className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-slate-100 hover:text-slate-900 transition-all"><Share2 size={16} /></button>
@@ -820,10 +937,19 @@ export default function App() {
                       </motion.div>
                     )}
 
-                    {activeTab === 'board' && selectedProject && <KanbanBoard key={selectedProject.id} projectId={selectedProject.id} userId={user.uid} userProfiles={userProfiles} bugs={bugs} />}
+                    {activeTab === 'board' && selectedProject && (
+                      <KanbanBoard 
+                        key={selectedProject.id} 
+                        projectId={selectedProject.id} 
+                        userId={user.uid} 
+                        userProfiles={userProfiles} 
+                        bugs={bugs} 
+                        isProjectOwner={selectedProject.ownerId === user.uid}
+                      />
+                    )}
 
                      {activeTab === 'logs' && (
-                      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-16 max-w-7xl">
+                      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-16 w-full">
                         <div className="space-y-4">
                            <div className="flex items-center gap-4">
                               <div className="h-0.5 w-12 bg-brand-500/30 rounded-full" />

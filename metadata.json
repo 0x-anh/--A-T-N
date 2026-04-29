@@ -1,5 +1,5 @@
 {
   "name": "Zenith Issue Tracker",
-  "description": "A high-fidelity project management interface designed for modern engineering teams. Featuring clean typography, real-time sync, and professional workflows.",
+  "description": "A high-fidelity project management interface for engineering teams. Secure, real-time collaboration with advanced role-based access control (RBAC), team management, and professional project workflows.",
   "requestFramePermissions": []
 }

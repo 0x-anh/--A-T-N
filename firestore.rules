@@ -42,7 +42,30 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      return isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+      return isSignedIn() && (
+        request.auth.token.email == 'jokerducanh@gmail.com' ||
+        'admin' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('roles', [])
+      );
+    }
+
+    function getUserRoles() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('roles', []);
+    }
+
+    function hasRole(role) {
+      return isSignedIn() && (role in getUserRoles());
+    }
+
+    function canMoveTo(targetStatus) {
+      return isAdmin() || 
+             (hasRole('developer') && targetStatus in ['in-progress', 'in-review']) || 
+             (hasRole('qa') && targetStatus in ['backlog', 'in-review', 'done']);
+    }
+
+    function canEditDetails(status) {
+      return isAdmin() || 
+             (hasRole('developer') && status in ['in-progress', 'in-review']) || 
+             (hasRole('qa') && status in ['backlog', 'in-review', 'done']);
     }
 
     function isProjectMember(projectId) {
@@ -78,10 +101,11 @@ service cloud.firestore {
     }
 
     function isValidUserProfile(data) {
-      return data.userId == request.auth.uid
+      return data.userId is string && data.userId.size() <= 128
         && data.email == request.auth.token.email
         && data.displayName is string && data.displayName.size() <= 100
-        && data.photoURL is string && data.photoURL.size() <= 500;
+        && data.photoURL is string && data.photoURL.size() <= 500
+        && (!data.keys().hasAny(['roles']) || (data.roles is list && data.roles.size() <= 10));
     }
 
     // 1. Users Collection
@@ -90,8 +114,17 @@ service cloud.firestore {
       allow get: if isSignedIn();
       
       allow create: if isSignedIn() && request.auth.uid == userId && isValidUserProfile(incoming());
-      allow update: if isSignedIn() && request.auth.uid == userId && isValidUserProfile(incoming())
-        && incoming().email == existing().email;
+      
+      allow update: if isSignedIn() && (
+        // User updating their own profile (cannot change roles)
+        (request.auth.uid == userId && 
+         incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL']) && 
+         isValidUserProfile(incoming())) ||
+        // Admin updating someone else's roles
+        (isAdmin() && 
+         incoming().diff(existing()).affectedKeys().hasOnly(['roles']) &&
+         incoming().roles is list)
+      );
     }
 
     // 2. Projects Collection
@@ -127,16 +160,21 @@ service cloud.firestore {
         incoming().creatorId == existing().creatorId && 
         incoming().projectId == existing().projectId &&
         incoming().createdAt == existing().createdAt && (
-          // Action: Quick Status Update/Assign/DueDate
-          (incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt', 'assigneeId', 'dueDate']) && incoming().updatedAt == request.time) ||
-          // Action: Edit bug (Creator only)
-          (existing().creatorId == request.auth.uid && isValidBug(incoming()) && 
+          // Action: Status Update (respect canMoveTo)
+          (incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt']) && 
+           canMoveTo(incoming().status) && incoming().updatedAt == request.time) ||
+          // Action: Assign/DueDate (respect canEditDetails)
+          (incoming().diff(existing()).affectedKeys().hasOnly(['assigneeId', 'dueDate', 'updatedAt']) && 
+           canEditDetails(existing().status) && incoming().updatedAt == request.time) ||
+          // Action: Edit content (respect canEditDetails)
+          (canEditDetails(existing().status) && isValidBug(incoming()) && 
            incoming().diff(existing()).affectedKeys().hasOnly(['title', 'description', 'priority', 'updatedAt', 'dueDate']) &&
            incoming().updatedAt == request.time)
         );
       
       allow delete: if isSignedIn() && (
-        existing().creatorId == request.auth.uid || 
+        isAdmin() || hasRole('qa') ||
+        (existing().creatorId == request.auth.uid && existing().status == 'backlog') || 
         get(/databases/$(database)/documents/projects/$(existing().projectId)).data.ownerId == request.auth.uid
       );
     }

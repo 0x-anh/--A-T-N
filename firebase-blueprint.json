@@ -70,13 +70,14 @@
     },
     "UserProfile": {
       "title": "UserProfile",
-      "description": "Thông tin người dùng.",
+      "description": "Thông tin người dùng và phân quyền.",
       "type": "object",
       "properties": {
         "userId": { "type": "string" },
         "displayName": { "type": "string" },
         "email": { "type": "string" },
-        "photoURL": { "type": "string" }
+        "photoURL": { "type": "string" },
+        "roles": { "type": "array", "items": { "type": "string" } }
       },
       "required": ["userId", "email"]
     },
