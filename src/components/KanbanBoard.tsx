@@ -50,107 +50,80 @@ const BugCard: React.FC<{ bug: Bug, index: number, userProfiles: UserProfile[], 
       {(provided: any, snapshot: any) => (
         <motion.div
           layout
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           className={cn(
-            "mb-4 outline-none",
+            "mb-6 outline-none",
             snapshot.isDragging ? "z-[210]" : ""
           )}
           style={{ ...provided.draggableProps.style }}
         >
           <motion.div 
-            whileHover={!snapshot.isDragging ? { y: -4, scale: 1.01 } : {}}
-            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+            whileHover={!snapshot.isDragging ? { y: -4, x: 2, scale: 1.01 } : {}}
+            transition={{ type: "spring", stiffness: 400, damping: 30 }}
             onClick={() => !snapshot.isDragging && onSelect(bug)}
             className={cn(
-               "relative overflow-hidden group p-5 bg-white border border-slate-100 rounded-[1.75rem] transition-all duration-300",
-               snapshot.isDragging ? "shadow-2xl shadow-brand-500/30 border-brand-500/40 rotate-[1deg] scale-[1.05] bg-white/95 backdrop-blur-md" : "shadow-sm hover:shadow-xl hover:shadow-slate-200/50 hover:border-brand-500/20 active:scale-[0.98]",
-               !canMove && "opacity-80 grayscale-[0.2] cursor-default",
-               isOverdue && !snapshot.isDragging && "ring-2 ring-rose-500/20 bg-rose-50/10 border-rose-200"
+               "relative overflow-hidden group p-6 rounded-[1.75rem] border transition-all duration-500",
+               snapshot.isDragging 
+                ? "shadow-5xl shadow-slate-950/20 border-slate-950/30 rotate-[0.5deg] scale-105 bg-white z-[300]" 
+                : "bg-white/80 backdrop-blur-md border-slate-200/60 hover:border-brand-500/30 hover:shadow-2xl hover:shadow-slate-200/60",
+               !canMove && "opacity-60 cursor-default",
+               isOverdue && !snapshot.isDragging && "border-rose-200 bg-rose-50/20"
             )}
           >
-            {isOverdue && (
-              <div className="absolute top-0 left-0 w-full h-1 bg-rose-500 animate-pulse" />
-            )}
-
-            {/* Background Accent */}
-            <div className={cn(
-              "absolute top-0 right-0 w-32 h-32 -mr-16 -mt-16 rounded-full opacity-[0.03] transition-transform group-hover:scale-150 duration-700",
-              bug.priority === 'critical' || isOverdue ? "bg-rose-500" : 
-              bug.priority === 'high' ? "bg-amber-500" : "bg-brand-500"
-            )} />
-
-            {!canMove && (
-               <div className="absolute top-4 right-4 p-1.5 bg-slate-50 rounded-lg text-slate-300 opacity-40 group-hover:opacity-100 transition-opacity">
-                 <Lock size={10} />
-               </div>
-            )}
-
-            <div className="space-y-4 relative">
-              <div className="flex items-center justify-between gap-3">
-                 <div className="flex items-center gap-2.5">
+            <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-brand-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+            
+            <div className="space-y-5 relative">
+              <div className="flex items-center justify-between">
+                 <div className="flex items-center gap-3">
                     <div className={cn(
-                      "w-2 h-2 rounded-full",
-                      isOverdue ? "bg-rose-600 shadow-[0_0_12px_rgba(225,29,72,0.8)]" :
-                      bug.priority === 'critical' ? "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.4)]" : 
-                      bug.priority === 'high' ? "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]" : "bg-brand-500 shadow-[0_0_8px_rgba(99,102,241,0.4)]"
+                      "w-1.5 h-4 rounded-full transition-all duration-500 group-hover:scale-y-125",
+                      isOverdue ? "bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]" :
+                      bug.priority === 'critical' ? "bg-rose-500" : 
+                      bug.priority === 'high' ? "bg-amber-400" : "bg-emerald-400"
                     )} />
-                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] font-mono">#{bug.id.slice(-4).toUpperCase()}</span>
-                    {isOverdue && (
-                      <span className="bg-rose-600 text-white text-[7px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter shadow-sm">Overdue</span>
-                    )}
+                    <span className="text-[10px] font-bold text-slate-300 font-mono tracking-widest uppercase opacity-60">NODE::0x{bug.id.slice(-4).toUpperCase()}</span>
                  </div>
                  
                  {bug.assigneeId && (
-                   <div className="flex items-center gap-2 group/assignee">
-                      <div className="flex flex-col items-end opacity-0 group-hover/assignee:opacity-100 transition-opacity translate-x-2 group-hover/assignee:translate-x-0 duration-300">
-                        <span className="text-[8px] font-black text-slate-900 uppercase tracking-tighter truncate max-w-[80px]">
-                          {assignee?.displayName.split(' ')[0]}
-                        </span>
-                      </div>
+                   <div className="relative group/avatar">
                       <img 
                         src={assignee?.photoURL || `https://api.dicebear.com/7.x/notionists/svg?seed=${bug.assigneeId}`} 
-                        className="w-7 h-7 rounded-xl border-2 border-white bg-slate-50 shadow-md transform hover:scale-110 transition-transform" 
+                        className="w-10 h-10 rounded-2xl bg-white border border-slate-100 shadow-sm transition-all duration-500 group-hover:rotate-6 group-hover:scale-110" 
                         alt=""
                       />
+                      <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full scale-0 group-hover/avatar:scale-100 transition-transform" />
                    </div>
                  )}
               </div>
   
-              <h4 className="text-[13px] font-black text-slate-800 leading-tight tracking-tight group-hover:text-brand-600 transition-colors">
+              <h4 className="text-base font-semibold text-slate-900 leading-snug tracking-tight group-hover:text-brand-600 transition-colors line-clamp-2">
                 {bug.title}
               </h4>
   
-              <div className="flex items-center justify-between pt-4 border-t border-slate-50">
-                  <div className="flex flex-wrap items-center gap-4">
+              <div className="flex items-center justify-between pt-5 border-t border-slate-100">
+                  <div className="flex items-center gap-3">
                     {bug.comments?.length > 0 && (
-                      <div className="flex items-center gap-1.5">
-                        <MessageSquare size={13} className="text-slate-300" />
-                        <span className="text-[10px] font-bold text-slate-400">{bug.comments.length}</span>
+                      <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-100 transition-colors group-hover:bg-brand-50 group-hover:border-brand-100">
+                        <MessageSquare size={10} className="text-slate-400 group-hover:text-brand-500" />
+                        <span className="text-[9px] font-bold text-slate-500 font-mono group-hover:text-brand-600">{bug.comments.length}</span>
                       </div>
                     )}
-                    <div className="flex items-center gap-1.5 text-slate-400">
-                      <Clock size={13} className="text-slate-200" />
-                      <span className="text-[9px] font-bold uppercase tracking-widest leading-none">
-                        {bug.updatedAt ? new Date((bug.updatedAt as any).toDate()).toLocaleDateString([], { month: 'short', day: 'numeric' }) : 'VỪA XONG'}
-                      </span>
+                    <div className="px-2 py-0.5 rounded border border-slate-100 text-[8px] font-bold text-slate-400 uppercase tracking-widest font-mono group-hover:text-slate-600 transition-colors">
+                       {bug.priority.toUpperCase()}
                     </div>
                   </div>
 
                   {bug.dueDate && (
                     <div className={cn(
-                      "flex items-center gap-1.5 px-2 py-1 rounded-lg transition-all",
-                      bug.status !== 'done' && new Date(bug.dueDate) < new Date() 
-                        ? "bg-rose-500 text-white shadow-lg shadow-rose-500/25" 
-                        : "bg-slate-50 text-slate-400 border border-slate-100"
+                      "flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest font-mono",
+                      bug.status !== 'done' && new Date(bug.dueDate) < new Date() ? "text-rose-500 animate-pulse" : "text-slate-400"
                     )}>
-                      <Calendar size={11} className={cn(bug.status !== 'done' && new Date(bug.dueDate) < new Date() ? "text-white" : "text-slate-300")} />
-                      <span className="text-[8px] font-black uppercase tracking-tighter">
-                        {new Date(bug.dueDate).toLocaleDateString([], { month: 'short', day: 'numeric' })}
-                      </span>
+                      <Clock size={10} />
+                      {new Date(bug.dueDate).toLocaleDateString([], { month: 'short', day: 'numeric' }).toUpperCase()}
                     </div>
                   )}
               </div>
@@ -164,24 +137,34 @@ const BugCard: React.FC<{ bug: Bug, index: number, userProfiles: UserProfile[], 
 
 const KanbanColumn: React.FC<ColumnProps & { isAdmin: boolean }> = ({ title, tasks, status, userProfiles, onSelect, isAdding, setIsAdding, newBugTitle, setNewBugTitle, handleAddBug, userId, isAdmin }) => {
    return (
-    <div className="w-[360px] shrink-0 h-full flex flex-col px-4">
-      <div className="py-8 flex items-center justify-between group px-1">
-        <div className="flex items-center gap-4">
-           <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-white border border-slate-100 shadow-sm">
-             <div className="w-2.5 h-2.5 rounded-full bg-brand-500 shadow-[0_0_8px_rgba(99,102,241,0.4)]" />
+    <div className="w-[320px] md:w-[460px] shrink-0 h-full flex flex-col px-4 md:px-8">
+      <div className="py-12 md:py-20 flex items-center justify-between px-6">
+        <div className="flex items-center gap-6">
+           <div className="relative flex items-center justify-center">
+              <div className={cn(
+                "w-1 h-6 rounded-full relative z-10 transition-all duration-700",
+                status === 'backlog' ? "bg-slate-950" :
+                status === 'in-progress' ? "bg-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.5)]" :
+                status === 'in-review' ? "bg-brand-500 shadow-[0_0_15px_rgba(99,102,241,0.5)]" : "bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]"
+              )} />
            </div>
-           <h3 className="text-xs font-black text-slate-900 uppercase tracking-[0.25em]">{title}</h3>
+           <div>
+              <h3 className="text-2xl font-heading font-extrabold text-slate-900 uppercase tracking-tight leading-none mb-2">{title}</h3>
+              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.3em] font-mono leading-none opacity-50">NODE_STATUS::0{['backlog', 'in-progress', 'in-review', 'done'].indexOf(status)}</p>
+           </div>
         </div>
-        <div className="flex items-center gap-3">
-           <span className="text-[10px] font-black text-slate-400 bg-white px-2.5 py-1 rounded-lg border border-slate-100 shadow-sm font-mono">{tasks.length}</span>
+        <div className="flex items-center gap-4">
+           <div className="px-3 py-1.5 bg-slate-900 text-white rounded-xl text-[10px] font-bold font-mono shadow-lg shadow-slate-950/10">
+              {tasks.length.toString().padStart(2, '0')}
+           </div>
            <button 
              onClick={() => setIsAdding(isAdding ? null : status)}
              className={cn(
-               "w-9 h-9 flex items-center justify-center rounded-xl border border-slate-100 bg-white text-slate-400 hover:text-indigo-600 hover:border-indigo-200 transition-all shadow-sm active:scale-90", 
-               isAdding && "bg-brand-500 text-white border-transparent shadow-lg shadow-brand-500/20"
+               "w-12 h-12 flex items-center justify-center rounded-2xl border border-slate-100 bg-white text-slate-300 hover:text-slate-950 hover:bg-slate-50 transition-all duration-500 group relative overflow-hidden", 
+               isAdding && "bg-slate-950 text-white border-transparent"
              )}
            >
-             <Plus size={16} strokeWidth={2.5} />
+             <Plus size={20} strokeWidth={3} className={cn("transition-transform duration-700 relative z-10", isAdding ? "rotate-45" : "group-hover:rotate-90")} />
            </button>
         </div>
       </div>
@@ -192,27 +175,28 @@ const KanbanColumn: React.FC<ColumnProps & { isAdmin: boolean }> = ({ title, tas
             {...provided.droppableProps}
             ref={provided.innerRef}
             className={cn(
-              "flex-1 overflow-y-auto custom-scrollbar transition-all bg-slate-100/30 rounded-[2.5rem] p-4 border border-slate-200/40 shadow-inner",
-              snapshot.isDraggingOver && "bg-indigo-50/50 border-indigo-200"
+              "flex-1 overflow-y-auto no-scrollbar transition-all duration-700 bg-white/20 backdrop-blur-3xl rounded-[3.5rem] p-8 border border-white/40 shadow-[inset_0_-20px_40px_-20px_rgba(0,0,0,0.02)]",
+              snapshot.isDraggingOver && "bg-slate-100/30 border-brand-200/40 translate-y-[-2px]"
             )}
           >
             <AnimatePresence>
               {isAdding && (
                 <motion.div 
-                  initial={{ opacity: 0, y: 20, scale: 0.95 }} 
+                  initial={{ opacity: 0, y: 30, scale: 0.9 }} 
                   animate={{ opacity: 1, y: 0, scale: 1 }} 
-                  exit={{ opacity: 0, y: -20, scale: 0.95 }} 
-                  className="p-1 bg-white border border-indigo-200/50 rounded-[2rem] mb-6 shadow-2xl shadow-brand-500/10"
+                  exit={{ opacity: 0, y: -30, scale: 0.9 }} 
+                  className="p-1 bg-white border border-brand-500/20 rounded-[2.5rem] mb-8 shadow-3xl shadow-brand-500/10 overflow-hidden"
                 >
-                  <div className="p-6">
-                    <div className="text-[10px] font-black text-brand-600 uppercase tracking-[0.2em] mb-4 font-mono opacity-60 flex items-center gap-2">
-                       <Plus size={10} /> Khởi tạo nhiệm vụ
+                  <div className="p-8">
+                    <div className="text-[9px] font-bold text-brand-600 uppercase tracking-[0.2em] mb-4 font-mono flex items-center gap-2">
+                       <div className="w-1 h-1 rounded-full bg-brand-500 animate-pulse" />
+                       ENTRY_LOG
                     </div>
                     <textarea
                       autoFocus
                       rows={3}
-                      className="w-full bg-transparent border-none p-0 text-sm font-bold text-slate-900 outline-none placeholder:text-slate-200 mb-6 resize-none"
-                      placeholder="Dán hoặc nhập tiêu đề nhiệm vụ mới..."
+                      className="w-full bg-transparent border-none p-0 text-base font-medium text-slate-950 outline-none placeholder:text-slate-200 mb-6 resize-none font-sans tracking-tight"
+                      placeholder="Ghi chú nhiệm vụ..."
                       value={newBugTitle}
                       onChange={(e) => setNewBugTitle(e.target.value)}
                       onKeyDown={(e) => {
@@ -226,13 +210,13 @@ const KanbanColumn: React.FC<ColumnProps & { isAdmin: boolean }> = ({ title, tas
                     <div className="flex gap-3">
                       <button 
                         onClick={() => handleAddBug(status)} 
-                        className="flex-1 h-11 bg-brand-600 text-white rounded-[1.25rem] text-[10px] font-black hover:bg-brand-700 transition-all uppercase tracking-[0.2em] shadow-lg shadow-brand-600/20 active:scale-95"
+                        className="flex-1 h-11 bg-slate-900 text-white rounded-xl text-[10px] font-bold hover:bg-brand-600 transition-all uppercase tracking-[0.2em] shadow-lg shadow-slate-900/10 active:scale-95"
                       >
-                        Triển khai
+                        Khởi tạo
                       </button>
                       <button 
                         onClick={() => setIsAdding(null)} 
-                        className="h-11 px-5 text-[10px] font-black text-slate-400 hover:text-slate-900 transition-all uppercase tracking-[0.2em]"
+                        className="h-11 px-6 text-[10px] font-bold text-slate-400 hover:text-slate-950 transition-all uppercase tracking-widest font-mono"
                       >
                         Hủy
                       </button>
@@ -242,7 +226,7 @@ const KanbanColumn: React.FC<ColumnProps & { isAdmin: boolean }> = ({ title, tas
               )}
             </AnimatePresence>
 
-            <div className="min-h-[150px] space-y-0.5">
+            <div className="min-h-[200px] space-y-0.5 pb-20">
               {tasks.map((bug, index) => (
                 <BugCard key={bug.id} bug={bug} index={index} userProfiles={userProfiles} onSelect={onSelect} userId={userId} isAdmin={isAdmin} />
               ))}
@@ -469,82 +453,76 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
 
    return (
      <div className="flex-1 w-full flex flex-col overflow-hidden bg-slate-50">
-      <div className="h-24 px-10 flex items-center justify-between border-b border-slate-100 bg-white/70 backdrop-blur-xl shrink-0 z-20">
-        <div className="flex items-center gap-10">
-           <div className="flex flex-col">
-              <h2 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-                Zenith Command Center
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+      <div className="h-28 md:h-36 px-6 md:px-14 flex flex-col items-center justify-center md:flex-row md:justify-between border-b border-slate-100 bg-white/80 backdrop-blur-2xl shrink-0 z-20 gap-4 md:gap-0 shadow-sm relative">
+        <div className="absolute top-0 right-0 p-8 opacity-[0.02] pointer-events-none">
+           <LayoutGrid size={120} />
+        </div>
+        <div className="flex items-center justify-between md:justify-start gap-10 md:gap-14 w-full md:w-auto mt-2 md:mt-0">
+          <div className="flex flex-col">
+              <h2 className="text-lg md:text-2xl font-extrabold text-slate-950 tracking-tight flex items-center gap-3 uppercase">
+                <span>Task_Matrix</span>
+                <div className="w-1.5 h-1.5 rounded-full bg-brand-500 shadow-[0_0_8px_rgba(99,102,241,0.6)]" />
               </h2>
-              <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mt-0.5">Workspace / Task Protocol v2.5</p>
+              <p className="text-[8px] md:text-[9px] font-bold text-slate-400 uppercase tracking-[0.3em] font-mono mt-1.5 opacity-60">Distribution_Relay / Node_0x{projectId.slice(0, 4).toUpperCase()}</p>
            </div>
 
-           <div className="h-8 w-px bg-slate-100" />
+           <div className="hidden lg:block h-8 w-px bg-slate-100" />
            
-           <div className="flex items-center bg-slate-50 border border-slate-100 p-1.5 rounded-[1.25rem] shadow-inner">
+           <div className="flex items-center bg-slate-50 border border-slate-100 p-1 rounded-2xl shadow-sm shrink-0 self-center">
              <button 
                onClick={() => setViewMode('board')}
                className={cn(
-                 "px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2",
-                 viewMode === 'board' ? "bg-white text-brand-600 shadow-md ring-1 ring-slate-100" : "text-slate-400 hover:text-slate-600"
+                 "px-4 py-2 rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all flex items-center gap-3",
+                 viewMode === 'board' ? "bg-slate-900 text-white shadow-lg shadow-slate-900/10" : "text-slate-400 hover:text-slate-900 hover:bg-white"
                )}
              >
-               <LayoutGrid size={13} />
-               <span>Matrix</span>
+               <LayoutGrid size={14} />
+               <span className="hidden sm:inline">Visual_Grid</span>
              </button>
              <button 
                onClick={() => setViewMode('list')}
                className={cn(
-                 "px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2",
-                 viewMode === 'list' ? "bg-white text-brand-600 shadow-md ring-1 ring-slate-100" : "text-slate-400 hover:text-slate-600"
+                 "px-4 py-2 rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all flex items-center gap-3",
+                 viewMode === 'list' ? "bg-slate-900 text-white shadow-lg shadow-slate-900/10" : "text-slate-400 hover:text-slate-900 hover:bg-white"
                )}
              >
-               <List size={13} />
-               <span>Database</span>
+               <List size={14} />
+               <span className="hidden sm:inline">Data_Stream</span>
              </button>
-           </div>
-           
-           <div className="flex items-center gap-5">
-              <button 
-                onClick={() => setShowOverdueOnly(!showOverdueOnly)}
-                className={cn(
-                  "h-11 px-6 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-3 border",
-                  showOverdueOnly 
-                    ? "bg-rose-600 text-white border-transparent shadow-lg shadow-rose-600/30 animate-pulse" 
-                    : "bg-white text-slate-400 border-slate-100 hover:border-rose-200 hover:text-rose-600"
-                )}
-              >
-                <Clock size={14} className={showOverdueOnly ? "text-white" : "text-rose-400"} />
-                <span>Cảnh báo quá hạn {bugs.filter(b => b.status !== 'done' && b.dueDate && new Date(b.dueDate) < new Date()).length > 0 && `(${bugs.filter(b => b.status !== 'done' && b.dueDate && new Date(b.dueDate) < new Date()).length})`}</span>
-              </button>
-
-              <div className="relative group">
-                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within:text-indigo-600 transition-colors" />
-                 <input 
-                   type="text" placeholder="Tìm kiếm tài liệu..." value={searchTerm}
-                   onChange={(e) => setSearchTerm(e.target.value)}
-                   className="h-11 bg-slate-50 border border-slate-100 rounded-2xl pl-11 pr-6 text-xs font-bold text-slate-900 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 transition-all w-72 outline-none placeholder:text-slate-300 font-mono"
-                 />
-              </div>
-
-              {isAdmin && (
-                <button 
-                  onClick={() => setShowTeamManagement(true)}
-                  className="h-11 px-6 flex items-center gap-3 bg-white border border-slate-100 rounded-[1.25rem] hover:bg-slate-50 hover:border-indigo-300 transition-all text-[9px] font-black text-slate-600 uppercase tracking-widest shadow-sm active:scale-95"
-                >
-                  <Shield size={14} className="text-indigo-400" />
-                  Security Matrix
-                </button>
-              )}
            </div>
         </div>
 
-        <button 
-          onClick={() => setShowQuickAdd(true)}
-          className="h-12 px-8 bg-indigo-600 text-white rounded-[1.5rem] text-[10px] font-black hover:bg-indigo-700 transition-all flex items-center gap-3 shadow-2xl shadow-indigo-600/30 active:scale-95 uppercase tracking-[0.2em] border-b-4 border-indigo-800"
-        >
-           <Plus size={16} strokeWidth={3} /> Khởi tạo ngay
-        </button>
+        <div className="flex items-center gap-3 md:gap-6 w-full md:w-auto overflow-x-auto no-scrollbar pb-3 md:pb-0">
+          <button 
+            onClick={() => setShowOverdueOnly(!showOverdueOnly)}
+            className={cn(
+              "h-10 md:h-14 px-5 md:px-8 rounded-2xl text-[8px] md:text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-3 border shrink-0 italic",
+              showOverdueOnly 
+                ? "bg-rose-500 text-white border-transparent shadow-2xl shadow-rose-500/20 animate-pulse" 
+                : "bg-white text-slate-400 border-slate-100 hover:border-rose-300 hover:text-rose-600 hover:bg-rose-50/10"
+            )}
+          >
+            <Clock size={14} className={showOverdueOnly ? "text-white" : "text-rose-400"} />
+            <span className="whitespace-nowrap">Overdue {bugs.filter(b => b.status !== 'done' && b.dueDate && new Date(b.dueDate) < new Date()).length > 0 && `:: 0${bugs.filter(b => b.status !== 'done' && b.dueDate && new Date(b.dueDate) < new Date()).length}`}</span>
+          </button>
+
+          <div className="relative group shrink-0 self-center">
+             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-brand-500 transition-colors" />
+             <input 
+               type="text" placeholder="Matrix_Search..." value={searchTerm}
+               onChange={(e) => setSearchTerm(e.target.value)}
+               className="h-10 md:h-14 bg-slate-50 border border-slate-100 rounded-2xl pl-12 pr-6 text-[10px] md:text-sm font-bold text-slate-950 focus:bg-white focus:border-brand-500 transition-all w-32 md:w-72 outline-none font-mono italic"
+             />
+          </div>
+
+          <button 
+            onClick={() => setShowQuickAdd(true)}
+            className="h-10 md:h-14 px-6 md:px-10 bg-slate-950 text-white rounded-2xl text-[9px] md:text-[11px] font-black hover:bg-brand-600 hover:translate-y-[-2px] transition-all flex items-center gap-3 shadow-2xl shadow-slate-950/20 active:translate-y-[1px] uppercase tracking-widest md:tracking-[0.3em] italic group"
+          >
+             <Plus size={16} strokeWidth={3} className="group-hover:rotate-90 transition-transform duration-500" /> 
+             <span className="hidden sm:inline">DEPLOY_NODE</span>
+          </button>
+        </div>
       </div>
 
       <AnimatePresence>
@@ -562,16 +540,16 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
               animate={{ x: 0, opacity: 1 }} 
               exit={{ x: '100%', opacity: 0 }}
               transition={{ type: 'spring', damping: 30, stiffness: 200 }}
-              className="relative w-full max-w-4xl h-[90vh] bg-white rounded-[3rem] shadow-5xl overflow-hidden border border-slate-100 flex flex-col"
+              className="relative w-full max-w-4xl h-[95vh] md:h-[90vh] bg-white rounded-t-3xl md:rounded-[3rem] shadow-5xl overflow-hidden border border-slate-100 flex flex-col mt-auto md:mt-0"
             >
-              <div className="px-12 h-28 border-b border-slate-50 flex items-center justify-between bg-white shrink-0">
-                <div className="flex items-center gap-6">
-                   <div className="w-14 h-14 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-xl shadow-indigo-600/20">
-                     <Shield size={28} />
+              <div className="px-6 md:px-12 h-24 md:h-28 border-b border-slate-50 flex items-center justify-between bg-white shrink-0">
+                <div className="flex items-center gap-4 md:gap-6">
+                   <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-xl shadow-indigo-600/20">
+                     <Shield size={20} md:size={28} />
                    </div>
                    <div>
-                     <h2 className="text-xl font-black text-slate-900 uppercase tracking-[0.2em]">Cơ sở dữ liệu nhân sự</h2>
-                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1 opacity-60">Control Panel / Security Matrix v4.0</p>
+                     <h2 className="text-sm md:text-xl font-bold text-slate-900 uppercase tracking-widest md:tracking-[0.2em]">Cơ sở dữ liệu nhân sự</h2>
+                     <p className="text-[8px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1 opacity-60">Control Panel / Security v4.0</p>
                    </div>
                 </div>
                 <button 
@@ -582,36 +560,36 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-12 space-y-6 custom-scrollbar bg-slate-50/30">
+              <div className="flex-1 overflow-y-auto p-6 md:p-12 space-y-4 md:space-y-6 custom-scrollbar bg-slate-50/30">
                 <div className="grid grid-cols-1 gap-4">
                   {userProfiles.map(profile => {
                     const isGlobalAdmin = profile.email === 'jokerducanh@gmail.com';
                     return (
-                      <div key={profile.userId} className="group p-8 bg-white border border-slate-100 rounded-[2.5rem] hover:border-indigo-400/30 hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-500">
-                         <div className="flex items-center gap-10">
-                           <div className="flex items-center gap-6 w-72 shrink-0">
+                      <div key={profile.userId} className="group p-6 md:p-8 bg-white border border-slate-100 rounded-3xl md:rounded-[2.5rem] hover:border-indigo-400/30 hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-500">
+                         <div className="flex flex-col md:flex-row md:items-center gap-6 md:gap-10">
+                           <div className="flex items-center gap-4 md:gap-6 w-full md:w-72 shrink-0">
                              <div className="relative">
                                <img src={profile.photoURL} alt="" className={cn(
-                                 "w-16 h-16 rounded-[1.5rem] shadow-xl border-4 border-white transition-transform group-hover:scale-105 duration-500",
+                                 "w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-[1.5rem] shadow-xl border-4 border-white",
                                  isGlobalAdmin && "ring-4 ring-amber-400/20"
                                )} />
                                {isGlobalAdmin && (
-                                 <div className="absolute -top-2 -right-2 w-7 h-7 bg-amber-400 rounded-lg flex items-center justify-center text-white shadow-lg border-2 border-white">
-                                   <Shield size={12} fill="currentColor" />
+                                 <div className="absolute -top-2 -right-2 w-6 h-6 md:w-7 md:h-7 bg-amber-400 rounded-lg flex items-center justify-center text-white shadow-lg border-2 border-white">
+                                   <Shield size={10} md:size={12} fill="currentColor" />
                                  </div>
                                )}
                              </div>
                              <div className="min-w-0">
-                               <div className="text-base font-black text-slate-900 group-hover:text-indigo-600 transition-colors uppercase tracking-tight truncate">{profile.displayName}</div>
-                               <div className="text-[9px] font-bold text-slate-400 truncate uppercase mt-1 tracking-widest font-mono opacity-50">{profile.email}</div>
+                               <div className="text-sm md:text-base font-bold text-slate-900 uppercase tracking-tight truncate">{profile.displayName}</div>
+                               <div className="text-[8px] md:text-[9px] font-bold text-slate-400 truncate mt-1 tracking-widest font-mono opacity-50">{profile.email}</div>
                              </div>
                            </div>
                            
-                           <div className="flex-1 flex flex-wrap gap-3">
+                           <div className="flex-1 flex flex-wrap gap-2 md:gap-3">
                              {isGlobalAdmin ? (
-                               <div className="flex items-center gap-3 px-6 py-3 bg-amber-50 border border-amber-100 rounded-2xl">
-                                 <Shield size={16} className="text-amber-500" />
-                                 <span className="text-[10px] font-black text-amber-700 uppercase tracking-[0.2em]">Cấp quyền tối cao (System Root)</span>
+                               <div className="flex items-center gap-3 px-4 py-2 md:px-6 md:py-3 bg-amber-50 border border-amber-100 rounded-xl md:rounded-2xl">
+                                 <Shield size={14} md:size={16} className="text-amber-500" />
+                                 <span className="text-[8px] md:text-[10px] font-bold text-amber-700 uppercase tracking-widest md:tracking-[0.2em]">Cấp quyền tối cao</span>
                                </div>
                              ) : (
                                (Object.keys(ROLE_CONFIG) as UserRole[]).map(role => {
@@ -621,13 +599,13 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
                                      key={role}
                                      onClick={() => handleUpdateUserRoles(profile.userId, profile.roles || [], role)}
                                      className={cn(
-                                       "px-5 h-11 rounded-[1.25rem] text-[10px] font-black uppercase tracking-[0.15em] flex items-center gap-2 transition-all border outline-none active:scale-95",
+                                       "px-3 md:px-5 h-8 md:h-11 rounded-lg md:rounded-[1.25rem] text-[8px] md:text-[10px] font-bold uppercase tracking-widest md:tracking-[0.15em] flex items-center gap-1.5 md:gap-2 transition-all border outline-none active:scale-95",
                                        isAssigned 
-                                         ? cn(ROLE_CONFIG[role].color, "text-white border-transparent shadow-xl shadow-current/20")
+                                         ? cn(ROLE_CONFIG[role].color, "text-white border-transparent shadow-lg shadow-current/20")
                                          : "bg-slate-50 text-slate-400 border-slate-100 hover:border-indigo-300 hover:text-indigo-600 hover:bg-white"
                                      )}
                                    >
-                                     {isAssigned ? <Check size={14} strokeWidth={3} /> : <div className="w-1 h-1 rounded-full bg-slate-300" />}
+                                     {isAssigned ? <Check size={12} md:size={14} strokeWidth={3} /> : <div className="w-1 h-1 rounded-full bg-slate-300" />}
                                      {ROLE_CONFIG[role].label.split(' / ')[0]}
                                    </button>
                                  );
@@ -635,8 +613,8 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
                              )}
                            </div>
 
-                           <div className="w-40 text-right opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-x-4 group-hover:translate-x-0">
-                              <span className="text-[9px] font-black text-slate-300 uppercase tracking-[0.3em]">Authorized Access_</span>
+                           <div className="hidden md:block w-40 text-right opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-x-4 group-hover:translate-x-0">
+                              <span className="text-[9px] font-bold text-slate-300 uppercase tracking-[0.3em]">Authorized Access_</span>
                            </div>
                          </div>
                       </div>
@@ -645,16 +623,16 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
                 </div>
               </div>
 
-              <div className="px-12 py-8 bg-white border-t border-slate-50 flex items-center justify-between shrink-0">
-                 <div className="flex items-center gap-6">
-                    <div className="flex items-center gap-3">
-                       <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/20" />
-                       <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Protocol Secured</span>
+              <div className="px-6 md:px-12 py-6 md:py-8 bg-white border-t border-slate-50 flex items-center justify-between shrink-0">
+                 <div className="flex items-center gap-4 md:gap-6">
+                    <div className="flex items-center gap-2 md:gap-3">
+                       <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                       <span className="text-[8px] md:text-[10px] font-bold text-slate-900 uppercase tracking-widest">Protocol Secured</span>
                     </div>
-                    <div className="h-4 w-px bg-slate-100" />
-                    <span className="text-[9px] font-bold text-slate-300 font-mono">Encryption: AES-256-Bit_</span>
+                    <div className="hidden sm:block h-4 w-px bg-slate-100" />
+                    <span className="hidden sm:block text-[8px] md:text-[9px] font-bold text-slate-300 font-mono">Encryption: AES-256-Bit_</span>
                  </div>
-                 <div className="text-[10px] font-black text-slate-300 uppercase tracking-[0.4em]">Matrix Personnel Records</div>
+                 <div className="text-[8px] md:text-[10px] font-bold text-slate-300 uppercase tracking-[0.2em] md:tracking-[0.4em]">Matrix Personnel Records</div>
               </div>
             </motion.div>
           </div>
@@ -739,7 +717,7 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
       <div className="flex-1 overflow-y-auto custom-scrollbar">
         <DragDropContext onDragEnd={onDragEnd}>
           {viewMode === 'board' ? (
-            <div className="flex h-full p-12 gap-10 min-w-fit mx-auto justify-center items-start pb-20">
+            <div className="flex h-full p-6 md:p-20 gap-6 md:gap-16 min-w-fit mx-auto justify-start items-start pb-40 overflow-x-auto no-scrollbar">
               {STATUS_COLUMNS.map(col => (
                  <KanbanColumn 
                     key={col.id}
@@ -759,27 +737,30 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
               ))}
             </div>
           ) : (
-            <div className="p-12 max-w-7xl mx-auto w-full space-y-20 pb-32">
+            <div className="p-6 md:p-20 max-w-[1400px] mx-auto w-full space-y-20 md:space-y-32 pb-40">
               {STATUS_COLUMNS.map(col => {
                 const columnTasks = getFilteredTasks(col.id);
                 return (
-                  <div key={col.id} className="space-y-6">
-                    <div className="flex items-center justify-between px-2">
-                       <div className="flex items-center gap-4">
-                          <div className="w-2.5 h-2.5 rounded-full bg-brand-500 shadow-lg shadow-brand-500/20" />
-                          <h3 className="text-sm font-black text-slate-900 uppercase tracking-[0.2em]">{col.label}</h3>
-                          <span className="text-xs font-bold text-slate-300 font-mono">/ {columnTasks.length}</span>
+                  <div key={col.id} className="space-y-10">
+                    <div className="flex items-center justify-between px-6 border-l-2 border-brand-500">
+                       <div className="flex flex-col">
+                          <h3 className="text-xl font-heading font-bold text-slate-900 uppercase tracking-tight leading-none">{col.label}</h3>
+                          <span className="text-[8px] font-bold text-slate-300 font-mono tracking-[0.2em] mt-1.5 ">Matrix_Protocol::Nodes</span>
+                       </div>
+                       <div className="flex items-baseline gap-3">
+                          <span className="text-3xl font-heading font-bold text-slate-900 leading-none">{columnTasks.length.toString().padStart(2, '0')}</span>
+                          <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest font-mono">Nodes</span>
                        </div>
                     </div>
                     
-                    <div className="bg-white rounded-[2rem] border border-slate-200 overflow-hidden shadow-sm">
-                      <div className="grid grid-cols-[48px_1fr_120px_150px_150px_120px] bg-slate-50/50 border-b border-slate-100">
-                        <div className="px-6 py-4"></div>
-                        <div className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Mục tiêu</div>
-                        <div className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Trạng thái</div>
-                        <div className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Mức ưu tiên</div>
-                        <div className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Nhân sự</div>
-                        <div className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Hạn chót</div>
+                    <div className="bg-white/40 backdrop-blur-3xl rounded-[3rem] border border-slate-200/50 overflow-hidden shadow-sm">
+                      <div className="grid grid-cols-[80px_1fr_140px_180px_180px_140px] bg-slate-50 text-slate-400 border-b border-slate-100">
+                        <div className="px-8 py-5 text-[9px] font-bold uppercase tracking-[0.2em] font-mono">ID</div>
+                        <div className="px-8 py-5 text-[9px] font-bold uppercase tracking-[0.2em] font-mono text-slate-600">Objective</div>
+                        <div className="px-8 py-5 text-[9px] font-bold uppercase tracking-[0.2em] font-mono text-center">Status</div>
+                        <div className="px-8 py-5 text-[9px] font-bold uppercase tracking-[0.2em] font-mono">Priority</div>
+                        <div className="px-8 py-5 text-[9px] font-bold uppercase tracking-[0.2em] font-mono">Operator</div>
+                        <div className="px-8 py-5 text-[9px] font-bold uppercase tracking-[0.2em] font-mono text-right">Deadline</div>
                       </div>
 
                       <Droppable droppableId={col.id}>
@@ -788,13 +769,13 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
                             ref={provided.innerRef} 
                             {...provided.droppableProps}
                             className={cn(
-                              "divide-y divide-slate-50 min-h-[80px] transition-all duration-300",
-                              snapshot.isDraggingOver && "bg-brand-50/40"
+                              "divide-y divide-slate-50 min-h-[120px] transition-all duration-700",
+                              snapshot.isDraggingOver && "bg-brand-50/20"
                             )}
                           >
                             {columnTasks.length === 0 ? (
-                              <div className="flex items-center justify-center h-20 text-[10px] font-bold text-slate-300 uppercase tracking-widest italic select-none">
-                                Thả mục vào đây để cập nhật sang {col.label}
+                              <div className="flex items-center justify-center h-40 text-[11px] font-bold text-slate-200 uppercase tracking-[0.5em] select-none">
+                                Thả mục tiêu vào đây để đồng bộ sang {col.label.toUpperCase()}
                               </div>
                             ) : columnTasks.map((bug, index) => (
                                 <DraggableAny 
@@ -814,78 +795,72 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
                                       {...draggableProvided.dragHandleProps}
                                       onClick={() => !draggableSnapshot.isDragging && setSelectedBug(bug)}
                                       className={cn(
-                                        "grid grid-cols-[48px_1fr_120px_150px_150px_120px] items-center hover:bg-slate-50/80 cursor-grab active:cursor-grabbing transition-colors group bg-white",
-                                        draggableSnapshot.isDragging && "shadow-3xl z-[500] relative ring-2 ring-brand-500/20 rounded-xl",
-                                        !canMove && "opacity-70 cursor-default"
+                                        "grid grid-cols-[80px_1fr_140px_180px_180px_140px] items-center hover:bg-slate-50/80 cursor-grab active:cursor-grabbing transition-all duration-500 group bg-white",
+                                        draggableSnapshot.isDragging && "shadow-5xl z-[500] relative ring-2 ring-brand-500 rounded-3xl scale-[1.02]",
+                                        !canMove && "opacity-60 cursor-default"
                                       )}
                                       style={{ ...draggableProvided.draggableProps.style }}
                                     >
-                                      <div className="px-6 py-5">
-                                        <div className="text-slate-200 group-hover:text-brand-400 transition-colors">
-                                          {!canMove ? <Lock size={12} /> : <MoreHorizontal size={14} />}
+                                      <div className="px-8 py-8">
+                                         <span className="text-[10px] font-black text-slate-300 font-mono italic">#{bug.id.slice(-4).toUpperCase()}</span>
+                                      </div>
+                                      <div className="px-8 py-8">
+                                        <div className="flex flex-col gap-2">
+                                          <span className="text-[11px] font-bold text-slate-300 uppercase tracking-[0.2em] font-mono leading-none opacity-0 group-hover:opacity-100 transition-opacity">Task_Header_id</span>
+                                          <span className="text-lg font-heading font-bold text-slate-900 group-hover:text-brand-600 transition-colors uppercase leading-none">{bug.title}</span>
                                         </div>
                                       </div>
-                                      <div className="px-6 py-5">
-                                        <div className="flex flex-col gap-1">
-                                          <span className="text-[9px] font-bold text-slate-300 font-mono tracking-tighter">#{bug.id.slice(-4).toUpperCase()}</span>
-                                          <span className="text-xs font-bold text-slate-900 group-hover:text-brand-600 transition-colors truncate">{bug.title}</span>
+                                      <div className="px-8 py-8 flex justify-center">
+                                        <div className="px-4 py-1.5 bg-slate-50 border border-slate-100 rounded-lg text-[9px] font-black text-slate-400 uppercase tracking-widest font-mono italic">
+                                          {col.label.toUpperCase()}
                                         </div>
                                       </div>
-                                      <div className="px-6 py-5 flex justify-center">
-                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest border border-slate-100 px-2 py-0.5 rounded-lg bg-slate-50/50">
-                                          {col.label}
-                                        </span>
-                                      </div>
-                                      <div className="px-6 py-5">
-                                         <div className="flex items-center gap-3">
+                                      <div className="px-8 py-8">
+                                         <div className="flex items-center gap-4">
                                            <div className={cn(
-                                             "w-1.5 h-1.5 rounded-full shadow-sm",
-                                             bug.priority === 'critical' ? "bg-rose-500" : 
-                                             bug.priority === 'high' ? "bg-amber-500" : "bg-brand-500"
+                                             "w-2 h-2 rounded-full shadow-sm ring-4 ring-transparent",
+                                             bug.priority === 'critical' ? "bg-rose-500 ring-rose-500/10" : 
+                                             bug.priority === 'high' ? "bg-amber-500 ring-amber-500/10" : "bg-emerald-500 ring-emerald-500/10"
                                            )} />
-                                           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.1em]">
-                                             {PRIORITY_CONFIG[bug.priority].label}
+                                           <span className="text-[10px] font-black text-slate-950 uppercase tracking-[0.2em] font-mono italic">
+                                             {PRIORITY_CONFIG[bug.priority].label.split(' / ')[0].toUpperCase()}
                                            </span>
                                          </div>
                                       </div>
-                                      <div className="px-6 py-5">
-                                        <div className="flex items-center gap-3">
+                                      <div className="px-8 py-8">
+                                        <div className="flex items-center gap-4">
                                           {bug.assigneeId ? (
                                             <>
                                               <img 
                                                 src={assignee?.photoURL || `https://api.dicebear.com/7.x/notionists/svg?seed=${bug.assigneeId}`} 
-                                                className="w-7 h-7 rounded-lg bg-slate-50 border border-slate-100 shadow-sm" 
+                                                className="w-10 h-10 rounded-2xl bg-white border border-slate-100 shadow-md group-hover:scale-110 transition-transform duration-500" 
                                                 alt=""
                                               />
                                               <div className="flex flex-col min-w-0">
-                                                <span className="text-[10px] font-bold text-slate-700 uppercase tracking-tighter truncate max-w-[80px]">
+                                                <span className="text-[11px] font-black text-slate-950 uppercase tracking-tighter truncate leading-none">
                                                   {assignee?.displayName}
                                                 </span>
-                                                <div className="flex gap-0.5 mt-0.5">
-                                                  {assignee?.roles?.map(role => (
-                                                    <div key={role} className={cn("w-2 h-0.5 rounded-full", ROLE_CONFIG[role]?.color || "bg-slate-300")} />
-                                                  ))}
-                                                </div>
+                                                <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest mt-1.5 font-mono">Agent_ACTIVE</span>
                                               </div>
                                             </>
                                           ) : (
-                                            <div className="flex items-center gap-2 opacity-30">
-                                              <div className="w-7 h-7 rounded-lg bg-slate-100 border border-slate-200" />
-                                              <span className="text-[9px] font-bold text-slate-400 italic uppercase">- Trống -</span>
+                                            <div className="flex items-center gap-4 opacity-20">
+                                              <div className="w-10 h-10 rounded-2xl bg-slate-100 border border-slate-200" />
+                                              <span className="text-[9px] font-black text-slate-400 italic uppercase font-mono tracking-widest">OFFLINE</span>
                                             </div>
                                           )}
                                         </div>
                                       </div>
-                                    <div className="px-6 py-5 text-right">
+                                    <div className="px-8 py-8 text-right">
                                       {bug.dueDate ? (
                                         <div className={cn(
-                                          "text-[10px] font-bold font-mono tracking-tighter",
-                                          bug.status !== 'done' && new Date(bug.dueDate) < new Date() ? "text-rose-500" : "text-slate-400"
+                                          "text-[10px] font-black font-mono tracking-widest uppercase italic",
+                                          bug.status !== 'done' && new Date(bug.dueDate) < new Date() ? "text-rose-500 underline underline-offset-4" : "text-slate-400"
                                         )}>
-                                          {new Date(bug.dueDate).toLocaleDateString([], { month: 'short', day: 'numeric' })}
+                                          {new Date(bug.dueDate).toLocaleDateString([], { month: 'short', day: 'numeric' }).toUpperCase()}
                                         </div>
                                       ) : (
-                                        <span className="text-[10px] font-bold text-slate-200">---</span>
+                                        <span className="text-[10px] font-black text-slate-100 font-mono tracking-[0.5em]">---</span>
                                       )}
                                     </div>
                                   </div>
@@ -915,78 +890,87 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
               className="absolute inset-0 bg-slate-200/60 backdrop-blur-sm"
             />
             <motion.div 
-              initial={{ x: '100%', opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: '100%', opacity: 0 }} transition={{ type: 'spring', damping: 30, stiffness: 200 }}
-              className="relative w-full max-w-5xl h-[90vh] bg-white rounded-[3rem] shadow-5xl flex flex-col overflow-hidden border border-slate-100"
+              initial={{ x: '100%', opacity: 0 }} 
+              animate={{ x: 0, opacity: 1 }} 
+              exit={{ x: '100%', opacity: 0 }} 
+              transition={{ type: 'spring', damping: 30, stiffness: 200 }}
+              className="relative w-full max-w-5xl h-[95vh] md:h-[90vh] bg-white rounded-t-3xl md:rounded-[2.5rem] shadow-5xl flex flex-col overflow-hidden border border-slate-100 mt-auto md:mt-0"
             >
-              <div className="px-10 h-20 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
-                <div className="flex items-center gap-6">
-                   <div className="flex items-center gap-2">
-                     <div className="w-2 h-2 rounded-full bg-brand-500 animate-pulse" />
-                     <span className="text-[10px] font-black text-slate-900 uppercase tracking-[0.2em] font-mono">Bug-ID: {selectedBug.id.slice(-6).toUpperCase()}</span>
+              <div className="px-6 md:px-12 h-24 md:h-28 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
+                <div className="flex items-center gap-4 md:gap-10">
+                   <div className="flex items-center gap-4">
+                     <div className="w-2.5 h-2.5 rounded-full bg-brand-500 animate-pulse shadow-[0_0_15px_rgba(99,102,241,0.5)]" />
+                     <div className="flex flex-col">
+                       <span className="text-[10px] md:text-[11px] font-black text-slate-950 uppercase tracking-[0.3em] font-mono leading-none">NODE_ID: {selectedBug.id.slice(-6).toUpperCase()}</span>
+                       <span className="text-[8px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono leading-none mt-1.5">v4.2.0::ACTIVE</span>
+                     </div>
                    </div>
-                   <div className="h-3 w-px bg-slate-200" />
-                   <span className="text-[9px] font-bold text-slate-300 uppercase tracking-[0.3em]">System Diagnostics_</span>
+                   <div className="hidden sm:block h-6 w-px bg-slate-100" />
+                   <div className="hidden lg:flex flex-col">
+                     <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.5em] font-mono italic">SyncStatus::Established</span>
+                   </div>
                 </div>
                 <button 
                   onClick={() => setSelectedBug(null)}
-                  className="group w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-50 transition-all"
+                  className="group w-14 h-14 flex items-center justify-center rounded-2xl hover:bg-slate-50 transition-all border border-slate-100"
                 >
-                  <X size={18} className="text-slate-400 group-hover:text-slate-900 group-hover:rotate-90 transition-all duration-300" />
+                  <X size={24} className="text-slate-400 group-hover:text-slate-950 group-hover:rotate-90 transition-all duration-500" />
                 </button>
               </div>
 
-              <div className="flex-1 flex overflow-hidden">
+              <div className="flex-1 flex flex-col md:flex-row overflow-hidden overflow-y-auto md:overflow-hidden">
                 {/* Left: Detail Section */}
-                <div className="flex-1 overflow-y-auto custom-scrollbar p-12 lg:p-16 space-y-12 bg-white">
-                  <div className="space-y-8">
-                    <div className="space-y-4">
+                <div className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-14 lg:p-20 space-y-12 md:space-y-16 bg-white text-left">
+                  <div className="space-y-10">
+                    <div className="space-y-6">
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-3">
                           <div className={cn(
-                            "px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest",
-                            selectedBug.priority === 'critical' ? "bg-rose-500 text-white" : "bg-slate-100 text-slate-500"
+                            "px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border",
+                            selectedBug.priority === 'critical' ? "bg-rose-50 text-rose-600 border-rose-100" : "bg-slate-50 text-slate-500 border-slate-100"
                           )}>
                             {selectedBug.priority.toUpperCase()}
                           </div>
-                          <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">Priority Segment</span>
+                          <div className="w-1.5 h-1.5 rounded-full bg-slate-200" />
+                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Protocol Priority</span>
                         </div>
                         {(isAdmin || canDeleteBug(userProfiles.find(u => u.userId === userId)?.roles)) && (
                           <button 
                             onClick={async () => {
-                              if (confirm('Bạn có chắc chắn muốn xóa thẻ này?')) {
+                              if (confirm('Xác nhận xóa nút dữ liệu?')) {
                                 try {
                                   await deleteDoc(doc(db, 'bugs', selectedBug.id));
                                   setSelectedBug(null);
-                                  toast.success("Đã xóa thẻ thành công");
+                                  toast.success("Nút dữ liệu đã được giải phóng");
                                 } catch (e) {
-                                  toast.error("Lỗi khi xóa thẻ");
+                                  toast.error("Lỗi vận hành hệ thống");
                                 }
                               }
                             }}
-                            className="w-10 h-10 flex items-center justify-center rounded-xl bg-rose-50 text-rose-500 hover:bg-rose-100 transition-all"
+                            className="w-12 h-12 flex items-center justify-center rounded-2xl bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all duration-300 shadow-sm"
                           >
-                            <Trash2 size={18} />
+                            <Trash2 size={20} />
                           </button>
                         )}
                       </div>
                       <div className="relative group/title">
                         <textarea 
                           rows={2}
-                          className="w-full text-4xl font-black text-slate-900 outline-none border-none p-0 bg-transparent tracking-tight leading-tight resize-none placeholder:text-slate-100 disabled:cursor-not-allowed"
-                          placeholder="Nội dung tiêu đề..."
+                          className="w-full text-3xl md:text-5xl font-heading font-black text-slate-950 outline-none border-none p-0 bg-transparent tracking-tighter leading-tight resize-none placeholder:text-slate-100 disabled:cursor-not-allowed uppercase"
+                          placeholder="TIÊU ĐỀ NÚT..."
                           value={selectedBug.title}
                           disabled={!isAdmin && !canEditBug(userProfiles.find(u => u.userId === userId)?.roles, selectedBug.status)}
                           onChange={(e) => handleUpdateBugDetails(selectedBug.id, { title: e.target.value })}
                         />
                         {!isAdmin && !canEditBug(userProfiles.find(u => u.userId === userId)?.roles, selectedBug.status) && (
-                          <div className="absolute -left-6 top-2 text-slate-300 opacity-20 group-hover/title:opacity-100 transition-opacity">
-                            <Lock size={14} />
+                          <div className="absolute -left-8 top-3 text-slate-300 opacity-20 group-hover/title:opacity-100 transition-opacity hidden md:block">
+                            <Lock size={16} />
                           </div>
                         )}
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-8 py-8 border-y border-slate-50">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 md:gap-12 py-10 border-y border-slate-50">
                       <div className="space-y-3">
                         <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Trạng thái</label>
                         <select 
@@ -1086,7 +1070,7 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
                 </div>
 
                 {/* Right: Interaction Log Section */}
-                <div className="w-[400px] border-l border-slate-100 flex flex-col bg-slate-50">
+                <div className="w-full md:w-[320px] lg:w-[400px] border-t md:border-t-0 md:border-l border-slate-100 flex flex-col bg-slate-50">
                   <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-white/50 backdrop-blur-sm">
                     <div className="flex items-center gap-3">
                       <div className="w-1 h-3 bg-brand-500 rounded-full" />

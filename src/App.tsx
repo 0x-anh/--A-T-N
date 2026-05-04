@@ -25,6 +25,34 @@ import { Project, UserProfile, Bug, UserRole, ROLE_CONFIG } from './types';
 
 import { Toaster, toast } from 'sonner';
 
+const MatrixBackground = () => {
+  return (
+    <div className="absolute inset-0 pointer-events-none overflow-hidden select-none z-0 noise-overlay">
+      <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at 1.5px 1.5px, #6366f1 1px, transparent 0)', backgroundSize: '48px 48px' }} />
+      <div className="absolute inset-0 opacity-[0.015]" style={{ backgroundImage: 'linear-gradient(rgba(99, 102, 241, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(99, 102, 241, 0.1) 1px, transparent 1px)', backgroundSize: '128px 128px' }} />
+      
+      <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-brand-500/10 blur-[160px] rounded-full animate-pulse" style={{ animationDuration: '8s' }} />
+      <div className="absolute bottom-[-20%] right-[-10%] w-[70%] h-[70%] bg-violet-600/5 blur-[200px] rounded-full" />
+      
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 0.15 }}
+        transition={{ duration: 4 }}
+        className="absolute inset-0"
+      >
+        <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-brand-400/50 to-transparent animate-[scan_15s_linear_infinite]" />
+        <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-violet-400/30 to-transparent animate-[scan_25s_linear_infinite] [animation-delay:7s]" />
+      </motion.div>
+
+      {/* TECHNICAL OVERLAY DECORATIONS */}
+      <div className="absolute top-10 left-10 micro-label opacity-20 hidden md:block">LATENCY::0.002MS</div>
+      <div className="absolute top-10 right-10 micro-label opacity-20 hidden md:block">UPTIME::99.98%</div>
+      <div className="absolute bottom-10 left-10 micro-label opacity-20 hidden md:block">ENCRYPTION::AES_256</div>
+      <div className="absolute bottom-10 right-10 micro-label opacity-20 hidden md:block">NODE::DISTRIBUTED_TX</div>
+    </div>
+  );
+};
+
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -85,7 +113,6 @@ export default function App() {
       where('members', 'array-contains', user.uid),
       orderBy('createdAt', 'desc')
     );
-    
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const projList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Project[];
       setProjects(projList);
@@ -366,257 +393,286 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }} className="w-10 h-10 border-4 border-brand-500 border-t-transparent rounded-full shadow-2xl shadow-brand-500/10" />
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4">
+        <div className="w-8 h-8 relative">
+          <motion.div 
+            animate={{ rotate: 360 }} 
+            transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }} 
+            className="w-full h-full border border-slate-200 border-t-slate-900 rounded-full" 
+          />
+        </div>
+        <span className="text-[9px] font-bold text-slate-300 uppercase tracking-[0.3em] animate-pulse">Zenith System Init</span>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col font-sans">
-      <Toaster position="top-right" richColors />
-      
+    <div className="min-h-screen font-sans noise-overlay">
       <AnimatePresence mode="wait">
         {!user ? (
-          <motion.div key="landing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="w-full min-h-screen bg-[#FBFBFE]">
-            <nav className="fixed top-0 left-0 right-0 h-20 flex items-center justify-between px-10 lg:px-20 z-[100] bg-white/80 backdrop-blur-3xl border-b border-slate-200/60">
-               <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 bg-brand-500 text-white flex items-center justify-center rounded-xl shadow-lg shadow-brand-500/20">
-                     <Orbit size={18} strokeWidth={2.5} />
+          <motion.div key="landing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="w-full min-h-screen bg-white relative overflow-hidden">
+            <MatrixBackground />
+            <div className="absolute inset-0 pattern-zenith opacity-[0.6]" />
+            <nav className="fixed top-0 left-0 right-0 h-20 md:h-24 flex items-center justify-between px-6 lg:px-32 z-[100] bg-white/40 backdrop-blur-3xl border-b border-slate-200/30">
+               <div className="flex items-center gap-4 group cursor-pointer">
+                  <div className="w-10 h-10 bg-slate-950 text-white flex items-center justify-center rounded-xl shadow-2xl shadow-slate-950/20 group-hover:rotate-12 transition-transform duration-700">
+                     <Orbit size={24} strokeWidth={2.5} />
                   </div>
                   <div className="flex flex-col">
-                     <span className="text-sm font-bold text-slate-900 tracking-widest uppercase font-mono">Linebase</span>
-                     <span className="text-[9px] font-bold text-brand-500/50 uppercase tracking-[0.2em] font-mono">V2.0.4</span>
+                    <span className="text-xl font-heading font-extrabold text-slate-950 tracking-[-0.06em] uppercase leading-none">Zenith</span>
+                    <span className="text-[8px] font-bold text-brand-600 uppercase tracking-[0.3em] font-mono leading-none mt-1.5 opacity-80">Protocol_v4.2</span>
                   </div>
                </div>
-               <div className="flex items-center gap-8">
-                 <button onClick={() => handleLogin()} className="text-[11px] font-bold text-slate-500 hover:text-brand-600 transition-colors uppercase tracking-widest">Đăng nhập</button>
+
+               <div className="hidden lg:flex items-center gap-12">
+                 <div className="flex items-center gap-10">
+                   <button className="text-[9px] font-bold text-slate-400 hover:text-slate-950 transition-all uppercase tracking-[0.3em] font-mono">Reference_</button>
+                   <button className="text-[9px] font-bold text-slate-400 hover:text-slate-950 transition-all uppercase tracking-[0.3em] font-mono">Nodes_</button>
+                 </div>
+                 <div className="w-px h-6 bg-slate-100" />
+                 <div className="flex items-center gap-8">
+                   <button onClick={() => handleLogin()} className="text-[9px] font-bold text-slate-500 hover:text-slate-950 transition-all uppercase tracking-[0.3em] font-mono">Access_</button>
+                   <button onClick={() => handleLogin()} className="h-11 px-8 bg-slate-900 text-white rounded-xl text-[9px] font-bold uppercase tracking-[0.2em] font-mono hover:bg-brand-600 hover:shadow-lg hover:shadow-brand-500/10 active:scale-95 transition-all duration-300">Deploy_System</button>
+                 </div>
                </div>
             </nav>
 
-            <main className="pt-40 lg:pt-52 px-10 lg:px-20 max-w-7xl mx-auto flex flex-col technical-grid min-h-screen">
-               <div className="grid grid-cols-1 lg:grid-cols-12 gap-20 items-center">
-                 <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }} className="lg:col-span-7 space-y-12 text-left">
-                    <div className="inline-flex items-center gap-3">
-                      <div className="h-2 w-2 rounded-full bg-brand-500 shadow-[0_0_10px_rgba(139,92,246,0.5)]" />
-                      <span className="text-[11px] font-bold text-brand-400 uppercase tracking-[0.3em] font-mono">Công_cụ_không_gian_tự_trị</span>
+            <main className="relative pt-32 lg:pt-60 px-6 lg:px-32 max-w-[1400px] mx-auto flex flex-col min-h-screen">
+               <div className="flex flex-col items-center text-center space-y-20">
+                 <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }} className="space-y-12 max-w-5xl">
+                    <div className="inline-flex items-center gap-3 px-4 py-2 rounded-xl bg-slate-50 border border-slate-100 text-slate-400 text-[8px] font-bold uppercase tracking-[0.4em] font-mono shadow-sm">
+                      <div className="h-1 w-1 rounded-full bg-brand-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
+                      Zenith_Matrix::Core_v4.2.1
                     </div>
                     
-                    <h1 className="text-7xl lg:text-[7.5rem] font-bold tracking-tighter text-slate-900 leading-[0.9] font-sans">
-                      Điều hành <br />
-                      <span className="text-brand-500 italic">Ma trận.</span>
+                    <h1 className="text-6xl md:text-8xl lg:text-[10rem] font-heading font-extrabold tracking-[-0.07em] text-slate-900 leading-[0.85] uppercase">
+                       Precision <br />
+                       <span className="text-brand-600 relative inline-block">
+                         Operating
+                         <motion.div 
+                           className="absolute -bottom-2 left-0 w-full h-1.5 bg-brand-500/10"
+                           initial={{ width: 0 }}
+                           animate={{ width: '100%' }}
+                           transition={{ duration: 1.5, delay: 0.5 }}
+                         />
+                       </span> <br />
+                       System.
                     </h1>
                     
-                    <p className="text-xl lg:text-2xl text-slate-500 max-w-xl font-medium leading-relaxed tracking-tight border-l-2 border-brand-500/20 pl-8">
-                      Đồng bộ hóa nguồn, nhiệm vụ và telemetry của bạn trong một trung tâm điều khiển độ trung thực cao duy nhất, được thiết kế cho các nhóm tốc độ cao.
+                    <p className="text-xl lg:text-3xl text-slate-500 max-w-3xl mx-auto leading-relaxed tracking-tight font-medium mt-8">
+                       Hệ điều hành quản trị tối ưu cho đội ngũ tinh hoa. <br />
+                       <span className="text-brand-500 font-bold text-xs uppercase tracking-[0.3em] font-mono">Engineering_Intelligence_Suite</span>
                     </p>
 
-                    <div className="flex flex-wrap items-center gap-6 pt-6">
-                       <button onClick={() => handleLogin()} className="btn-precision h-16 px-12 text-base rounded-full hover:scale-105 active:scale-95 transition-all">
-                          Khởi tạo không gian
+                    <div className="flex flex-wrap items-center justify-center gap-8 pt-16">
+                       <button onClick={() => handleLogin()} className="h-16 px-12 bg-slate-950 text-white rounded-2xl text-[11px] font-bold hover:bg-brand-600 transition-all flex items-center gap-5 shadow-2xl shadow-slate-950/20 active:scale-95 uppercase tracking-[0.3em] group duration-500">
+                          Deploy Matrix <ArrowRight size={18} className="group-hover:translate-x-2 transition-transform duration-500" />
                        </button>
-                       <button onClick={() => setShowDocsModal(true)} className="h-16 px-10 border border-slate-200 bg-white text-slate-900 text-[12px] font-bold uppercase tracking-[0.2em] hover:bg-slate-50 transition-all rounded-full flex items-center gap-3">
-                          <Terminal size={16} /> Tài liệu
+                       <button onClick={() => setShowDocsModal(true)} className="h-16 px-12 border border-slate-200 bg-white text-slate-950 text-[11px] font-bold hover:bg-slate-50 transition-all rounded-2xl flex items-center gap-5 uppercase tracking-[0.3em] shadow-sm duration-500">
+                          Technical_Doc
                        </button>
                     </div>
                  </motion.div>
 
-                  <motion.div initial={{ x: 40, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 1, delay: 0.2 }} className="lg:col-span-5 relative">
-                    <div className="surface-precision p-1 bg-white/40 backdrop-blur-3xl border-slate-200">
-                       <div className="bg-white rounded-[1.2rem] overflow-hidden aspect-[4/5] p-12 flex flex-col justify-between border border-slate-100">
-                          <div className="space-y-4">
-                             <div className="w-12 h-12 bg-brand-500 text-white flex items-center justify-center rounded-2xl shadow-2xl shadow-brand-500/20">
-                                <Activity size={24} />
-                             </div>
-                             <h3 className="text-4xl font-bold text-slate-900 leading-tight tracking-tighter">Số liệu hệ thống trực tiếp</h3>
+
+                  <motion.div initial={{ y: 100, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 1.5, delay: 0.6, ease: [0.16, 1, 0.3, 1] }} className="relative w-full max-w-6xl mx-auto">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.15),transparent)] blur-[120px] -z-10" />
+                    <div className="relative p-6 rounded-[5rem] bg-slate-200/20 border border-white shadow-5xl backdrop-blur-xl">
+                       <div className="bg-white rounded-[4.5rem] overflow-hidden aspect-[16/10] p-16 md:p-24 flex flex-col justify-between border border-white shadow-inner relative group">
+                          <div className="absolute inset-0 pattern-zenith opacity-[0.06]" />
+                          <div className="absolute top-0 right-0 p-32 opacity-[0.02] rotate-12 transition-transform duration-1000 group-hover:scale-110 group-hover:rotate-45">
+                             <Orbit size={600} strokeWidth={1} />
                           </div>
-                          <div className="space-y-8">
-                             <div className="h-[4px] w-full bg-slate-100 rounded-full overflow-hidden">
-                                <motion.div animate={{ width: ["10%", "80%", "40%"] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }} className="h-full bg-brand-500 shadow-[0_0_20px_rgba(139,92,246,0.3)]" />
-                             </div>
-                             <div className="flex justify-between items-end">
-                                <div className="space-y-1">
-                                   <div className="micro-label opacity-40">Trạng thái: Hoạt động</div>
-                                   <div className="text-slate-500 text-[10px] font-mono tracking-widest">GIAO_THỨC_TRUYỀN_TIN_OK</div>
+                          <div className="flex justify-between items-start relative z-10 w-full scale-110 md:scale-100 origin-top-left transition-transform duration-700">
+                             <div className="space-y-8">
+                                <div className="w-28 h-28 bg-slate-950 text-white flex items-center justify-center rounded-[2.5rem] shadow-5xl shadow-slate-950/40 group-hover:rotate-12 transition-all duration-700">
+                                   <Cpu size={48} strokeWidth={1.5} className="group-hover:scale-110 transition-transform" />
                                 </div>
-                                <div className="text-slate-900 text-7xl font-sans font-bold tracking-tighter italic">100<span className="text-2xl text-brand-500">%</span></div>
+                                <div className="space-y-4">
+                                  <h3 className="text-4xl font-heading font-extrabold text-slate-900 uppercase tracking-tight leading-none group-hover:text-brand-600 transition-colors">System_Core</h3>
+                                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.4em] font-mono leading-none mt-1 opacity-60">Kernel_Distribution::Node_0x1</p>
+                                </div>
+                             </div>
+                             <div className="px-8 py-3 bg-emerald-50 text-emerald-600 rounded-2xl text-[9px] font-bold uppercase tracking-[0.4em] border border-emerald-100 flex items-center gap-4 shadow-sm relative overflow-hidden transition-colors">
+                                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                                OPERATIONAL::TX_ESTABLISHED
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                             </div>
+                          </div>
+                          
+                          <div className="space-y-24 relative z-10 w-full">
+                             <div className="space-y-10">
+                                <div className="flex justify-between items-end">
+                                   <div className="space-y-6">
+                                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.4em] font-mono leading-none block">Throughput Metrics</span>
+                                     <div className="h-0.5 w-16 bg-brand-500 rounded-full" />
+                                   </div>
+                                   <div className="flex items-baseline gap-4">
+                                     <span className="text-[10rem] font-heading font-extrabold text-slate-900 tracking-[-0.05em] leading-none transition-all duration-700 group-hover:text-brand-600">98.2</span>
+                                     <span className="text-3xl text-slate-300 font-mono font-bold uppercase tracking-tight">Tbps</span>
+                                   </div>
+                                </div>
+                                <div className="h-10 w-full bg-slate-50/80 rounded-[2rem] overflow-hidden border border-slate-200/50 shadow-inner p-2">
+                                   <motion.div animate={{ width: ["94%", "99%", "96%"] }} transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }} className="h-full bg-slate-950 rounded-full shadow-5xl relative overflow-hidden">
+                                      <motion.div animate={{ x: ['-100%', '300%'] }} transition={{ duration: 4, repeat: Infinity, ease: "linear" }} className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                                   </motion.div>
+                                </div>
+                             </div>
+                             
+                             <div className="grid grid-cols-3 gap-12 pt-10 border-t border-slate-100">
+                                <div className="flex flex-col gap-4">
+                                   <div className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.4em] leading-none font-mono">Terminal_Nodes</div>
+                                   <div className="text-6xl font-extrabold text-slate-900 uppercase tracking-tight leading-none group-hover:text-brand-600 transition-colors">4.5K</div>
+                                </div>
+                                <div className="flex flex-col gap-4 border-l border-slate-100 pl-12">
+                                   <div className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.4em] leading-none font-mono">Latency_μs</div>
+                                   <div className="text-6xl font-extrabold text-slate-900 uppercase tracking-tight leading-none group-hover:text-brand-600 transition-colors">0.2</div>
+                                </div>
+                                <div className="flex flex-col gap-4 border-l border-slate-100 pl-12">
+                                   <div className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.4em] leading-none font-mono">Encryption</div>
+                                   <div className="text-6xl font-extrabold text-indigo-500 uppercase tracking-tight leading-none group-hover:text-brand-600 transition-colors">RSA</div>
+                                </div>
                              </div>
                           </div>
                        </div>
                     </div>
-
                  </motion.div>
                </div>
 
-
-
-                <footer className="mt-60 pt-32 pb-20 border-t border-slate-200/60 relative overflow-hidden">
-                  <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-brand-500/20 to-transparent" />
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-20 mb-32">
-                    <div className="lg:col-span-1 space-y-10">
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 bg-brand-500 text-white flex items-center justify-center rounded-xl shadow-2xl shadow-brand-500/20">
-                          <Orbit size={20} strokeWidth={2.5} />
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="text-sm font-bold text-slate-900 tracking-widest uppercase font-mono">Linebase</span>
-                          <span className="text-[10px] font-bold text-brand-500/40 uppercase tracking-[0.2em] font-mono leading-none">Nút_Toàn_Cầu</span>
-                        </div>
+                <footer className="mt-32 pt-20 pb-20 border-t border-slate-100 flex flex-col md:flex-row items-center justify-between gap-10">
+                   <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-slate-950 text-white flex items-center justify-center rounded-lg">
+                         <Orbit size={16} />
                       </div>
-                      <p className="text-[15px] text-slate-500 leading-relaxed font-medium tracking-tight pr-10">
-                        Công cụ không gian làm việc tự động cho các nhóm tốc độ cao. Điều phối sự đồng nhất trên toàn ma trận với độ trễ bằng không.
-                      </p>
-                      <div className="flex items-center gap-5 text-slate-400">
-                        <button onClick={() => toast.info("Relay source active")} className="w-10 h-10 rounded-xl border border-slate-100 flex items-center justify-center hover:text-brand-500 hover:bg-slate-50 hover:border-brand-500/20 transition-all"><Code2 size={18} /></button>
-                        <button onClick={() => toast.info("Comms channel established")} className="w-10 h-10 rounded-xl border border-slate-100 flex items-center justify-center hover:text-brand-500 hover:bg-slate-50 hover:border-brand-500/20 transition-all"><Mail size={18} /></button>
-                        <button onClick={() => toast.info("Telemetry frequency locked")} className="w-10 h-10 rounded-xl border border-slate-100 flex items-center justify-center hover:text-brand-500 hover:bg-slate-50 hover:border-brand-500/20 transition-all"><Activity size={18} /></button>
-                      </div>
-                    </div>
-
-                    {[
-                      { title: "Nền tảng", links: ["Ma trận nhiệm vụ", "Telemetry", "Nhật ký kiểm tra", "Nhân sự"] },
-                      { title: "Mạng lưới", links: ["Trạng thái hệ thống", "Tài liệu hướng dẫn", "Tham chiếu API", "Giao thức bảo mật"] },
-                      { title: "Tài nguyên", links: ["Cộng đồng", "Lịch sử thay đổi", "Hỗ trợ", "Trạng thái"] }
-                    ].map((col, i) => (
-                      <div key={i} className="space-y-8">
-                        <h4 className="micro-label text-slate-900 font-bold tracking-[0.3em] font-mono">{col.title}</h4>
-                        <ul className="space-y-5">
-                          {col.links.map(link => (
-                            <li key={link}>
-                              <button 
-                                onClick={() => {
-                                  if (link === "Tài liệu hướng dẫn") setShowDocsModal(true);
-                                  else if (link === "Ma trận nhiệm vụ") handleLogin('board');
-                                  else if (link === "Telemetry") handleLogin('metrics');
-                                  else if (link === "Nhân sự") handleLogin('members');
-                                  else toast.info(`Đang khởi tạo truyền tin ${link}.`);
-                                }}
-                                className="text-[13px] font-semibold text-slate-500 hover:text-brand-600 transition-all tracking-tight flex items-center gap-3 group"
-                              >
-                                <div className="w-1.5 h-1.5 bg-slate-200 group-hover:bg-brand-500 group-hover:scale-125 transition-all rounded-full" />
-                                {link}
-                              </button>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="flex flex-col md:flex-row items-center justify-between pt-12 border-t border-slate-100 gap-8">
-                    <div className="flex items-center gap-8">
-                      <span className="text-[11px] font-bold text-slate-300 font-mono tracking-[0.2em] uppercase">© 2026 LINEBASE_SYS</span>
-                      <div className="h-4 w-px bg-slate-100 hidden sm:block" />
-                      <span className="text-[11px] font-bold text-slate-300 font-mono tracking-[0.2em] uppercase hidden sm:block">BUILD_HASH: 0x8F2E7DC2</span>
-                    </div>
-                    <div className="flex items-center gap-10">
-                      <button onClick={() => toast.info("Giao thức riêng tư đang hoạt động")} className="text-[11px] font-bold text-slate-400 hover:text-slate-900 uppercase tracking-widest transition-colors font-mono">Quyền riêng tư</button>
-                      <button onClick={() => toast.info("Điều khoản tham gia đã được chấp nhận")} className="text-[11px] font-bold text-slate-400 hover:text-slate-900 uppercase tracking-widest transition-colors font-mono">Điều khoản</button>
-                      <button onClick={() => toast.info("Đồng bộ hóa toàn cầu đang hoạt động")} className="flex items-center gap-3 px-5 py-2 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-bold uppercase tracking-widest border border-emerald-100 shadow-sm shadow-emerald-500/10">
-                        <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                        Hệ_Thống_Vận_Hành
-                      </button>
-                    </div>
-                  </div>
-                </footer>
-             </main>
-          </motion.div>
-        ) : (
-          <div className="flex-1 flex h-screen overflow-hidden bg-slate-50">
-            {/* PRECISION SIDEBAR */}
-            <aside className="w-64 h-full flex flex-col bg-white border-r border-slate-100 relative z-50 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
-               <div className="p-8 pb-12 flex items-center gap-4">
-                  <div className="w-10 h-10 bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-600/20 rounded-[1.25rem]">
-                     <Code2 size={20} strokeWidth={3} />
+                      <span className="text-lg font-heading font-extrabold text-slate-900 tracking-tighter">ZENITH</span>
+                   </div>
+                   <div className="flex items-center gap-12 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+                      <a href="#" className="hover:text-slate-900 transition-colors">Twitter</a>
+                      <a href="#" className="hover:text-slate-900 transition-colors">GitHub</a>
+                      <a href="#" className="hover:text-slate-900 transition-colors">Contact</a>
+                   </div>
+                 </footer>
+              </main>
+           </motion.div>
+         ) : (
+           <motion.div key="dashboard" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex h-screen overflow-hidden bg-white relative">
+            <aside className="hidden md:flex w-80 h-full flex-col bg-white/80 backdrop-blur-3xl border-r border-slate-200/50 relative z-50 overflow-hidden">
+               <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-brand-500/5 to-transparent pointer-events-none" />
+               <div className="p-12 pb-14 flex items-center gap-5 relative">
+                  <div className="w-14 h-14 bg-slate-950 text-white flex items-center justify-center rounded-[1.25rem] shadow-3xl shadow-slate-950/20 rotate-[-8deg] group hover:rotate-0 transition-all duration-700">
+                     <Orbit size={28} strokeWidth={2.5} className="group-hover:animate-spin-slow" />
                   </div>
                   <div className="flex flex-col">
-                     <span className="text-xl font-black text-slate-900 tracking-tight leading-none italic uppercase">Zenith</span>
-                     <span className="text-[8px] font-black text-indigo-400 uppercase tracking-[0.4em] font-mono mt-1 opacity-70">Control_OS</span>
+                    <span className="text-xl font-bold text-slate-950 tracking-[-0.05em] uppercase leading-none group-hover:text-brand-600 transition-colors">ZENITH</span>
+                    <span className="text-[10px] font-bold text-brand-600 uppercase tracking-[0.3em] font-mono mt-1.5 opacity-60">SYSTEM_X</span>
                   </div>
                </div>
 
-               <div className="flex-1 px-4 space-y-1.5 overflow-y-auto custom-scrollbar">
-                  <div className="px-6 mb-4 text-[9px] font-black text-slate-300 uppercase tracking-[0.2em]">Protocol Root</div>
+               <div className="flex-1 px-5 space-y-1 mt-4">
                   {[
-                    { id: 'dashboard', icon: LayoutGrid, label: 'Bảng điều hành' },
-                    { id: 'board', icon: FolderKanban, label: 'Ma trận nhiệm vụ' },
-                    { id: 'metrics', icon: PieChart, label: 'Trung tâm chỉ số' },
-                    { id: 'logs', icon: Activity, label: 'Lịch sử hệ thống' },
+                    { id: 'dashboard', icon: LayoutGrid, label: 'Overview' },
+                    { id: 'board', icon: FolderKanban, label: 'Task Matrix' },
+                    { id: 'metrics', icon: PieChart, label: 'Analytics' },
+                    { id: 'logs', icon: Activity, label: 'System Logs' },
+                    { id: 'members', icon: Users, label: 'Operators' },
                   ].map(item => (
                     <button 
-                      key={item.id}
+                      key={item.id} 
                       onClick={() => setActiveTab(item.id as any)}
                       className={cn(
-                        "flex items-center gap-4 w-full px-6 py-4 rounded-[1.5rem] transition-all duration-300 group outline-none",
+                        "relative flex items-center gap-3.5 w-full px-5 py-3 rounded-xl transition-all duration-300 group outline-none",
                         activeTab === item.id 
-                          ? "bg-slate-900 text-white shadow-xl shadow-slate-900/10" 
-                          : "text-slate-400 hover:text-slate-900 hover:bg-slate-50"
+                          ? "bg-slate-950 text-white shadow-lg shadow-slate-900/10" 
+                          : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                       )}
                     >
                       <item.icon 
-                        size={16} 
-                        strokeWidth={activeTab === item.id ? 3 : 2} 
+                        size={18} 
+                        strokeWidth={activeTab === item.id ? 2.5 : 2}
                         className={cn(
-                          "transition-transform duration-500",
-                          activeTab === item.id ? "scale-110" : "group-hover:scale-110"
+                          "transition-all duration-300",
+                          activeTab === item.id ? "text-brand-400" : "group-hover:translate-x-0.5"
                         )}
                       />
-                      <span className="tracking-[0.15em] uppercase text-[10px] font-black font-mono">{item.label}</span>
+                      <span className="text-[12px] font-semibold uppercase tracking-wide">{item.label}</span>
+                      {activeTab === item.id && (
+                        <motion.div layoutId="activeTabIndicator" className="absolute right-4 w-1 h-1 rounded-full bg-brand-400" />
+                      )}
                     </button>
                   ))}
                </div>
 
-               <div className="p-8 border-t border-slate-50">
-                  <div className="flex items-center gap-4 p-3 bg-slate-50/50 hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 border border-transparent hover:border-slate-100 rounded-[2rem] group cursor-pointer transition-all duration-500">
+               <div className="p-8 mt-auto border-t border-slate-50">
+                  <div className="p-5 bg-slate-50 border border-slate-100 rounded-3xl flex items-center gap-4 group cursor-pointer hover:bg-slate-100/80 transition-all">
                     <div className="relative">
-                      <img className="w-10 h-10 rounded-2xl grayscale group-hover:grayscale-0 transition-all border-2 border-white shadow-md" src={user.photoURL || `https://api.dicebear.com/7.x/notionists/svg?seed=${user.uid}`} alt="" />
-                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full shadow-sm" />
+                      <img className="w-11 h-11 rounded-2xl border-2 border-white shadow-xl group-hover:scale-105 transition-transform" src={user.photoURL || `https://api.dicebear.com/7.x/notionists/svg?seed=${user.uid}`} alt="" />
+                      <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full" />
                     </div>
                     <div className="min-w-0 flex-1">
-                       <div className="text-[10px] font-black text-slate-800 group-hover:text-indigo-600 truncate font-mono uppercase tracking-tighter transition-colors">{user.displayName}</div>
-                       <button onClick={handleLogout} className="text-[8px] font-bold text-slate-400 hover:text-rose-600 transition-colors uppercase tracking-widest mt-0.5">Thoát protocol</button>
+                       <div className="text-[12px] font-bold text-slate-950 truncate uppercase tracking-tight">{user.displayName}</div>
+                       <button onClick={handleLogout} className="text-[9px] font-bold text-slate-400 hover:text-rose-600 transition-colors uppercase tracking-[0.3em] font-mono leading-none">SIGN_OUT</button>
                     </div>
                   </div>
                </div>
             </aside>
+            {/* MOBILE BOTTOM NAVIGATION */}
+            <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-white/90 backdrop-blur-2xl border-t border-slate-100 z-[100] px-4 flex items-center justify-around shadow-[0_-10px_40px_rgba(0,0,0,0.03)] pb-safe">
+               {[
+                 { id: 'dashboard', icon: LayoutGrid },
+                 { id: 'board', icon: FolderKanban },
+                 { id: 'metrics', icon: PieChart },
+                 { id: 'logs', icon: Activity },
+               ].map(item => (
+                 <button 
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id as any)}
+                  className={cn(
+                    "flex flex-col items-center justify-center w-12 h-12 rounded-xl transition-all duration-300",
+                    activeTab === item.id 
+                      ? "bg-slate-900 text-white shadow-lg scale-110 active:scale-95" 
+                      : "text-slate-400"
+                  )}
+                 >
+                   <item.icon size={20} strokeWidth={activeTab === item.id ? 3 : 2} />
+                 </button>
+               ))}
+            </nav>
 
-            <main className="flex-1 overflow-hidden flex flex-col bg-[#FDFDFF]">
-               {/* PRECISION HEADER */}
-               <header className="h-16 px-10 flex items-center justify-between bg-white/40 backdrop-blur-xl relative z-40 border-b border-slate-100">
-                  <div className="flex items-center gap-10">
+            <main className="flex-1 overflow-hidden flex flex-col bg-slate-50 pattern-zenith pb-16 md:pb-0">
+               <header className="h-28 md:h-36 bg-white/80 backdrop-blur-3xl shrink-0 border-b border-slate-100/80 flex items-center justify-between px-8 md:px-14 lg:px-20 sticky top-0 z-[60] shadow-sm">
+                  <div className="flex items-center gap-6">
                     <div className="relative">
                       <button 
                         onClick={() => setShowProjectDropdown(!showProjectDropdown)}
-                        className="flex items-center gap-4 text-[10px] font-black text-slate-400 hover:text-slate-900 transition-all group tracking-[0.2em] uppercase font-mono"
+                        className="flex items-center gap-2 px-3 py-1.5 hover:bg-slate-50 rounded-lg border border-slate-200 transition-all font-sans bg-white shadow-sm"
                       >
-                         <span className="text-indigo-600 opacity-40">Frequency:</span>
-                         <span className="text-slate-900 py-1.5 border-b-2 border-indigo-500/0 hover:border-indigo-500/100 transition-all">{selectedProject?.name || 'SYNCING...'}</span>
-                         <ChevronDown size={14} className={cn("text-slate-300 transition-transform duration-500", showProjectDropdown && "rotate-180")} />
+                         <div className="w-1.5 h-1.5 rounded-full bg-brand-500" />
+                         <span className="text-[11px] font-bold text-slate-900 uppercase tracking-tight">{selectedProject?.name || 'Loading...'}</span>
+                         <ChevronDown size={12} className={cn("text-slate-400 transition-transform", showProjectDropdown && "rotate-180")} />
                       </button>
                       
                       <AnimatePresence>
                          {showProjectDropdown && (
                            <motion.div 
-                             initial={{ opacity: 0, y: 10, scale: 0.95 }} 
-                             animate={{ opacity: 1, y: 0, scale: 1 }} 
-                             exit={{ opacity: 0, y: 10, scale: 0.95 }} 
-                             className="absolute top-12 left-0 w-80 z-[110] bg-white border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-[2.5rem] overflow-hidden p-3"
+                             initial={{ opacity: 0, y: 8 }} 
+                             animate={{ opacity: 1, y: 0 }} 
+                             exit={{ opacity: 0, y: 8 }} 
+                             className="absolute top-full left-0 mt-2 w-56 z-[110] bg-white border border-slate-200 shadow-xl rounded-2xl overflow-hidden p-1.5"
                            >
-                             <div className="px-5 py-4 text-[9px] font-black text-slate-300 uppercase tracking-[0.3em]">Authorized Channels</div>
-                             <div className="space-y-1">
+                             <div className="px-3 py-1.5 text-[9px] font-bold text-slate-400 uppercase tracking-widest">Dự án</div>
+                             <div className="space-y-0.5">
                                {projects.map(p => (
-                                 <button key={p.id} onClick={() => { setSelectedProject(p); setShowProjectDropdown(false); }} className={cn("w-full flex items-center justify-between px-6 py-4 text-[10px] font-mono font-black tracking-[0.1em] uppercase transition-all rounded-[1.5rem]", selectedProject?.id === p.id ? "bg-slate-900 text-white shadow-xl" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900")}>
+                                 <button key={p.id} onClick={() => { setSelectedProject(p); setShowProjectDropdown(false); }} className={cn("w-full flex items-center justify-between px-3 py-2 text-xs font-medium rounded-xl transition-all", selectedProject?.id === p.id ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-50")}>
                                    {p.name}
-                                   {selectedProject?.id === p.id && <div className="w-2 h-2 rounded-full bg-emerald-500" />}
+                                   {selectedProject?.id === p.id && <Check size={12} />}
                                  </button>
                                ))}
-                               <div className="h-px bg-slate-50 my-3 mx-4" />
+                               <div className="h-px bg-slate-100 my-1.5 mx-1.5" />
                                <button 
                                  onClick={() => { setShowProjectModal(true); setShowProjectDropdown(false); }} 
-                                 className="w-full flex items-center gap-4 px-6 py-4 text-[10px] text-indigo-600 font-black tracking-[0.2em] uppercase hover:bg-indigo-50 rounded-[1.5rem] transition-colors"
+                                 className="w-full flex items-center gap-2 px-3 py-2 text-xs text-brand-600 font-semibold hover:bg-brand-50 rounded-xl transition-colors"
                                >
-                                 <Plus size={14} strokeWidth={3} /> New Channel
+                                 <Plus size={14} /> Tạo dự án
                                </button>
                              </div>
                            </motion.div>
@@ -624,305 +680,224 @@ export default function App() {
                       </AnimatePresence>
                     </div>
 
-                    <div className="h-6 w-px bg-slate-100" />
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]" />
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono">Uptime 99.9%</span>
-                      </div>
+                    <div className="h-4 w-px bg-slate-200" />
+                    <div className="flex items-center gap-2">
+                       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{activeTab}</span>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-4">
-                    <button onClick={() => toast.info("Mã hóa truyền tải đang hoạt động. Không có cảnh báo.")} className="w-8 h-8 flex items-center justify-center text-slate-600 hover:text-white transition-all">
-                       <Bell size={14} />
+                    <button onClick={() => setShowInviteModal(true)} className="h-9 px-4 bg-slate-950 text-white rounded-lg text-xs font-bold hover:bg-brand-600 transition-all flex items-center gap-2">
+                       <UserPlus size={14} /> 
+                       <span>Mời</span>
                     </button>
-                    <button 
-                      onClick={() => setShowSettingsModal(true)}
-                      className="w-8 h-8 flex items-center justify-center text-slate-600 hover:text-white transition-all"
-                    >
-                       <Settings size={14} />
-                    </button>
-                    <div className="h-4 w-px bg-white/10" />
-                    <button onClick={() => setShowInviteModal(true)} className="btn-precision h-8 px-4 text-[9px]">
-                       <UserPlus size={12} /> Thêm nhân sự
+                    <button onClick={() => setShowSettingsModal(true)} className="p-2 text-slate-400 hover:text-slate-900 transition-colors">
+                       <Settings size={18} />
                     </button>
                   </div>
                </header>
 
                <div className="flex-1 overflow-auto custom-scrollbar p-6 lg:p-8">
-                 <AnimatePresence mode="wait">
+                   <AnimatePresence mode="wait">
                     {activeTab === 'dashboard' && (
-                       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-12 w-full">
-                        <div className="flex items-end justify-between gap-8">
-                           <div className="space-y-4">
-                              <div className="flex items-center gap-3">
-                                <div className="h-[1px] w-8 bg-brand-500/40" />
-                                <span className="text-[9px] font-bold text-brand-500 uppercase tracking-[0.5em] font-mono">Chỉ_thị_điều_hành_hệ_thống</span>
-                              </div>
-                              <h2 className="text-8xl font-sans font-bold tracking-tighter italic leading-none text-slate-900">
-                                Tổng quan hệ thống
-                              </h2>
-                              <div className="flex items-center gap-6">
-                                <div className="text-slate-500 font-mono text-[10px] tracking-wider uppercase flex items-center gap-2">
-                                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                  Đồng bộ giao thức: hoàn tất
-                                </div>
-                                <div className="h-4 w-[1px] bg-slate-200" />
-                                <div className="flex items-center gap-3 font-mono">
-                                   <div className="flex flex-col">
-                                      <span className="text-[10px] font-black text-slate-900 leading-none">
-                                         {currentTime.toLocaleTimeString('vi-VN', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                                      </span>
-                                      <span className="text-[7px] font-bold text-slate-400 tracking-widest uppercase">Thời_gian_thực</span>
-                                   </div>
-                                   <div className="h-6 w-[1px] bg-slate-100" />
-                                   <div className="flex flex-col">
-                                      <span className="text-[10px] font-black text-slate-900 leading-none">
-                                         {currentTime.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })}
-                                      </span>
-                                      <span className="text-[7px] font-bold text-slate-400 tracking-widest uppercase">Lịch_nhật_ấn</span>
-                                   </div>
-                                </div>
-                              </div>
-                           </div>
-                              <div className="flex items-center gap-3">
-                                 <button onClick={() => setShowProjectModal(true)} className="btn-precision h-12 px-8">
-                                    <Plus size={14} /> Khởi tạo nút
-                                 </button>
-                                 <button onClick={() => setShowSettingsModal(true)} className="h-12 px-8 border border-slate-200 text-[10px] font-bold uppercase tracking-widest hover:bg-slate-50 transition-all">
-                                    Tham số
-                                 </button>
-                              </div>
-                        </div>
-
-                         {urgentTasks.length > 0 && (
-                            <motion.div 
-                              initial={{ opacity: 0, y: -20 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              className="p-10 rounded-[3rem] bg-rose-50 border border-rose-100 relative overflow-hidden mb-12"
-                            >
-                              <div className="absolute top-0 right-0 p-16 opacity-[0.03] text-rose-500 transform translate-x-12 -translate-y-12">
-                                 <AlertTriangle size={280} />
-                              </div>
-                              
-                              <div className="relative space-y-10">
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-6">
-                                    <div className="w-16 h-16 bg-rose-600 text-white rounded-[1.75rem] flex items-center justify-center shadow-2xl shadow-rose-600/30">
-                                      <Clock size={32} className="animate-pulse" strokeWidth={2.5} />
-                                    </div>
-                                    <div>
-                                      <h2 className="text-2xl font-black text-slate-900 uppercase tracking-[0.15em]">Giao thức khẩn cấp: {urgentTasks.length}</h2>
-                                      <p className="text-[10px] font-black text-rose-600 uppercase tracking-[0.3em] mt-1 opacity-80">Hệ thống phát hiện các nút xử lý đã quá thời hạn quy định_</p>
+                         <motion.div 
+                            key="dashboard"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className="space-y-12 pb-24"
+                         >
+                            <div className="space-y-10">
+                                <div className="flex items-center gap-6">
+                                  <div className="w-1 h-8 bg-slate-900 rounded-full" />
+                                  <div className="space-y-0.5">
+                                    <h3 className="text-[10px] font-bold text-slate-900 uppercase tracking-[0.3em] font-mono leading-none">Command_Protocol</h3>
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                      <span className="text-[9px] font-semibold text-slate-500 uppercase tracking-widest font-mono">Telemetry_Sync_Established</span>
                                     </div>
                                   </div>
-                                  <div className="bg-white/50 backdrop-blur-sm border border-rose-100 rounded-2xl px-5 py-3 flex items-center gap-4">
-                                     <div className="w-2 h-2 rounded-full bg-rose-600 animate-ping" />
-                                     <span className="text-[10px] font-black text-rose-600 uppercase tracking-widest font-mono">Status: Priority_Conflict</span>
+                                </div>
+                                <h2 className="text-5xl md:text-7xl lg:text-8xl font-heading font-extrabold tracking-[-0.03em] uppercase leading-[0.9] text-slate-900">
+                                  Command.<br/>Center
+                                </h2>
+                                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-12">
+                                  <p className="text-xl md:text-2xl text-slate-500 font-medium tracking-tight max-w-2xl leading-relaxed">
+                                    Giám sát rơ-le dữ liệu thời gian thực và phân bổ tài nguyên tối ưu cho đội ngũ tinh hoa. 
+                                    <span className="block mt-3 text-[10px] font-bold uppercase tracking-[0.3em] font-mono text-slate-300">System_Core v4.2.1-Alpha</span>
+                                  </p>
+                                  <motion.div 
+                                    className="flex flex-col items-start lg:items-end gap-3 px-8 py-6 bg-white border border-slate-100 rounded-2xl min-w-[280px] shadow-sm overflow-hidden"
+                                  >
+                                     <span className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] font-mono leading-none">Atomic_Clock</span>
+                                     <span className="text-4xl font-heading font-bold text-slate-900 tracking-tight leading-none">{currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                                     <div className="flex items-center gap-2.5 mt-1">
+                                        <div className="w-1 h-1 rounded-full bg-brand-500" />
+                                        <span className="text-[9px] font-bold text-brand-500 uppercase tracking-[0.3em] font-mono">Sync_Active</span>
+                                     </div>
+                                  </motion.div>
+                                </div>
+                              </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                             <StatsCard label="Năng suất" value={`${appStats.resolutionRate}%`} icon={<Cpu />} trend="STABLE" />
+                             <StatsCard label="Xử lý" value={appStats.open} icon={<Activity />} trend="ACTIVE" />
+                             <StatsCard label="Khẩn cấp" value={appStats.critical} icon={<Zap />} trend={appStats.critical > 3 ? "WARNING" : "SAFE"} />
+                             <StatsCard label="Đồng bộ" value={appStats.activeEvents} icon={<Orbit />} trend="SYNC" />
+                          </div>
+
+                          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            <div className="lg:col-span-2 space-y-8">
+                               <section className="bg-white rounded-[2rem] border border-slate-100 p-8 shadow-sm">
+                                  <div className="flex items-center justify-between mb-8">
+                                     <div className="space-y-1">
+                                        <h3 className="text-xs font-bold text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                                           Lịch trình dự án
+                                        </h3>
+                                        <p className="text-[10px] font-medium text-slate-400 uppercase tracking-tight">Timeline vận hành cấp độ Delta</p>
+                                     </div>
+                                     <div className="text-[10px] font-bold text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100 uppercase tracking-widest">{currentTime.toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' })}</div>
                                   </div>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                  {urgentTasks.slice(0, 3).map(task => (
-                                    <div key={task.id} className="p-8 bg-white rounded-[2.5rem] border border-rose-100 shadow-2xl shadow-rose-600/5 group hover:border-rose-400 transition-all duration-500 transform hover:-translate-y-1">
-                                      <div className="flex items-center justify-between mb-6">
-                                        <div className="flex items-center gap-2">
-                                           <div className="w-8 h-8 rounded-xl bg-rose-50 flex items-center justify-center text-rose-600">
-                                              <Activity size={16} />
+                                  
+                                  <div className="grid grid-cols-7 gap-px bg-slate-100 border border-slate-100 rounded-3xl overflow-hidden">
+                                     {['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map(day => (
+                                        <div key={day} className="bg-slate-50 py-3 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest border-r border-slate-100 last:border-0">{day}</div>
+                                     ))}
+                                     {Array.from({ length: 35 }).map((_, i) => {
+                                        const dayNum = i - 2; 
+                                        const isToday = dayNum === currentTime.getDate(); 
+                                        const isCurrentMonth = dayNum > 0 && dayNum <= 30;
+                                        const dateString = `2026-04-${String(dayNum).padStart(2, '0')}`;
+                                        const dayBugs = bugs.filter(b => b.dueDate?.startsWith(dateString));
+                                        
+                                        return (
+                                           <div key={i} className={cn(
+                                              "h-28 p-3 bg-white flex flex-col gap-1 transition-all hover:bg-slate-50/50 relative group/cell",
+                                              !isCurrentMonth && "bg-slate-50/10 opacity-30 pointer-events-none"
+                                           )}>
+                                              <span className={cn(
+                                                 "text-[10px] font-bold font-mono text-slate-200",
+                                                 isToday && "text-brand-600 font-extrabold"
+                                              )}>
+                                                 {dayNum > 0 && dayNum <= 30 ? dayNum : (dayNum <= 0 ? 31 + dayNum : dayNum - 30)}
+                                              </span>
+                                              <div className="space-y-1.5 mt-2">
+                                                 {dayBugs.slice(0, 3).map(bug => (
+                                                   <div key={bug.id} className={cn(
+                                                     "h-1.5 w-full rounded-full",
+                                                     bug.status === 'done' ? "bg-emerald-400/20" : "bg-brand-500/40"
+                                                   )} />
+                                                 ))}
+                                              </div>
                                            </div>
-                                           <span className="text-[10px] font-black text-slate-400 font-mono tracking-widest">#{task.id.slice(-4).toUpperCase()}</span>
-                                        </div>
-                                        <span className="text-[8px] font-black text-white bg-rose-600 px-3 py-1 rounded-full uppercase tracking-tighter shadow-lg shadow-rose-600/20">Quá hạn</span>
-                                      </div>
-                                      <h3 className="text-[15px] font-black text-slate-900 mb-8 line-clamp-2 leading-tight group-hover:text-rose-600 transition-colors">{task.title}</h3>
-                                      <div className="flex items-center justify-between pt-6 border-t border-rose-50">
-                                        <div className="flex items-center gap-3">
-                                           <img src={userProfiles.find(u => u.userId === task.assigneeId)?.photoURL} className="w-8 h-8 rounded-xl ring-4 ring-white shadow-md grayscale group-hover:grayscale-0 transition-all" alt="" />
-                                           <div className="flex flex-col">
-                                              <span className="text-[10px] font-black text-slate-900 uppercase tracking-tighter">{userProfiles.find(u => u.userId === task.assigneeId)?.displayName.split(' ')[0]}</span>
-                                              <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-none">Assignee</span>
+                                        );
+                                     })}
+                                  </div>
+                               </section>
+
+                               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                  <QuickAction title="Khởi tạo mới" desc="Bắt đầu nhiệm vụ hoặc quy trình vận hành Zenith." icon={<Plus />} onClick={() => setShowProjectModal(true)} />
+                                  <QuickAction title="Đội ngũ" desc="Quản lý nhân sự và phân quyền truy cập hệ thống." icon={<Users />} onClick={() => setShowInviteModal(true)} />
+                               </div>
+                            </div>
+
+                            <div className="space-y-8">
+                               <section className="bg-white rounded-[2rem] border border-slate-100 p-8 flex flex-col shadow-sm">
+                                  <div className="flex items-center justify-between mb-10">
+                                     <h3 className="text-[11px] font-bold text-slate-900 uppercase tracking-[0.2em] font-mono">Nhật ký vận hành</h3>
+                                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                                  </div>
+                                  <div className="flex-1 space-y-8">
+                                     {projectLogs.slice(0, 5).map((log, i) => (
+                                        <div key={log.id} className="flex gap-4 group">
+                                           <div className="relative">
+                                              <div className="w-9 h-9 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-brand-600 group-hover:border-brand-100 transition-all">
+                                                 <Orbit size={14} />
+                                              </div>
+                                              {i !== projectLogs.slice(0, 5).length - 1 && <div className="absolute top-9 left-1/2 -translate-x-1/2 w-px h-8 bg-slate-100" />}
+                                           </div>
+                                           <div className="flex-1 min-w-0">
+                                              <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">{log.action}</div>
+                                              <p className="text-[13px] text-slate-600 font-medium leading-tight group-hover:text-slate-950 transition-colors line-clamp-2">{log.details}</p>
+                                              <div className="text-[8px] font-bold text-slate-300 mt-2 font-mono uppercase">{log.createdAt?.toDate ? new Date(log.createdAt.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '...'}</div>
                                            </div>
                                         </div>
-                                        <button 
-                                          onClick={() => {
-                                            setSelectedProject(projects.find(p => p.id === task.projectId) || null);
-                                            setActiveTab('board');
-                                          }}
-                                          className="h-10 px-6 bg-slate-900 text-white rounded-2xl text-[9px] font-black uppercase tracking-widest hover:bg-rose-600 transition-all shadow-xl shadow-slate-900/10 active:scale-95"
-                                        >
-                                           Xử lý ngay
-                                        </button>
-                                      </div>
+                                     ))}
+                                  </div>
+                                  <button onClick={() => setActiveTab('logs')} className="mt-10 w-full py-4 bg-slate-50 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-all rounded-2xl border border-slate-100/50">
+                                     Xem tất cả nhật ký
+                                  </button>
+                               </section>
+
+                               {urgentTasks.length > 0 && (
+                                 <section className="bg-rose-50 border border-rose-100 rounded-[2rem] p-8 space-y-6 relative overflow-hidden group">
+                                    <div className="absolute top-0 right-0 p-6 opacity-[0.05] text-rose-600">
+                                       <AlertTriangle size={80} />
                                     </div>
-                                  ))}
-                                  {urgentTasks.length > 3 && (
-                                    <div 
-                                      onClick={() => setActiveTab('board')}
-                                      className="p-8 bg-rose-100/30 border border-dashed border-rose-300/50 rounded-[2.5rem] flex flex-col items-center justify-center cursor-pointer hover:bg-rose-100/50 transition-all group overflow-hidden relative"
-                                    >
-                                       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(225,29,72,0.05),transparent)] opacity-0 group-hover:opacity-100 transition-opacity" />
-                                       <span className="text-2xl font-black text-rose-600 mb-2">+{urgentTasks.length - 3}</span>
-                                       <span className="text-[10px] font-black text-rose-600 uppercase tracking-[0.2em]">Danh bạ nhiệm vụ quá hạn</span>
-                                       <div className="flex items-center gap-2 mt-4 text-[9px] font-bold text-rose-400 group-hover:text-rose-700 transition-colors">
-                                          Xem tất cả <ArrowRight size={12} />
+                                    <div className="relative">
+                                       <div className="flex items-center justify-between mb-6">
+                                          <h3 className="text-xs font-bold text-rose-600 uppercase tracking-widest leading-none">Nhiệm vụ trễ hạn</h3>
+                                          <div className="px-2 py-0.5 bg-rose-600 text-white rounded text-[8px] font-bold uppercase">{urgentTasks.length} NODES</div>
                                        </div>
+                                       <div className="space-y-3">
+                                          {urgentTasks.slice(0, 3).map(task => (
+                                            <div key={task.id} onClick={() => setActiveTab('board')} className="bg-white p-4 rounded-2xl border border-rose-200/50 shadow-sm cursor-pointer hover:border-rose-400 transition-all transform hover:-translate-y-0.5">
+                                               <h4 className="text-[12px] font-bold text-slate-900 line-clamp-1 mb-1 group-hover:text-rose-600 transition-colors">{task.title}</h4>
+                                               <div className="flex items-center justify-between text-[8px] font-bold text-slate-400 uppercase tracking-tight">
+                                                  <span className="text-rose-500">QUÁ HẠN</span>
+                                                  <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
+                                               </div>
+                                            </div>
+                                          ))}
+                                       </div>
+                                       <button onClick={() => setActiveTab('board')} className="mt-8 w-full py-4 bg-slate-900 text-white text-[10px] font-bold uppercase tracking-widest rounded-2xl shadow-xl shadow-slate-900/10 active:scale-95 transition-all">
+                                          Xử lý ngay lập tức
+                                       </button>
                                     </div>
-                                  )}
-                                </div>
-                              </div>
-                            </motion.div>
-                         )}
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                           <StatsCard label="Chất lượng hệ thống" value={`${appStats.resolutionRate}%`} icon={<Cpu size={14} />} trend="ĐỒNG BỘ" />
-                           <StatsCard label="Nút đang xử lý" value={appStats.open} icon={<Activity size={14} />} trend="ĐANG XỬ LÝ" />
-                           <StatsCard label="Chỉ số quan trọng" value={appStats.critical} icon={<Zap size={14} />} trend={appStats.critical > 3 ? "CẢNH BÁO" : "ỔN ĐỊNH"} />
-                           <StatsCard label="Sự kiện hoạt động" value={appStats.activeEvents} icon={<Orbit size={14} />} trend="ĐANG HOẠT ĐỘNG" />
-                        </div>
-
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                           <div className="lg:col-span-2 surface-precision p-5">
-                              <div className="flex items-center justify-between mb-4">
-                                 <div className="space-y-0.5">
-                                    <h3 className="text-xs font-black tracking-widest text-slate-900 uppercase">Lịch trình</h3>
-                                    <p className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">Đồng bộ Ma trận</p>
-                                 </div>
-                                 <div className="flex items-center gap-2">
-                                    {bugs.filter(b => b.dueDate && b.status !== 'done' && new Date(b.dueDate) < new Date()).length > 0 && (
-                                      <div className="px-2 py-0.5 bg-rose-500 text-white rounded-[2px] text-[8px] font-black uppercase tracking-widest animate-pulse">
-                                        TRỄ ({bugs.filter(b => b.dueDate && b.status !== 'done' && new Date(b.dueDate) < new Date()).length})
-                                      </div>
-                                    )}
-                                    <div className="px-2 py-0.5 bg-slate-50 border border-slate-100 rounded-[2px] text-[8px] font-bold text-slate-400 font-mono italic">SYNC: OK</div>
-                                 </div>
-                              </div>
-
-                              <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm">
-                                 <div className="grid grid-cols-7 border-b border-slate-100">
-                                    {['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map(day => (
-                                       <div key={day} className="py-4 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono">{day}</div>
-                                    ))}
-                                 </div>
-                                 <div className="grid grid-cols-7 bg-slate-50/30">
-                                    {Array.from({ length: 35 }).map((_, i) => {
-                                       const dayNum = i - 2; 
-                                       const isToday = dayNum === 28; 
-                                       const isCurrentMonth = dayNum > 0 && dayNum <= 30;
-                                       const dateString = `2026-04-${String(dayNum).padStart(2, '0')}`;
-                                       const dayBugs = bugs.filter(b => b.dueDate?.startsWith(dateString));
-                                       const hasOverdue = dayBugs.some(b => b.status !== 'done' && b.dueDate && new Date(b.dueDate) < new Date());
-                                       
-                                       return (
-                                          <div key={i} className={cn(
-                                             "h-20 p-2 border-r border-b border-slate-100 transition-all hover:bg-white group relative overflow-y-auto custom-scrollbar flex flex-col",
-                                             !isCurrentMonth && "opacity-20 bg-slate-50/50",
-                                             hasOverdue && isCurrentMonth && "bg-rose-50/20 transition-colors"
-                                          )}>
-                                             <span className={cn(
-                                                "text-[10px] font-bold font-mono shrink-0",
-                                                isToday ? "w-6 h-6 rounded-full bg-brand-500 text-white flex items-center justify-center -ml-1 -mt-1 shadow-lg shadow-brand-500/30" : "text-slate-400"
-                                             )}>
-                                                {dayNum > 0 && dayNum <= 30 ? dayNum : (dayNum <= 0 ? 31 + dayNum : dayNum - 30)}
-                                             </span>
-                                             
-                                             <div className="mt-2 space-y-1.5 flex-1">
-                                               {dayBugs.map(bug => {
-                                                  const isOverdue = bug.status !== 'done' && bug.dueDate && new Date(bug.dueDate) < new Date();
-                                                  const bugTime = bug.dueDate?.includes('T') ? new Date(bug.dueDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-                                                  return (
-                                                   <div 
-                                                     key={bug.id} 
-                                                     onClick={() => setActiveTab('board')}
-                                                     className={cn(
-                                                       "p-2 rounded-lg text-[9px] font-bold uppercase tracking-tighter truncate border cursor-pointer hover:scale-[1.02] transition-transform shadow-sm",
-                                                       isOverdue ? "bg-rose-500 border-rose-600 text-white shadow-rose-200" : (
-                                                         bug.priority === 'critical' ? "bg-red-50 border-red-100 text-red-600" :
-                                                         bug.priority === 'high' ? "bg-orange-50 border-orange-100 text-orange-600" :
-                                                         bug.priority === 'medium' ? "bg-blue-50 border-blue-100 text-blue-600" :
-                                                         "bg-emerald-50 border-emerald-100 text-emerald-600"
-                                                       )
-                                                     )}
-                                                   >
-                                                     {isOverdue && <span className="mr-1">⚠️</span>}
-                                                     {bugTime && <span className="mr-1 opacity-50">[{bugTime}]</span>}
-                                                     {bug.title}
-                                                   </div>
-                                                  );
-                                                })}
-                                             </div>
-                                          </div>
-                                       );
-                                    })}
-                                 </div>
-                              </div>
-                           </div>
-
-                           <div className="surface-precision p-5 flex flex-col">
-                              <div className="mb-4">
-                                 <h3 className="text-xs font-black tracking-widest text-slate-900 uppercase">Dòng tin</h3>
-                                 <p className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter mt-0.5">Giám sát luồng</p>
-                              </div>
-                              <div className="flex-1 space-y-2">
-                                 {projectLogs.slice(0, 5).map((log, i) => (
-                                    <div key={log.id} className="flex gap-2 group">
-                                       <div className="flex flex-col items-center">
-                                          <div className="w-1 h-1 rounded-none bg-slate-200 group-hover:bg-brand-500 transition-colors" />
-                                          {i !== projectLogs.slice(0, 5).length - 1 && <div className="w-[1px] flex-1 bg-slate-100 my-0.5" />}
-                                       </div>
-                                       <div className="space-y-0 pb-1">
-                                          <div className="text-[7px] font-bold text-slate-400 tracking-widest font-mono uppercase group-hover:text-slate-900 leading-none">Op_{log.action}</div>
-                                          <p className="text-[10px] text-slate-600 font-medium leading-tight group-hover:text-slate-900 transition-colors line-clamp-1">{log.details}</p>
-                                          <div className="text-[6px] font-bold text-slate-300 font-mono uppercase leading-none">{log.createdAt?.toDate ? new Date(log.createdAt.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '...'}</div>
-                                       </div>
-                                    </div>
-                                 ))}
-                              </div>
-                              <button onClick={() => setActiveTab('logs')} className="w-full h-7 border border-slate-100 text-[8px] font-bold uppercase tracking-[0.2em] text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all mt-4">
-                                 Mở rộng
-                              </button>
-                           </div>
-                        </div>
-                     </motion.div>
-                  )}
+                                 </section>
+                               )}
+                            </div>
+                          </div>
+                        </motion.div>
+                     )}
 
                     {activeTab === 'metrics' && (
-                      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-20 w-full">
-                        <div className="space-y-6">
+                      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-16 w-full max-w-7xl mx-auto">
+                        <header className="space-y-6">
                            <div className="flex items-center gap-4">
-                              <div className="h-0.5 w-12 bg-brand-500/30 rounded-full" />
-                              <span className="text-[10px] font-black text-brand-600 uppercase tracking-[0.5em] font-mono">Phân tích Telemetry</span>
+                              <div className="h-0.5 w-12 bg-slate-950 rounded-full" />
+                              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em] font-mono">Operations Analytics Registry</span>
                            </div>
-                           <h2 className="text-6xl font-bold tracking-tighter text-slate-900">Hiệu suất hệ thống</h2>
-                           <p className="text-lg text-slate-500 font-medium tracking-tight max-w-2xl">Trực quan hóa độ trung thực cao của lưu lượng hệ thống và phân phối giao thức đa kênh.</p>
+                           <h2 className="text-4xl md:text-8xl font-heading font-extrabold tracking-tighter uppercase leading-[0.8] text-slate-950">Chỉ số phân tích</h2>
+                           <p className="text-lg md:text-xl text-slate-500 font-medium tracking-tight max-w-2xl leading-relaxed">Trực quan hóa hiệu suất vận hành hệ thống Zenith thông qua các rơ-le dữ liệu thời gian thực.</p>
+                        </header>
+ 
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-px bg-slate-200 border border-slate-200">
+                           <StatsCard label="Chính xác" value={`${appStats.resolutionRate}%`} icon={<CheckCircle2 size={16} />} trend="ĐỒNG BỘ" />
+                           <StatsCard label="Khối lượng" value={appStats.total} icon={<Rocket size={16} />} trend="TUYẾN TÍNH" />
+                           <StatsCard label="Ghi chép" value={events.length} icon={<Globe size={16} />} trend="ĐÃ GHI" />
                         </div>
  
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-slate-200 border border-slate-200">
-                           <StatsCard label="Hiệu suất chính xác" value={`${appStats.resolutionRate}%`} icon={<CheckCircle2 size={16} />} trend="ĐỒNG BỘ" />
-                           <StatsCard label="Khối lượng nút" value={appStats.total} icon={<Rocket size={16} />} trend="TUYẾN TÍNH" />
-                           <StatsCard label="Sự kiện vận hành" value={events.length} icon={<Globe size={16} />} trend="ĐÃ GHI LẠI" />
-                        </div>
- 
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                           <div className="card-smart h-[520px] flex flex-col bg-white border border-slate-200 p-12 rounded-3xl overflow-hidden shadow-sm">
-                             <div className="flex items-center justify-between mb-12">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12">
+                           <div className="card-smart min-h-[350px] md:h-[520px] flex flex-col bg-white border border-slate-200 p-6 md:p-12 rounded-3xl overflow-hidden shadow-sm">
+                             <div className="flex items-center justify-between mb-8 md:mb-12">
                                 <h3 className="text-[11px] font-bold text-slate-900 uppercase tracking-[0.3em] font-mono">Tốc độ giải quyết</h3>
-                                <div className="px-4 py-1.5 bg-slate-50 rounded-xl text-[9px] font-black text-brand-600 tracking-widest border border-slate-100">ALPHA-CHART</div>
+                                <div className="px-3 py-1 bg-slate-50 rounded-xl text-[9px] font-bold text-brand-600 tracking-widest border border-slate-100">ALPHA-CHART</div>
                              </div>
                              <div className="flex-1 w-full translate-x-[-15px]">
                                 <ResponsiveContainer width="100%" height="100%">
                                   <BarChart data={resolutionChartData}>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.03)" />
-                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 900, fill: '#64748b', fontFamily: 'JetBrains Mono' }} dy={10} />
+                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 700, fill: '#64748b', fontFamily: 'JetBrains Mono' }} dy={10} />
                                     <Tooltip cursor={{ fill: 'rgba(0,0,0,0.02)' }} contentStyle={{ backgroundColor: '#fff', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '24px' }} />
-                                    <Bar dataKey="value" fill="#8b5cf6" radius={[10, 10, 0, 0]} barSize={44} />
+                                    <Bar dataKey="value" fill="#8b5cf6" radius={[10, 10, 0, 0]} barSize={34} />
                                   </BarChart>
                                 </ResponsiveContainer>
                              </div>
                            </div>
  
-                           <div className="card-smart h-[520px] flex flex-col items-center p-12 bg-white border border-slate-200 rounded-3xl shadow-sm">
-                             <h3 className="text-[11px] font-bold text-slate-900 uppercase tracking-[0.3em] font-mono mb-10 self-start">Phân bổ ưu tiên</h3>
+                           <div className="card-smart min-h-[400px] md:h-[520px] flex flex-col items-center p-6 md:p-12 bg-white border border-slate-200 rounded-3xl shadow-sm">
+                             <h3 className="text-[11px] font-bold text-slate-900 uppercase tracking-[0.3em] font-mono mb-8 md:mb-10 self-start">Phân bổ ưu tiên</h3>
                              <div className="flex-1 w-full flex items-center justify-center relative">
                                 <ResponsiveContainer width="100%" height="100%">
                                   <RePieChart>
@@ -932,57 +907,59 @@ export default function App() {
                                         { name: 'High', value: bugs.filter(b => b.priority === 'high').length },
                                         { name: 'Medium', value: bugs.filter(b => b.priority === 'medium').length },
                                       ]} 
-                                      innerRadius={110} outerRadius={150} paddingAngle={15} dataKey="value"
-                                      stroke="none"
-                                    >
-                                      <Cell fill="#f43f5e" />
-                                      <Cell fill="#f59e0b" />
-                                      <Cell fill="#8b5cf6" />
-                                    </Pie>
-                                    <Tooltip />
-                                  </RePieChart>
+                                      innerRadius={window.innerWidth < 768 ? 60 : 110} 
+                                      outerRadius={window.innerWidth < 768 ? 90 : 150} 
+                                      paddingAngle={10} dataKey="value"
+                                       stroke="none"
+                                     >
+                                       <Cell fill="#f43f5e" />
+                                       <Cell fill="#f59e0b" />
+                                       <Cell fill="#6366f1" />
+                                     </Pie>
+                                     <Tooltip />
+                                   </RePieChart>
                                 </ResponsiveContainer>
-                                <div className="absolute flex flex-col items-center justify-center gap-1">
-                                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Nodes</span>
-                                   <span className="text-5xl font-black text-slate-950 font-display italic leading-none">{bugs.length}</span>
-                                </div>
-                             </div>
-                           </div>
-                        </div>
-                      </motion.div>
-                    )}
+                                  <div className="absolute flex flex-col items-center justify-center gap-1">
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em]">Payloads</span>
+                                    <span className="text-6xl font-heading font-extrabold text-slate-950 leading-none">{bugs.length}</span>
+                                 </div>
+                              </div>
+                            </div>
+                         </div>
+                       </motion.div>
+                     )}
 
                     {activeTab === 'members' && (
-                      <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="space-y-16 w-full">
+                      <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="space-y-16 w-full max-w-7xl mx-auto">
                         <div className="flex flex-col md:flex-row md:items-end justify-between gap-10">
-                            <div className="space-y-4">
+                            <div className="space-y-6">
                                <div className="flex items-center gap-4">
-                                  <div className="h-0.5 w-12 bg-brand-500/30 rounded-full" />
-                                  <span className="text-[10px] font-black text-brand-600 uppercase tracking-[0.4em] font-mono">Operator Deployment Registry</span>
+                                  <div className="h-0.5 w-12 bg-slate-950 rounded-full" />
+                                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em] font-mono">Operator Deployment Registry</span>
                                </div>
-                               <h2 className="text-6xl font-bold tracking-tighter text-slate-900">System Operators</h2>
-                               <p className="text-lg text-slate-500 font-medium tracking-tight max-w-xl">Comprehensive directory of authorized engine operators assigned to this matrix node.</p>
+                               <h2 className="text-4xl md:text-8xl font-heading font-extrabold tracking-tighter uppercase leading-[0.8] text-slate-900">System Operators</h2>
+                               <p className="text-lg md:text-xl text-slate-500 font-medium tracking-tight max-w-xl leading-relaxed">Directory of authorized engine operators assigned to this matrix node.</p>
                             </div>
-                            <button onClick={() => setShowInviteModal(true)} className="btn-precision h-12 px-8">
-                               <UserPlus size={16} /> Add Member
+                            <button onClick={() => setShowInviteModal(true)} className="h-14 px-10 bg-slate-950 text-white rounded-2xl text-[12px] font-bold hover:bg-brand-600 transition-all flex items-center gap-3 uppercase tracking-widest shadow-xl shadow-slate-950/10">
+                               <UserPlus size={18} /> Add Member
                             </button>
                         </div>
-  
+   
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                             {userProfiles.map((profile) => (
-                              <div key={profile.userId} className="surface-precision flex items-center justify-between group bg-white hover:bg-slate-50 p-8 transition-all duration-500 border-slate-200 hover:border-brand-500/20 relative overflow-hidden shadow-sm">
+                              <div key={profile.userId} className="bg-white border border-slate-100 p-8 rounded-[2.5rem] flex items-center justify-between group hover:border-slate-300 transition-all duration-500 hover:shadow-2xl hover:shadow-slate-200/40 relative overflow-hidden">
                                   <div className="flex items-center gap-8">
                                     <div className="relative">
-                                      <img src={profile.photoURL || `https://api.dicebear.com/7.x/notionists/svg?seed=${profile.userId}`} alt="" className="w-20 h-20 rounded-2xl bg-slate-50 border border-slate-100 shadow-sm transition-all duration-500 group-hover:scale-105" />
-                                      <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-white rounded-xl flex items-center justify-center border border-slate-100 shadow-xl">
-                                        <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]" />
+                                      <img src={profile.photoURL || `https://api.dicebear.com/7.x/notionists/svg?seed=${profile.userId}`} alt="" className="w-24 h-24 rounded-[2rem] bg-slate-50 border border-slate-50 shadow-inner group-hover:scale-105 transition-transform duration-500" />
+                                      <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-white rounded-xl flex items-center justify-center border border-slate-100 shadow-xl">
+                                        <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
                                       </div>
                                     </div>
-                                    <div className="min-w-0">
-                                       <div className="text-xl font-bold text-slate-900 tracking-tight leading-none mb-3 group-hover:text-brand-600 transition-colors">{profile.displayName}</div>
-                                       <div className="flex items-center gap-4 py-2 px-4 bg-slate-50 rounded-xl w-fit border border-slate-100">
-                                          <Mail size={14} className="text-slate-400" />
-                                          <div className="text-[11px] font-black text-slate-400 truncate uppercase tracking-widest font-mono">{profile.email}</div>
+                                 <div className="space-y-4">
+                                       <div className="text-2xl font-heading font-extrabold text-slate-900 tracking-tighter uppercase group-hover:text-brand-600 transition-colors">{profile.displayName}</div>
+                                       <div className="flex items-center gap-3 py-2 px-4 bg-slate-50 rounded-xl w-fit border border-slate-100">
+                                          <Mail size={12} className="text-slate-400" />
+                                          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] font-mono">{profile.email}</div>
                                        </div>
                                     </div>
                                  </div>
@@ -996,7 +973,7 @@ export default function App() {
                                               key={role}
                                               onClick={() => handleUpdateUserRoles(profile.userId, profile.roles || [], role)}
                                               className={cn(
-                                                "px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-1 transition-all border",
+                                                "px-3 py-1 rounded-lg text-[9px] font-bold uppercase tracking-widest flex items-center gap-1 transition-all border",
                                                 isAssigned 
                                                   ? cn(ROLE_CONFIG[role].color, "text-white border-transparent shadow-md shadow-current/10")
                                                   : "bg-white text-slate-300 border-slate-100 hover:border-indigo-300 hover:text-indigo-600"
@@ -1004,12 +981,12 @@ export default function App() {
                                             >
                                               {isAssigned && <Check size={10} />}
                                               {ROLE_CONFIG[role].label.split(' / ')[0]}
-                                            </button>
+                                             </button>
                                           );
-                                        })
+                                       })
                                       ) : (
                                         profile.roles?.map(role => (
-                                          <div key={role} className={cn("px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest text-white", ROLE_CONFIG[role].color)}>
+                                          <div key={role} className={cn("px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-widest text-white", ROLE_CONFIG[role].color)}>
                                             {ROLE_CONFIG[role].label}
                                           </div>
                                         ))
@@ -1041,283 +1018,350 @@ export default function App() {
 
                      {activeTab === 'logs' && (
                       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-16 w-full">
-                        <div className="space-y-4">
+                        <header className="space-y-6">
                            <div className="flex items-center gap-4">
-                              <div className="h-0.5 w-12 bg-brand-500/30 rounded-full" />
-                              <span className="text-[10px] font-black text-brand-600 uppercase tracking-[0.4em] font-mono">System Ledger Index</span>
+                              <div className="h-0.5 w-12 bg-slate-900 rounded-full" />
+                              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em] font-mono">Protocol Event Ledger</span>
                            </div>
-                           <h2 className="text-6xl font-bold tracking-tighter text-slate-900">System Logs</h2>
-                           <p className="text-lg text-slate-500 font-medium tracking-tight max-w-xl">Comprehensive history of system changes and network state transitions.</p>
-                         </div>
+                           <h2 className="text-4xl md:text-8xl font-heading font-extrabold tracking-tighter uppercase leading-[0.8] text-slate-950">System Logs</h2>
+                           <p className="text-lg md:text-xl text-slate-500 font-medium tracking-tight max-w-2xl leading-relaxed">Ghi chép toàn diện các sự kiện hệ thống và quá trình chuyển đổi trạng thái mạng lưới.</p>
+                         </header>
 
-                         <div className="surface-precision overflow-hidden bg-white border border-slate-200 shadow-sm">
-                           <table className="w-full text-left">
-                             <thead>
-                               <tr className="bg-slate-50 border-b border-slate-100">
-                                 <th className="px-8 py-6 micro-label text-slate-400">TIMESTAMP</th>
-                                 <th className="px-8 py-6 micro-label text-slate-400">PROTOCOL</th>
-                                 <th className="px-8 py-6 micro-label text-slate-400">OPERATOR</th>
-                                 <th className="px-8 py-6 micro-label text-slate-400">AUDIT_DETAILS</th>
-                               </tr>
-                             </thead>
-                             <tbody className="divide-y divide-slate-100">
-                               {projectLogs.length === 0 ? (
-                                 <tr>
-                                   <td colSpan={4} className="px-8 py-20 text-center micro-label text-slate-300">Không có hoạt động nào được ghi lại trong chu kỳ hiện tại</td>
+                         <div className="bg-white border border-slate-100 rounded-[2.5rem] overflow-hidden shadow-sm hover:border-slate-300 transition-all">
+                           <div className="overflow-x-auto no-scrollbar">
+                             <table className="w-full text-left min-w-[800px]">
+                               <thead>
+                                 <tr className="bg-slate-50/50 border-b border-slate-100">
+                                   <th className="px-10 py-8 text-[10px] font-bold text-slate-400 tracking-[0.3em] uppercase font-mono">Timestamp_Iso</th>
+                                   <th className="px-10 py-8 text-[10px] font-bold text-slate-400 tracking-[0.3em] uppercase font-mono">Protocol_Action</th>
+                                   <th className="px-10 py-8 text-[10px] font-bold text-slate-400 tracking-[0.3em] uppercase font-mono">Operator_Identity</th>
+                                   <th className="px-10 py-8 text-[10px] font-bold text-slate-400 tracking-[0.3em] uppercase font-mono">Audit_Details_Stream</th>
                                  </tr>
-                               ) : projectLogs.map((log) => (
-                                 <tr key={log.id} className="hover:bg-slate-50 transition-colors group/row">
-                                   <td className="px-8 py-6 font-mono text-[11px] text-slate-400">{log.createdAt?.toDate ? new Date(log.createdAt.toDate()).toLocaleString() : 'PENDING...'}</td>
-                                   <td className="px-8 py-6">
-                                     <span className="px-2 py-1 bg-slate-100 rounded text-[10px] font-mono font-bold text-slate-500 group-hover/row:bg-brand-500 group-hover/row:text-white transition-all">{log.action?.toUpperCase() || 'MOD'}</span>
-                                   </td>
-                                   <td className="px-8 py-6">
-                                      <div className="flex items-center gap-3">
-                                         <div className="w-6 h-6 rounded bg-slate-50 flex items-center justify-center text-[10px] font-mono border border-slate-200 italic text-slate-400">
-                                            {userProfiles.find(u => u.userId === log.userId)?.displayName?.slice(0, 2).toUpperCase() || 'SY'}
-                                         </div>
-                                         <span className="font-bold text-slate-900 text-[13px] italic font-serif ">{userProfiles.find(u => u.userId === log.userId)?.displayName || 'SYSTEM_DAEMON'}</span>
-                                      </div>
-                                   </td>
-                                   <td className="px-8 py-6 text-slate-500 font-medium text-[13px] max-w-md italic">{log.details}</td>
-                                 </tr>
-                               ))}
-                             </tbody>
-                           </table>
+                               </thead>
+                               <tbody className="divide-y divide-slate-50">
+                                 {projectLogs.length === 0 ? (
+                                   <tr>
+                                     <td colSpan={4} className="px-10 py-24 text-center text-[10px] font-bold text-slate-300 uppercase tracking-widest">Hệ thống đang chờ lệnh... Không có hồ sơ hoạt động.</td>
+                                   </tr>
+                                 ) : projectLogs.map((log) => (
+                                   <tr key={log.id} className="hover:bg-slate-50/50 transition-colors group/row">
+                                     <td className="px-10 py-8 font-mono text-[11px] text-slate-400 font-medium">{log.createdAt?.toDate ? new Date(log.createdAt.toDate()).toLocaleString() : 'FETCHING...'}</td>
+                                     <td className="px-10 py-8">
+                                       <span className="px-3 py-1 bg-slate-100 rounded-lg text-[9px] font-mono font-bold text-slate-500 group-hover/row:bg-slate-950 group-hover/row:text-white transition-all uppercase tracking-widest">{log.action?.toUpperCase() || 'MOD'}</span>
+                                     </td>
+                                     <td className="px-10 py-8">
+                                        <div className="flex items-center gap-4">
+                                           <div className="w-8 h-8 rounded-xl bg-slate-950 text-white flex items-center justify-center text-[10px] font-bold shadow-lg shadow-slate-950/10">
+                                              {userProfiles.find(u => u.userId === log.userId)?.displayName?.slice(0, 2).toUpperCase() || 'SY'}
+                                           </div>
+                                           <span className="font-bold text-slate-950 text-sm tracking-tight">{userProfiles.find(u => u.userId === log.userId)?.displayName || 'SYSTEM_CORE'}</span>
+                                        </div>
+                                     </td>
+                                     <td className="px-10 py-8">
+                                        <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 group-hover/row:bg-white transition-all">
+                                           <span className="text-xs font-medium text-slate-500 leading-relaxed font-mono">{log.details || 'Không có mô tả chi tiết được mã hóa.'}</span>
+                                        </div>
+                                     </td>
+                                   </tr>
+                                 ))}
+                               </tbody>
+                             </table>
+                           </div>
                          </div>
                       </motion.div>
                     )}
                   </AnimatePresence>
                </div>
-            </main>
-          </div>
-        )}
-      </AnimatePresence>
+               </main>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-      <AnimatePresence>
-         {showSettingsModal && (
-          <div className="fixed inset-0 z-[500] flex items-center justify-center p-6">
-             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowSettingsModal(false)} className="absolute inset-0 bg-slate-200/60 backdrop-blur-sm" />
-             <div className="surface-precision w-full max-w-2xl relative z-[510] overflow-hidden bg-white border-slate-200">
-                <div className="px-12 py-10 flex items-center justify-between border-b border-slate-100">
-                   <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-brand-500 text-white flex items-center justify-center rounded shadow-xl">
-                         <Settings size={20} />
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-bold text-slate-900 tracking-tight">Cài đặt dự án</h3>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Cấu hình không gian làm việc</p>
-                      </div>
-                   </div>
-                   <button onClick={() => setShowSettingsModal(false)} className="w-10 h-10 rounded hover:bg-slate-100 transition-all flex items-center justify-center text-slate-500 hover:text-slate-900">
-                      <X size={20} />
-                   </button>
-                </div>
-                <div className="p-12 space-y-12">
-                   <div className="space-y-4">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Tên không gian làm việc</label>
-                      <input 
-                        className="w-full h-14 bg-slate-50 border border-slate-200 rounded-xl px-6 text-xl font-bold text-slate-900 outline-none focus:bg-white focus:border-brand-500 transition-all placeholder:text-slate-300 font-mono"
-                        value={selectedProject?.name} 
-                        onChange={(e) => setSelectedProject(selectedProject ? {...selectedProject, name: e.target.value} : null)} 
-                        disabled={user.uid !== selectedProject?.ownerId}
-                      />
-                   </div>
-
-                   <div className="grid grid-cols-2 gap-8">
-                      <div className="p-6 space-y-2 bg-slate-50 border border-slate-100 rounded">
-                         <span className="micro-label opacity-40 text-[9px]">GIAO_THỨC_MÃ_HÓA</span>
-                         <div className="text-sm font-bold text-slate-700 italic font-mono uppercase">AES-256-GCM</div>
-                      </div>
-                      <div className="p-6 space-y-2 bg-slate-50 border border-slate-100 rounded">
-                         <span className="micro-label opacity-40 text-[9px]">VÉC-TƠ_BẢO_MẬT</span>
-                         <div className="text-sm font-bold text-emerald-600 italic font-mono flex items-center gap-2">
-                            <Lock size={14} /> XÁC_THỰC_CẤP_4
-                         </div>
-                      </div>
-                   </div>
-
-                   <div className="pt-10 flex items-center justify-between gap-6">
-                      {user.uid === selectedProject?.ownerId && (
-                        <button 
-                          onClick={() => handleDeleteProject()}
-                          className="micro-label text-rose-500 hover:text-rose-400 transition-colors"
-                        >
-                          Xóa không gian làm việc
-                        </button>
-                      )}
-                      <div className="flex-1" />
-                      <button 
-                        onClick={() => { handleUpdateProject(); setShowSettingsModal(false); }}
-                        className="btn-precision h-12 px-12"
-                      >
-                         Lưu thay đổi
-                      </button>
-                   </div>
-                </div>
-             </div>
-          </div>
-        )}
-
-         {showProjectModal && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowProjectModal(false)} className="absolute inset-0 bg-slate-200/60 backdrop-blur-sm" />
-            <div className="surface-precision w-full max-w-lg p-12 relative z-[210] bg-white border-slate-200">
-              <div className="flex flex-col text-center space-y-4 mb-10">
-                <div className="w-16 h-16 bg-brand-500 text-white flex items-center justify-center rounded mx-auto shadow-2xl mb-4">
-                   <FolderPlus size={24} />
-                </div>
-                <h3 className="text-2xl font-bold text-slate-900 tracking-tight">Tạo không gian làm việc</h3>
-                <p className="text-slate-500 font-medium text-sm">Đặt tên cho nút ma trận cộng tác mới của bạn.</p>
-              </div>
-              <div className="space-y-8">
-                <div className="space-y-3">
-                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Tên không gian làm việc</label>
-                   <input autoFocus placeholder="VD: DỰ_ÁN_TỐI_ƯU" className="w-full h-14 bg-slate-50 border border-slate-200 rounded-xl px-6 text-lg text-center font-bold text-slate-900 outline-none focus:bg-white focus:border-brand-500 transition-all placeholder:text-slate-200 font-mono" value={newProjectName} onChange={(e) => setNewProjectName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleCreateProject()} />
-                </div>
-                <div className="flex gap-4">
-                  <button onClick={handleCreateProject} disabled={!newProjectName.trim()} className="flex-1 btn-precision h-12 disabled:opacity-50">Tạo không gian</button>
-                  <button onClick={() => setShowProjectModal(false)} className="px-6 text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors">Hủy bỏ</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {showEventModal && (
-          <div className="fixed inset-0 z-[600] flex items-center justify-center p-6">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowEventModal(false)} className="absolute inset-0 bg-slate-200/60 backdrop-blur-sm" />
-            <div className="surface-precision w-full max-w-lg p-12 relative z-[610] bg-white border-slate-200">
-              <div className="space-y-4 mb-10 text-center">
-                 <div className="w-12 h-12 bg-brand-500 text-white flex items-center justify-center rounded-none mx-auto mb-6">
-                    <Activity size={20} />
-                 </div>
-                 <h3 className="text-2xl font-bold text-slate-900 tracking-tight">Thêm sự kiện mới</h3>
-                 <p className="micro-label opacity-40">Yêu cầu xác thực cấp Matrix để ghi đè thủ công.</p>
-              </div>
-              <div className="space-y-8">
-                 <div className="space-y-4">
-                    <label className="micro-label ml-2">Định_danh_sự_kiện</label>
-                    <input autoFocus placeholder="TÊN_SỰ_KIỆN_..." className="w-full h-14 bg-slate-50 border border-slate-200 rounded-none px-6 text-lg text-center font-bold text-slate-900 outline-none focus:bg-white focus:border-brand-500 transition-all placeholder:text-slate-200 font-mono" value={newEventTitle} onChange={(e) => setNewEventTitle(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleCreateEvent()} />
-                 </div>
-                 <div className="flex gap-4">
-                    <button onClick={handleCreateEvent} disabled={!newEventTitle.trim()} className="flex-1 btn-precision h-12 disabled:opacity-50">Thực thi truyền tin</button>
-                    <button onClick={() => setShowEventModal(false)} className="micro-label px-6 text-slate-500 hover:text-slate-900 transition-colors">Hủy bỏ</button>
-                 </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {showInviteModal && (
-          <div className="fixed inset-0 z-[600] flex items-center justify-center p-6">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowInviteModal(false)} className="absolute inset-0 bg-slate-200/60 backdrop-blur-sm" />
-            <div className="surface-precision w-full max-w-lg p-12 relative z-[610] bg-white border-slate-200">
-              <div className="space-y-4 mb-10 text-center">
-                 <div className="w-12 h-12 bg-brand-500 text-white flex items-center justify-center rounded-2xl mx-auto mb-6">
-                    <UserPlus size={20} />
-                 </div>
-                 <h3 className="text-2xl font-bold text-slate-900 tracking-tight">Thêm nhân sự</h3>
-                 <p className="micro-label opacity-40">Mở rộng danh sách thành viên của nút ma trận.</p>
-              </div>
-              <div className="space-y-8">
-                 <div className="space-y-4">
-                    <label className="micro-label ml-2">Email đăng ký</label>
-                    <input autoFocus placeholder="nhansu@linebase.sys" className="w-full h-14 bg-slate-50 border border-slate-200 rounded-xl px-6 text-lg text-center font-bold text-slate-900 outline-none focus:bg-white focus:border-brand-500 transition-all placeholder:text-slate-200 font-mono" value={inviteUserEmail} onChange={(e) => setInviteUserEmail(e.target.value)} />
-                 </div>
-                 <div className="flex gap-4">
-                    <button onClick={handleInviteMember} disabled={!inviteUserEmail.trim()} className="flex-1 btn-precision h-12 disabled:opacity-50">Gán nhân sự</button>
-                    <button onClick={() => setShowInviteModal(false)} className="micro-label px-6 text-slate-500 hover:text-slate-900 transition-colors">Kết thúc</button>
-                 </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {showDocsModal && (
-          <div className="fixed inset-0 z-[700] flex items-center justify-center p-6">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowDocsModal(false)} className="absolute inset-0 bg-slate-200/60 backdrop-blur-sm" />
-            <div className="surface-precision w-full max-w-3xl max-h-[80vh] overflow-y-auto p-12 relative z-[710] bg-white border-slate-200 custom-scrollbar">
-              <div className="flex items-center justify-between mb-12">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-brand-500 text-white flex items-center justify-center rounded-xl">
-                    <Terminal size={20} />
+        <AnimatePresence>
+           {showSettingsModal && (
+            <div className="fixed inset-0 z-[500] flex items-center justify-center p-6">
+               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowSettingsModal(false)} className="absolute inset-0 bg-slate-950/20 backdrop-blur-sm" />
+               <motion.div 
+                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                 animate={{ opacity: 1, scale: 1, y: 0 }}
+                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                 className="w-full max-w-2xl relative z-[510] overflow-hidden bg-white border border-slate-200/60 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] rounded-[2.5rem]"
+               >
+                  <div className="px-12 py-10 flex items-center justify-between border-b border-slate-100">
+                     <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-slate-950 text-white flex items-center justify-center rounded-2xl shadow-xl">
+                           <Settings size={22} />
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold text-slate-900 tracking-tight uppercase">Settings_Control</h3>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] font-mono">System Configuration Matrix</p>
+                        </div>
+                     </div>
+                     <button onClick={() => setShowSettingsModal(false)} className="w-12 h-12 rounded-2xl hover:bg-slate-100 transition-all flex items-center justify-center text-slate-400 hover:text-slate-950">
+                        <X size={24} />
+                     </button>
                   </div>
-                  <h3 className="text-3xl font-bold text-slate-900 tracking-tighter italic">Lõi_Hệ_Thống v2</h3>
-                </div>
-                <button onClick={() => setShowDocsModal(false)} className="w-10 h-10 rounded hover:bg-slate-100 transition-all flex items-center justify-center text-slate-400">
-                  <X size={24} />
-                </button>
-              </div>
-              
-              <div className="prose prose-slate max-w-none space-y-10">
-                <section className="space-y-4">
-                  <h4 className="text-xl font-bold text-slate-900 uppercase tracking-widest font-mono flex items-center gap-3">
-                    <div className="w-1 h-1 bg-brand-500" /> 0x01_Tổng_Quan
-                  </h4>
-                  <p className="text-slate-500 leading-relaxed italic">Linebase là một công cụ không gian làm việc tự động. Mọi tương tác được đồng bộ hóa thông qua các rơ-le telemetry tới Firestore để có sự đồng nhất trong thời gian thực giữa tất cả các nhân sự được kết nối.</p>
-                </section>
+                  <div className="p-12 space-y-12">
+                     <div className="space-y-4">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.4em] font-mono ml-1">Workspace_Identity</label>
+                        <input 
+                          className="w-full h-16 bg-slate-50 border border-slate-100 rounded-2xl px-8 text-2xl font-black text-slate-950 outline-none focus:bg-white focus:border-brand-500 transition-all placeholder:text-slate-200 font-mono italic"
+                          value={selectedProject?.name} 
+                          onChange={(e) => setSelectedProject(selectedProject ? {...selectedProject, name: e.target.value} : null)} 
+                          disabled={user?.uid !== selectedProject?.ownerId}
+                        />
+                     </div>
 
-                <section className="space-y-4">
-                  <h4 className="text-xl font-bold text-slate-900 uppercase tracking-widest font-mono flex items-center gap-3">
-                    <div className="w-1 h-1 bg-brand-500" /> 0x02_Ma_Trận_Nhiệm_Vụ
-                  </h4>
-                  <p className="text-slate-500 leading-relaxed italic">Sử dụng Ma trận nhiệm vụ để quản lý các nút (vấn đề). Kéo và thả giữa các cột để cập nhật trạng thái giao thức. Nhấp vào một mục cho phép thao tác sâu vào trạng thái bao gồm thay đổi độ ưu tiên và phân bổ nhân sự.</p>
-                </section>
+                     <div className="grid grid-cols-2 gap-8">
+                        <div className="p-8 space-y-3 bg-slate-50 border border-slate-100 rounded-3xl">
+                           <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] font-mono opacity-50">Encryption_Standard</span>
+                           <div className="text-lg font-black text-slate-950 italic font-mono uppercase">AES-256-GCM</div>
+                        </div>
+                        <div className="p-8 space-y-3 bg-slate-50 border border-slate-100 rounded-3xl">
+                           <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] font-mono opacity-50">Security_Level</span>
+                           <div className="text-lg font-black text-emerald-600 italic font-mono flex items-center gap-2">
+                              <Lock size={18} /> AUTH_LEVEL_4
+                           </div>
+                        </div>
+                     </div>
 
-                <section className="space-y-4">
-                  <h4 className="text-xl font-bold text-slate-900 uppercase tracking-widest font-mono flex items-center gap-3">
-                    <div className="w-1 h-1 bg-brand-500" /> 0x03_Bảo_Mật
-                  </h4>
-                  <p className="text-slate-500 leading-relaxed italic">Tất cả dữ liệu được bảo vệ bằng các quy tắc bảo mật tương đương AES-256. Thành viên phải được chỉ định rõ ràng vào các nút dự án để có quyền đọc/ghi.</p>
-                </section>
-
-                <div className="pt-10 flex justify-center">
-                  <button onClick={() => setShowDocsModal(false)} className="btn-precision h-12 px-12">Chấp_Nhận_Chỉ_Thị</button>
-                </div>
-              </div>
+                     <div className="pt-10 flex items-center justify-between gap-6">
+                        {user?.uid === selectedProject?.ownerId && (
+                          <button 
+                            onClick={() => handleDeleteProject()}
+                            className="text-[10px] font-black text-rose-500 hover:text-rose-400 transition-colors uppercase tracking-[0.4em] font-mono italic"
+                          >
+                            Terminate_Workspace
+                          </button>
+                        )}
+                        <div className="flex-1" />
+                        <button 
+                          onClick={() => { handleUpdateProject(); setShowSettingsModal(false); }}
+                          className="h-14 px-14 bg-slate-950 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] font-mono hover:bg-brand-600 hover:shadow-2xl hover:shadow-brand-500/20 transition-all active:scale-95"
+                        >
+                           Commit_Changes
+                        </button>
+                     </div>
+                  </div>
+               </motion.div>
             </div>
-          </div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
+          )}
+
+           {showProjectModal && (
+            <div className="fixed inset-0 z-[500] flex items-center justify-center p-6">
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowProjectModal(false)} className="absolute inset-0 bg-slate-950/20 backdrop-blur-sm" />
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="w-full max-w-lg p-14 relative z-[510] bg-white border border-slate-200/60 shadow-5xl rounded-[3rem]"
+              >
+                <div className="flex flex-col text-center space-y-6 mb-12">
+                  <div className="w-20 h-20 bg-slate-950 text-white flex items-center justify-center rounded-[1.75rem] mx-auto shadow-2xl mb-4 group rotate-[-8deg] hover:rotate-0 transition-transform duration-700">
+                     <FolderPlus size={32} />
+                  </div>
+                       <h3 className="text-3xl font-bold text-slate-900 tracking-tight uppercase leading-none">New_Deployment</h3>
+                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] font-mono">Initialize collaborative matrix node.</p>
+                </div>
+                <div className="space-y-10">
+                  <div className="space-y-4">
+                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono ml-1">Workspace_Callsign</label>
+                     <input autoFocus placeholder="..." className="w-full h-16 bg-slate-50 border border-slate-100 rounded-2xl px-8 text-xl text-center font-black text-slate-950 outline-none focus:bg-white focus:border-brand-500 transition-all placeholder:text-slate-100 font-mono italic uppercase" value={newProjectName} onChange={(e) => setNewProjectName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleCreateProject()} />
+                  </div>
+                  <div className="flex gap-4">
+                    <button onClick={handleCreateProject} disabled={!newProjectName.trim()} className="flex-1 h-14 bg-slate-950 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] font-mono hover:bg-brand-600 shadow-xl disabled:opacity-30 transition-all">Execute_Init</button>
+                    <button onClick={() => setShowProjectModal(false)} className="px-8 text-[10px] font-black text-slate-400 hover:text-slate-950 transition-colors uppercase tracking-[0.3em] font-mono italic">Cancel</button>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          )}
+
+          {showEventModal && (
+            <div className="fixed inset-0 z-[600] flex items-center justify-center p-6">
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowEventModal(false)} className="absolute inset-0 bg-slate-950/20 backdrop-blur-sm" />
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="w-full max-w-lg p-14 relative z-[610] bg-white border border-slate-200/60 shadow-5xl rounded-[3rem]"
+              >
+                <div className="space-y-6 mb-12 text-center">
+                   <div className="w-16 h-16 bg-brand-500 text-white flex items-center justify-center rounded-2xl mx-auto mb-6 shadow-brand-500/20 shadow-2xl">
+                      <Activity size={24} />
+                   </div>
+                   <h3 className="text-3xl font-black text-slate-950 tracking-tight uppercase italic leading-none">Register_Event</h3>
+                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] font-mono">Manual override telemetry injection.</p>
+                </div>
+                <div className="space-y-10">
+                   <div className="space-y-4">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono ml-1">Event_Identifier</label>
+                      <input autoFocus placeholder="..." className="w-full h-16 bg-slate-50 border border-slate-100 rounded-2xl px-8 text-xl text-center font-black text-slate-950 outline-none focus:bg-white focus:border-brand-500 transition-all placeholder:text-slate-100 font-mono italic uppercase" value={newEventTitle} onChange={(e) => setNewEventTitle(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleCreateEvent()} />
+                   </div>
+                   <div className="flex gap-4">
+                      <button onClick={handleCreateEvent} disabled={!newEventTitle.trim()} className="flex-1 h-14 bg-slate-950 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] font-mono hover:bg-brand-600 transition-all shadow-xl disabled:opacity-30">Commit_Log</button>
+                      <button onClick={() => setShowEventModal(false)} className="px-8 text-[10px] font-black text-slate-400 hover:text-slate-950 transition-colors uppercase tracking-[0.3em] font-mono italic">Cancel</button>
+                   </div>
+                </div>
+              </motion.div>
+            </div>
+          )}
+
+          {showInviteModal && (
+            <div className="fixed inset-0 z-[600] flex items-center justify-center p-6">
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowInviteModal(false)} className="absolute inset-0 bg-slate-950/20 backdrop-blur-sm" />
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="w-full max-w-lg p-14 relative z-[610] bg-white border border-slate-200/60 shadow-5xl rounded-[3.5rem]"
+              >
+                <div className="space-y-6 mb-12 text-center">
+                   <div className="w-20 h-20 bg-slate-950 text-white flex items-center justify-center rounded-[2rem] mx-auto mb-8 shadow-2xl group rotate-6 hover:rotate-0 transition-transform duration-700">
+                      <UserPlus size={32} />
+                   </div>
+                       <h3 className="text-3xl font-bold text-slate-900 tracking-tight uppercase leading-none text-center">Add_Operator</h3>
+                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] font-mono text-center">Expand matrix node member registry.</p>
+                </div>
+                <div className="space-y-10">
+                   <div className="space-y-4">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono ml-1">Identity_Endpoint_Email</label>
+                      <input autoFocus placeholder="..." className="w-full h-16 bg-slate-50 border border-slate-100 rounded-2xl px-8 text-xl text-center font-black text-slate-950 outline-none focus:bg-white focus:border-brand-500 transition-all placeholder:text-slate-100 font-mono italic" value={inviteUserEmail} onChange={(e) => setInviteUserEmail(e.target.value)} />
+                   </div>
+                   <div className="flex gap-4">
+                      <button onClick={handleInviteMember} disabled={!inviteUserEmail.trim()} className="flex-1 h-14 bg-slate-950 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] font-mono hover:bg-brand-600 transition-all shadow-xl disabled:opacity-30">Grant_Access</button>
+                      <button onClick={() => setShowInviteModal(false)} className="px-8 text-[10px] font-black text-slate-400 hover:text-slate-950 transition-colors uppercase tracking-[0.3em] font-mono italic">Resume</button>
+                   </div>
+                </div>
+              </motion.div>
+            </div>
+          )}
+
+          {showDocsModal && (
+            <div className="fixed inset-0 z-[700] flex items-center justify-center p-6">
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowDocsModal(false)} className="absolute inset-0 bg-slate-950/20 backdrop-blur-sm" />
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="w-full max-w-4xl max-h-[85vh] overflow-hidden flex flex-col relative z-[710] bg-white border border-slate-200 shadow-6xl rounded-[3rem]"
+              >
+                <div className="px-14 py-12 flex items-center justify-between border-b border-slate-100 bg-slate-50/50">
+                  <div className="flex items-center gap-6">
+                    <div className="w-16 h-16 bg-brand-600 text-white flex items-center justify-center rounded-[1.5rem] shadow-2xl shadow-brand-500/20">
+                      <Terminal size={28} />
+                    </div>
+                    <div>
+                      <h3 className="text-4xl font-extrabold text-slate-900 tracking-[-0.05em] uppercase leading-none">System_Core v4.2</h3>
+                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.4em] font-mono mt-2">Internal_Reference_Protocol</p>
+                    </div>
+                  </div>
+                  <button onClick={() => setShowDocsModal(false)} className="w-14 h-14 rounded-2xl hover:bg-white hover:shadow-xl transition-all flex items-center justify-center text-slate-400 hover:text-slate-950 border border-transparent hover:border-slate-100">
+                    <X size={28} />
+                  </button>
+                </div>
+                
+                <div className="flex-1 overflow-y-auto p-14 pb-20 space-y-16 custom-scrollbar bg-white">
+                  <div className="prose prose-slate max-w-none space-y-16">
+                    <section className="space-y-6">
+                      <h4 className="text-2xl font-black text-slate-950 uppercase tracking-widest font-mono flex items-center gap-4 italic">
+                        <div className="w-2 h-8 bg-brand-500/20" /> 0x01_Operational_Overview
+                      </h4>
+                      <p className="text-xl text-slate-500 leading-relaxed italic font-medium border-l-[6px] border-slate-50 pl-10">Zenith is an automated workspace orchestration layer. Every interaction is synchronized via telemetry relays to Firestore for real-time consistency across all connected elite personnel nodes.</p>
+                    </section>
+
+                    <section className="space-y-6">
+                      <h4 className="text-2xl font-black text-slate-950 uppercase tracking-widest font-mono flex items-center gap-4 italic">
+                        <div className="w-2 h-8 bg-brand-500/20" /> 0x02_Task_Matrix_Control
+                      </h4>
+                      <p className="text-xl text-slate-500 leading-relaxed italic font-medium border-l-[6px] border-slate-50 pl-10">Utilize the Task Matrix to manage node entries (issues). Drag and drop between columns for instant network-wide state transitions.</p>
+                    </section>
+
+                    <section className="space-y-8 p-12 bg-slate-950 rounded-[2.5rem] text-white">
+                       <div className="flex items-center gap-4 text-brand-400 font-mono text-xs font-black uppercase tracking-[0.5em]">
+                          <Activity size={14} className="animate-pulse" /> Live_Telemetry_Active
+                       </div>
+                       <div className="grid grid-cols-2 md:grid-cols-4 gap-10">
+                          <div className="space-y-3">
+                             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Uptime</div>
+                             <div className="text-3xl font-bold tracking-tight">99.998<span className="text-brand-500">%</span></div>
+                          </div>
+                          <div className="space-y-3">
+                             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Latency</div>
+                             <div className="text-3xl font-bold tracking-tight">12<span className="text-brand-500">ms</span></div>
+                          </div>
+                          <div className="space-y-3">
+                             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Security</div>
+                             <div className="text-3xl font-bold tracking-tight text-emerald-500">PASS</div>
+                          </div>
+                          <div className="space-y-3">
+                              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Status</div>
+                              <div className="text-3xl font-bold tracking-tight text-indigo-500">READY</div>
+                           </div>
+                        </div>
+                     </section>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+      </div>
+    );
 }
 
- function StatsCard({ label, value, icon, trend }: { label: string, value: any, icon: any, trend?: string }) {
+function StatsCard({ label, value, icon, trend }: { label: string; value: any; icon: any; trend?: string }) {
   return (
-    <div className="surface-precision p-8 h-48 flex flex-col justify-between group relative overflow-hidden bg-white transition-all hover:bg-slate-50">
-      <div className="flex items-center justify-between relative z-10">
-        <div className="w-12 h-12 bg-slate-50 flex items-center justify-center rounded-2xl text-slate-400 group-hover:text-brand-600 transition-all border border-slate-100 shadow-inner">
-          {icon}
+    <motion.div 
+      whileHover={{ y: -4 }}
+      className="surface-precision p-6 flex flex-col justify-between h-[220px] group bg-white"
+    >
+      <div className="flex justify-between items-start">
+        <div className="w-10 h-10 bg-slate-900 text-white flex items-center justify-center rounded-xl shadow-lg transition-colors duration-300">
+          {React.cloneElement(icon as React.ReactElement, { size: 20, strokeWidth: 2 })}
         </div>
         {trend && (
-          <div className="px-3 py-1 bg-brand-50 text-brand-600 text-[10px] font-bold rounded-full tracking-wider uppercase border border-brand-100">
+          <div className={cn(
+            "px-2.5 py-1 rounded-lg text-[8px] font-bold uppercase tracking-widest border",
+            trend === "ACTIVE" || trend === "SYNC" || trend === "SAFE" || trend === "STABLE" || trend === "ĐỒNG BỘ" ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
+            trend === "WARNING" ? "bg-rose-50 text-rose-600 border-rose-100 animate-pulse" : "bg-slate-50 text-slate-400 border-slate-100"
+          )}>
             {trend}
           </div>
         )}
       </div>
-      <div className="space-y-1 relative z-10 mt-auto">
-        <div className="micro-label opacity-40 text-[10px] mb-2">{label}</div>
-        <div className="text-4xl font-bold tracking-tighter leading-none text-slate-900">
-          {value}
-        </div>
+      
+      <div className="space-y-1 text-left">
+         <div className="text-5xl font-heading font-extrabold text-slate-900 tracking-tight leading-none group-hover:text-brand-600 transition-colors duration-300">{value}</div>
+         <div className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2 mt-4">
+            <div className="w-1 h-1 bg-slate-900 rounded-full" />
+            {label}
+         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
-function QuickAction({ title, desc, icon, onClick }: { title: string, desc: string, icon: any, onClick: () => void }) {
+function QuickAction({ title, desc, icon, onClick }: { title: string; desc: string; icon: any; onClick: () => void }) {
   return (
     <button 
       onClick={onClick}
-      className="surface-precision p-10 flex flex-col text-left group bg-white/[0.01] hover:bg-white/[0.03] transition-all duration-500"
+      className="surface-precision p-8 flex flex-col justify-between h-[260px] group hover:border-brand-500/30 hover:shadow-xl transition-all duration-300 bg-white text-left"
     >
-      <div className="w-14 h-14 bg-brand-500/10 text-brand-500 flex items-center justify-center rounded-2xl mb-8 group-hover:bg-brand-500 group-hover:text-white transition-all duration-500">
-        {React.cloneElement(icon as React.ReactElement, { size: 24, strokeWidth: 2.5 })}
+      <div className="w-12 h-12 bg-slate-900 text-white flex items-center justify-center rounded-xl shadow-lg group-hover:bg-brand-600 transition-colors duration-300">
+         {React.cloneElement(icon as React.ReactElement, { size: 24, strokeWidth: 2 })}
       </div>
-      <h3 className="text-xl font-bold mb-3 tracking-tight text-slate-900 group-hover:text-brand-600 transition-all">{title}</h3>
-      <p className="text-sm font-medium text-slate-500 leading-relaxed">{desc}</p>
+      
+      <div className="space-y-3">
+        <h3 className="text-3xl font-heading font-extrabold text-slate-900 tracking-tight leading-none">{title}</h3>
+        <p className="text-[13px] font-medium text-slate-500 leading-relaxed max-w-[220px]">{desc}</p>
+      </div>
+      
+      <div className="flex items-center justify-end w-full">
+         <div className="w-10 h-10 bg-slate-50 flex items-center justify-center rounded-xl text-slate-400 group-hover:bg-slate-900 group-hover:text-white transition-all shadow-sm">
+            <ArrowRight size={18} className="group-hover:translate-x-0.5 transition-transform" />
+         </div>
+      </div>
     </button>
   );
 }
