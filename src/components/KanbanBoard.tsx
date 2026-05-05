@@ -33,7 +33,7 @@ interface KanbanBoardProps {
 
 const DraggableAny = Draggable as any;
 
-const BugCard: React.FC<{ bug: Bug, index: number, userProfiles: UserProfile[], onSelect: (bug: Bug) => void, userId: string, isAdmin: boolean }> = ({ bug, index, userProfiles, onSelect, userId, isAdmin }) => {
+const BugCard = React.memo(({ bug, index, userProfiles, onSelect, userId, isAdmin }: { bug: Bug, index: number, userProfiles: UserProfile[], onSelect: (bug: Bug) => void, userId: string, isAdmin: boolean }) => {
   const assignee = userProfiles.find(u => u.userId === bug.assigneeId);
   const currentUser = userProfiles.find(u => u.userId === userId);
   
@@ -48,30 +48,38 @@ const BugCard: React.FC<{ bug: Bug, index: number, userProfiles: UserProfile[], 
   return (
     <DraggableAny key={bug.id} draggableId={bug.id} index={index} isDragDisabled={!canMove}>
       {(provided: any, snapshot: any) => (
-        <motion.div
-          layout
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
+        <div
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           className={cn(
             "mb-4 outline-none",
-            snapshot.isDragging ? "z-[210]" : ""
+            snapshot.isDragging ? "z-[300]" : ""
           )}
-          style={{ ...provided.draggableProps.style }}
+          style={{ 
+            ...provided.draggableProps.style,
+          }}
         >
           <motion.div 
-            whileHover={!snapshot.isDragging ? { y: -4, x: 2, scale: 1.01 } : {}}
-            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+            animate={snapshot.isDragging ? { 
+              scale: 1.02, 
+              rotate: 1.5,
+              boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)"
+            } : { 
+              scale: 1, 
+              rotate: 0,
+              boxShadow: "0 1px 2px 0 rgb(0 0 0 / 0.05)"
+            }}
+            whileHover={!snapshot.isDragging ? { y: -2 } : {}}
+            transition={{ type: "spring", stiffness: 500, damping: 30, mass: 0.8 }}
             onClick={() => !snapshot.isDragging && onSelect(bug)}
             className={cn(
-               "relative overflow-hidden group p-4 rounded-3xl border transition-all duration-500",
+               "relative overflow-hidden group p-4 rounded-2xl border transition-colors duration-200",
                snapshot.isDragging 
-                ? "shadow-5xl shadow-slate-950/20 border-slate-950/30 rotate-[0.5deg] scale-105 bg-white z-[300]" 
-                : "bg-white/80 backdrop-blur-md border-slate-200/60 hover:border-brand-500/30 hover:shadow-2xl hover:shadow-slate-200/60",
+                ? "border-brand-500 bg-white" 
+                : "bg-white border-slate-200/80 hover:border-brand-500/30 shadow-sm",
                !canMove && "opacity-60 cursor-default",
-               isOverdue && !snapshot.isDragging && "border-rose-200 bg-rose-50/20"
+               isOverdue && !snapshot.isDragging && "border-rose-200 bg-rose-50/30"
             )}
           >
             <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-brand-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
@@ -85,7 +93,7 @@ const BugCard: React.FC<{ bug: Bug, index: number, userProfiles: UserProfile[], 
                       bug.priority === 'critical' ? "bg-rose-500" : 
                       bug.priority === 'high' ? "bg-amber-400" : "bg-emerald-400"
                     )} />
-                    <span className="text-[9px] font-black text-slate-300 font-mono tracking-widest uppercase italic opacity-60">NODE::0x{bug.id.slice(-4).toUpperCase()}</span>
+                    <span className="text-[9px] font-black text-slate-300 font-mono tracking-widest uppercase italic opacity-60">NÚT::0x{bug.id.slice(-4).toUpperCase()}</span>
                  </div>
                  
                  {bug.assigneeId && (
@@ -106,12 +114,6 @@ const BugCard: React.FC<{ bug: Bug, index: number, userProfiles: UserProfile[], 
   
               <div className="flex items-center justify-between pt-3 border-t border-slate-100">
                   <div className="flex items-center gap-3">
-                    {bug.comments?.length > 0 && (
-                      <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-100 transition-colors group-hover:bg-brand-50 group-hover:border-brand-100">
-                        <MessageSquare size={10} className="text-slate-400 group-hover:text-brand-500" />
-                        <span className="text-[9px] font-black text-slate-400 font-mono group-hover:text-brand-600">{bug.comments.length}</span>
-                      </div>
-                    )}
                     <div className="px-2 py-0.5 rounded border border-slate-100 text-[8px] font-black text-slate-300 uppercase tracking-widest font-mono italic group-hover:text-slate-500 transition-colors">
                        {PRIORITY_CONFIG[bug.priority].label.toUpperCase()}
                     </div>
@@ -129,13 +131,27 @@ const BugCard: React.FC<{ bug: Bug, index: number, userProfiles: UserProfile[], 
               </div>
             </div>
           </motion.div>
-        </motion.div>
+        </div>
       )}
     </DraggableAny>
   );
-};
+});
 
-const KanbanColumn: React.FC<ColumnProps & { isAdmin: boolean }> = ({ title, tasks, status, userProfiles, onSelect, isAdding, setIsAdding, newBugTitle, setNewBugTitle, handleAddBug, userId, isAdmin }) => {
+interface ColumnProps {
+  title: string;
+  tasks: Bug[];
+  status: BugStatus;
+  userProfiles: UserProfile[];
+  onSelect: (bug: Bug) => void;
+  isAdding: boolean;
+  setIsAdding: (status: BugStatus | null) => void;
+  newBugTitle: string;
+  setNewBugTitle: (title: string) => void;
+  handleAddBug: (status: BugStatus) => void;
+  userId: string;
+}
+
+const KanbanColumn = React.memo(({ title, tasks, status, userProfiles, onSelect, isAdding, setIsAdding, newBugTitle, setNewBugTitle, handleAddBug, userId, isAdmin }: ColumnProps & { isAdmin: boolean }) => {
    return (
     <div className="w-[85vw] sm:w-[350px] md:w-[400px] lg:w-[450px] shrink-0 h-full flex flex-col px-2 md:px-4">
       <div className="py-4 md:py-6 flex items-center justify-between px-4">
@@ -150,7 +166,7 @@ const KanbanColumn: React.FC<ColumnProps & { isAdmin: boolean }> = ({ title, tas
            </div>
            <div>
               <h3 className="text-xl md:text-2xl font-heading font-black text-slate-950 uppercase tracking-tighter leading-none mb-2">{title}</h3>
-              <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono leading-none opacity-40">NODE_STATUS::0{['backlog', 'in-progress', 'in-review', 'done'].indexOf(status)}</p>
+              <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono leading-none opacity-40">TRẠNG_THÁI_NÚT::0{['backlog', 'in-progress', 'in-review', 'done'].indexOf(status)}</p>
            </div>
         </div>
         <div className="flex items-center gap-5">
@@ -175,10 +191,17 @@ const KanbanColumn: React.FC<ColumnProps & { isAdmin: boolean }> = ({ title, tas
             {...provided.droppableProps}
             ref={provided.innerRef}
             className={cn(
-              "flex-1 overflow-y-auto no-scrollbar transition-all duration-700 bg-white/20 backdrop-blur-3xl rounded-[2rem] p-4 border border-white/40 shadow-[inset_0_-20px_40px_-20px_rgba(0,0,0,0.02)]",
-              snapshot.isDraggingOver && "bg-slate-100/30 border-brand-200/40 translate-y-[-2px]"
+              "flex-1 overflow-y-auto no-scrollbar transition-all duration-300 bg-white/40 rounded-[2rem] p-4 border border-slate-100/50 shadow-[inset_0_-20px_40px_-20px_rgba(0,0,0,0.02)] relative",
+              snapshot.isDraggingOver && "bg-slate-100/50 border-brand-200/50"
             )}
           >
+            {snapshot.isDraggingOver && (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="absolute inset-4 border-2 border-dashed border-brand-500/20 rounded-[1.5rem] pointer-events-none z-0"
+              />
+            )}
             <AnimatePresence>
               {isAdding && (
                 <motion.div 
@@ -237,10 +260,11 @@ const KanbanColumn: React.FC<ColumnProps & { isAdmin: boolean }> = ({ title, tas
       </Droppable>
     </div>
    );
-};
+});
 
 export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isProjectOwner }: KanbanBoardProps & { key?: any }) {
   const [enabled, setEnabled] = useState(false);
+  const [localBugs, setLocalBugs] = useState<Bug[]>(bugs);
   const [viewMode, setViewMode] = useState<'board' | 'list'>('board');
   const [showOverdueOnly, setShowOverdueOnly] = useState(false);
   const [isAdding, setIsAdding] = useState<BugStatus | null>(null);
@@ -257,6 +281,11 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
   const [activePanelTab, setActivePanelTab] = useState<'info' | 'comments' | 'history'>('info');
   const [showTeamManagement, setShowTeamManagement] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  // Sync localBugs with bugs prop
+  useEffect(() => {
+    setLocalBugs(bugs);
+  }, [bugs]);
 
   const isAdmin = useMemo(() => {
     const profile = userProfiles.find(u => u.userId === userId);
@@ -330,12 +359,12 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
   }, [comments, activePanelTab]);
 
   const filteredBugs = useMemo(() => {
-    return bugs.filter(bug => {
+    return localBugs.filter(bug => {
       const matchesSearch = bug.title.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesOverdue = !showOverdueOnly || (bug.status !== 'done' && bug.dueDate && new Date(bug.dueDate) < new Date());
       return matchesSearch && matchesOverdue;
     });
-  }, [bugs, searchTerm, showOverdueOnly]);
+  }, [localBugs, searchTerm, showOverdueOnly]);
 
   const logActivity = async (bugId: string, action: string, details: string) => {
     if (!auth.currentUser) return;
@@ -367,8 +396,20 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
 
     const oldStatus = source.droppableId;
     
-    // Optimistic UI update could be handled here if needed, 
-    // but Firestore onSnapshot handles it pretty fast.
+    // OPTIMISTIC UI UPDATE
+    // Move bug in local state immediately
+    const updatedBugs = [...localBugs];
+    const bugIndex = updatedBugs.findIndex(b => b.id === draggableId);
+    if (bugIndex !== -1) {
+      const movedBug = { ...updatedBugs[bugIndex], status: newStatus };
+      updatedBugs.splice(bugIndex, 1);
+      
+      // Calculate new position in the target column
+      const bugsInTargetColumn = updatedBugs.filter(b => b.status === newStatus);
+      // This is a bit simplified, but since our filteredBugs is derived from this, it works
+      updatedBugs.push(movedBug); 
+      setLocalBugs(updatedBugs);
+    }
     
     const bugRef = doc(db, 'bugs', draggableId);
     try {
@@ -379,6 +420,8 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
       await logActivity(draggableId, 'STATUS_UPDATE', `Trạng thái thay đổi từ ${oldStatus} sang ${newStatus}`);
       toast.success("Hệ thống đã ghi nhận thay đổi vị trí");
     } catch (error) { 
+      // Revert on error
+      setLocalBugs(bugs);
       toast.error("Không thể đồng bộ thay đổi");
       console.error(error);
     }
@@ -445,83 +488,108 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
     } catch (error) { console.error(error); }
   };
 
+  const tasksByStatus = useMemo(() => {
+    const map: Record<BugStatus, Bug[]> = {
+      'backlog': [],
+      'in-progress': [],
+      'in-review': [],
+      'done': []
+    };
+    filteredBugs.forEach(bug => {
+      if (map[bug.status]) {
+        map[bug.status].push(bug);
+      }
+    });
+    return map;
+  }, [filteredBugs]);
+
   const getFilteredTasks = (status: BugStatus) => {
-    return filteredBugs.filter(bug => bug.status === status);
+    return tasksByStatus[status];
   };
 
   if (!enabled) return null;
 
    return (
      <div className="flex-1 w-full flex flex-col overflow-hidden bg-slate-50">
-      <div className="min-h-[5rem] md:h-24 px-4 md:px-10 flex flex-col md:flex-row items-center justify-between border-b border-slate-100 bg-white/80 backdrop-blur-2xl shrink-0 z-20 gap-4 md:gap-0 shadow-sm relative py-4 md:py-0">
-        <div className="absolute top-0 right-0 p-8 opacity-[0.02] pointer-events-none hidden md:block">
-           <LayoutGrid size={120} />
-        </div>
-        <div className="flex items-center justify-between md:justify-start gap-4 md:gap-14 w-full md:w-auto">
-           <div className="flex flex-col">
-              <h2 className="text-base md:text-2xl font-black text-slate-950 tracking-tighter flex items-center gap-2 uppercase italic leading-none">
-                <span>QUẢN_LÝ_CÔNG_VIỆC</span>
-                <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-brand-500 animate-pulse shrink-0 shadow-[0_0_12px_rgba(99,102,241,0.6)]" />
-              </h2>
-              <p className="text-[7px] md:text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono mt-1 opacity-60">TRẠM-TRUNG-CHUYỂN / NÚT_0x{projectId.slice(0, 4).toUpperCase()}</p>
+      <div className="min-h-[5.5rem] md:h-24 px-6 md:px-10 flex flex-col md:flex-row items-center justify-between border-b border-slate-100 bg-white/90 backdrop-blur-3xl shrink-0 z-20 gap-4 md:gap-0 shadow-lg shadow-slate-200/20 relative py-4 md:py-0">
+        <div className="absolute inset-0 bg-grid-slate-100/[0.03] pointer-events-none" />
+        
+        <div className="flex items-center justify-between md:justify-start gap-4 md:gap-12 w-full md:w-auto relative z-10">
+           <div className="flex items-center gap-5">
+              <div className="flex flex-col">
+                 <h2 className="text-lg md:text-xl font-heading font-black text-slate-950 tracking-tighter flex items-center gap-2 uppercase italic leading-none group cursor-default">
+                   <span className="group-hover:text-brand-600 transition-colors duration-500">QUẢN LÝ CÔNG VIỆC</span>
+                   <div className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse shrink-0 shadow-[0_0_15px_rgba(99,102,241,0.8)]" />
+                 </h2>
+                 <div className="flex items-center gap-2 mt-1.5">
+                    <span className="text-[8px] font-black text-slate-300 uppercase tracking-[0.5em] font-mono opacity-80">STATION::CENTRAL</span>
+                    <div className="w-1 h-1 rounded-full bg-slate-200" />
+                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-[0.3em] font-mono">NODE_0x{projectId.slice(0, 4).toUpperCase()}</span>
+                 </div>
+              </div>
            </div>
 
-           <div className="hidden lg:block h-10 w-px bg-slate-100/80" />
+           <div className="hidden xl:block h-8 w-px bg-slate-100" />
            
-           <div className="flex items-center bg-slate-100/50 border border-slate-100 p-1 rounded-xl md:rounded-2xl shadow-inner shrink-0 scale-90 md:scale-100 transition-transform">
+           <div className="hidden md:flex items-center bg-slate-50 border border-slate-100 p-1 rounded-xl shadow-inner-sm">
              <button 
                onClick={() => setViewMode('board')}
                className={cn(
-                 "px-3 md:px-4 py-1.5 md:py-2.5 rounded-lg md:rounded-xl text-[8px] md:text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2 italic",
-                 viewMode === 'board' ? "bg-slate-950 text-white shadow-2xl shadow-slate-950/20" : "text-slate-400 hover:text-slate-950 hover:bg-white/50"
+                 "px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2 italic",
+                 viewMode === 'board' ? "bg-white text-slate-950 shadow-md border border-slate-100" : "text-slate-400 hover:text-slate-900"
                )}
              >
-               <LayoutGrid size={12} md:size={14} className={viewMode === 'board' ? "animate-pulse" : ""} />
-               <span className="hidden sm:inline">BẢNG</span>
+               <LayoutGrid size={13} className={viewMode === 'board' ? "text-brand-500" : ""} />
+               <span>BẢNG</span>
              </button>
              <button 
                onClick={() => setViewMode('list')}
                className={cn(
-                 "px-3 md:px-4 py-1.5 md:py-2.5 rounded-lg md:rounded-xl text-[8px] md:text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2 italic",
-                 viewMode === 'list' ? "bg-slate-950 text-white shadow-2xl shadow-slate-950/20" : "text-slate-400 hover:text-slate-950 hover:bg-white/50"
+                 "px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2 italic",
+                 viewMode === 'list' ? "bg-white text-slate-950 shadow-md border border-slate-100" : "text-slate-400 hover:text-slate-900"
                )}
              >
-               <List size={12} md:size={14} className={viewMode === 'list' ? "animate-pulse" : ""} />
-               <span className="hidden sm:inline">DANH SÁCH</span>
+               <List size={13} className={viewMode === 'list' ? "text-brand-500" : ""} />
+               <span>DANH SÁCH</span>
              </button>
            </div>
         </div>
 
-        <div className="flex items-center gap-3 md:gap-6 w-full md:w-auto overflow-x-auto no-scrollbar scroll-smooth">
+        <div className="flex items-center gap-4 md:gap-5 w-full md:w-auto relative z-10">
           <button 
             onClick={() => setShowOverdueOnly(!showOverdueOnly)}
             className={cn(
-              "h-10 md:h-14 px-4 md:px-8 rounded-xl md:rounded-2xl text-[8px] md:text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 border shrink-0 italic",
+              "h-11 px-5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2.5 border group italic",
               showOverdueOnly 
-                ? "bg-rose-500 text-white border-transparent shadow-2xl shadow-rose-500/20 animate-pulse" 
-                : "bg-white text-slate-400 border-slate-100 hover:border-rose-300 hover:text-rose-600 hover:bg-rose-50/10"
+                ? "bg-rose-500 text-white border-transparent shadow-xl shadow-rose-500/20" 
+                : "bg-white text-slate-400 border-slate-100 hover:border-rose-200 hover:text-rose-600 hover:bg-rose-50/30"
             )}
           >
-            <Clock size={12} md:size={14} className={showOverdueOnly ? "text-white" : "text-rose-400"} />
-            <span className="whitespace-nowrap">QUÁ-HẠN {bugs.filter(b => b.status !== 'done' && b.dueDate && new Date(b.dueDate) < new Date()).length > 0 && `:: 0${bugs.filter(b => b.status !== 'done' && b.dueDate && new Date(b.dueDate) < new Date()).length}`}</span>
+            <Clock size={13} className={cn("transition-transform group-hover:rotate-12", showOverdueOnly ? "text-white" : "text-rose-400")} />
+            <span className="hidden sm:inline">QUÁ HẠN</span>
+            {bugs.filter(b => b.status !== 'done' && b.dueDate && new Date(b.dueDate) < new Date()).length > 0 && (
+               <span className={cn("text-[8px] font-mono px-1.5 py-0.5 rounded", showOverdueOnly ? "bg-white/20" : "bg-rose-100 text-rose-600")}>
+                  {bugs.filter(b => b.status !== 'done' && b.dueDate && new Date(b.dueDate) < new Date()).length.toString().padStart(2, '0')}
+               </span>
+            )}
           </button>
 
-          <div className="relative group shrink-0 self-center">
-             <Search className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 w-3 h-3 md:w-4 md:h-4 text-slate-300 group-focus-within:text-brand-500 transition-colors" />
+          <div className="relative group flex-1 md:flex-none">
+             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-brand-500 transition-colors" />
              <input 
-               type="text" placeholder="Tìm kiếm..." value={searchTerm}
+               type="text" placeholder="Tìm kiếm hệ thống..." value={searchTerm}
                onChange={(e) => setSearchTerm(e.target.value)}
-               className="h-10 md:h-14 bg-slate-50 border border-slate-100 rounded-xl md:rounded-2xl pl-10 md:pl-12 pr-4 md:pr-6 text-[9px] md:text-sm font-bold text-slate-950 focus:bg-white focus:border-brand-500 transition-all w-32 md:w-72 outline-none font-mono italic"
+               className="h-11 bg-slate-50/50 border border-slate-100 rounded-xl pl-11 pr-5 text-[12px] font-bold text-slate-950 focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/5 transition-all w-full md:w-64 outline-none font-mono italic placeholder:text-slate-300"
              />
           </div>
 
           <button 
             onClick={() => setShowQuickAdd(true)}
-            className="h-10 md:h-14 px-5 md:px-10 bg-slate-950 text-white rounded-xl md:rounded-2xl text-[8px] md:text-[11px] font-black hover:bg-brand-600 hover:translate-y-[-2px] transition-all flex items-center gap-2 shadow-2xl shadow-slate-950/20 active:translate-y-[1px] uppercase tracking-widest md:tracking-[0.3em] italic group shrink-0"
+            className="h-11 px-6 bg-slate-950 text-white rounded-xl text-[10px] font-black hover:bg-brand-600 hover:shadow-xl hover:shadow-brand-500/20 transition-all flex items-center gap-2.5 uppercase tracking-widest italic group shrink-0"
           >
-             <Plus size={14} md:size={16} strokeWidth={3} className="group-hover:rotate-90 transition-transform duration-500" /> 
-             <span className="hidden sm:inline">KHỞI TẠO NÚT</span>
-             <span className="sm:hidden">THÊM</span>
+             <Plus size={16} strokeWidth={3} className="group-hover:rotate-90 transition-transform duration-500" /> 
+             <span className="hidden lg:inline">KHỞI TẠO NÚT</span>
+             <span className="lg:hidden">THÊM</span>
           </button>
         </div>
       </div>
@@ -724,7 +792,7 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
                    <KanbanColumn 
                       key={col.id}
                       title={col.label}
-                      tasks={getFilteredTasks(col.id)}
+                      tasks={tasksByStatus[col.id]}
                       status={col.id}
                       userProfiles={userProfiles}
                       onSelect={setSelectedBug}

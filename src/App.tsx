@@ -568,13 +568,13 @@ export default function App() {
                </div>
 
                 <div className="flex-1 px-4 space-y-1 mt-2">
-                  {[
-                    { id: 'dashboard', icon: LayoutGrid, label: 'Overview' },
-                    { id: 'board', icon: FolderKanban, label: 'Task Matrix' },
-                    { id: 'metrics', icon: PieChart, label: 'Analytics Hub' },
-                    { id: 'logs', icon: Activity, label: 'System Logs' },
-                    { id: 'members', icon: Users, label: 'Operators' },
-                  ].map(item => (
+                    {[
+                      { id: 'dashboard', icon: LayoutGrid, label: 'TỔNG QUAN' },
+                      { id: 'board', icon: FolderKanban, label: 'BẢNG CÔNG VIỆC' },
+                      { id: 'metrics', icon: PieChart, label: 'PHÂN TÍCH' },
+                      { id: 'logs', icon: Activity, label: 'NHẬT KÝ' },
+                      { id: 'members', icon: Users, label: 'ĐỘI NGŨ' },
+                    ].map(item => (
                     <button 
                       key={item.id} 
                       onClick={() => setActiveTab(item.id as any)}
@@ -609,7 +609,7 @@ export default function App() {
                     </div>
                     <div className="min-w-0 flex-1">
                        <div className="text-[12px] font-black text-slate-950 truncate uppercase tracking-tight italic">{user.displayName}</div>
-                       <button onClick={handleLogout} className="text-[9px] font-black text-slate-400 hover:text-rose-600 transition-colors uppercase tracking-[0.3em] font-mono leading-none">SIGN_OUT</button>
+                       <button onClick={handleLogout} className="text-[9px] font-black text-slate-400 hover:text-rose-600 transition-colors uppercase tracking-[0.3em] font-mono leading-none">ĐĂNG_XUẤT</button>
                     </div>
                   </div>
                </div>
@@ -716,35 +716,35 @@ export default function App() {
                                     </div>
                                   </div>
                                 </div>
-                                <h2 className="text-4xl md:text-5xl lg:text-7xl font-heading font-black tracking-[-0.06em] uppercase leading-[0.8] text-slate-950">
-                                  Command.<br/>Center
+                                <h2 className="text-xl md:text-2xl lg:text-3xl font-heading font-black tracking-[-0.05em] uppercase leading-tight text-slate-950">
+                                  Trung tâm<br/>Điều hành
                                 </h2>
                                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                                   <p className="text-base md:text-lg text-slate-500 font-medium tracking-tight max-w-xl leading-relaxed">
                                     Giám sát rơ-le dữ liệu thời gian thực và phân bổ tài nguyên tối ưu cho đội ngũ tinh hoa. 
-                                    <span className="block mt-1 text-[10px] font-black uppercase tracking-[0.4em] font-mono text-slate-300">System_Core v4.2.1</span>
+                                    <span className="block mt-1 text-[10px] font-black uppercase tracking-[0.4em] font-mono text-slate-300">Nhân_Hệ_Thống v4.2.1</span>
                                   </p>
                                   <motion.div 
                                     className="flex flex-col items-start lg:items-end gap-1 px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl min-w-[260px] relative overflow-hidden"
                                   >
-                                     <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono leading-none">Atomic_Clock</span>
+                                     <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono leading-none">Đồng_Hồ_Hệ_Thống</span>
                                      <span className="text-4xl font-heading font-black text-slate-950 tracking-tighter leading-none">{currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
                                      <div className="flex items-center gap-3 mt-1">
                                         <div className="w-1 h-1 rounded-full bg-brand-500 animate-ping" />
-                                        <span className="text-[9px] font-black text-brand-500 uppercase tracking-[0.4em] font-mono">Sync_Active</span>
+                                        <span className="text-[9px] font-black text-brand-500 uppercase tracking-[0.4em] font-mono">ĐỒNG_BỘ_ACTIVE</span>
                                      </div>
                                   </motion.div>
                                 </div>
                              </header>
 
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                             <StatsCard label="Năng suất" value={`${appStats.resolutionRate}%`} icon={<Cpu />} trend="STABLE" />
-                             <StatsCard label="Xử lý" value={appStats.open} icon={<Activity />} trend="ACTIVE" />
-                             <StatsCard label="Khẩn cấp" value={appStats.critical} icon={<Zap />} trend="URGENT" />
-                             <StatsCard label="Hoàn thành" value={appStats.resolved} icon={<CheckCircle2 />} trend="STABLE" />
-                          </div>
-                          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            <div className="lg:col-span-2 space-y-6">
+                           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                              <StatsCard label="Năng suất" value={`${appStats.resolutionRate}%`} icon={<Cpu />} trend="ỔN ĐỊNH" />
+                              <StatsCard label="Xử lý" value={appStats.open} icon={<Activity />} trend="HOẠT ĐỘNG" />
+                              <StatsCard label="Khẩn cấp" value={appStats.critical} icon={<Zap />} trend="KHẨN CẤP" />
+                              <StatsCard label="Hoàn thành" value={appStats.resolved} icon={<CheckCircle2 />} trend="ỔN ĐỊNH" />
+                           </div>
+                          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+                            <div className="lg:col-span-2 flex flex-col gap-6">
                                <section className="bg-white rounded-[1.5rem] border border-slate-100 p-6 shadow-sm">
                                   <div className="flex items-center justify-between mb-6">
                                      <div className="space-y-1">
@@ -792,67 +792,67 @@ export default function App() {
                                   </div>
                                </section>
 
-                               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
                                   <QuickAction title="Khởi tạo mới" desc="Bắt đầu nhiệm vụ hoặc quy trình vận hành Zenith." icon={<Plus />} onClick={() => setShowProjectModal(true)} />
                                   <QuickAction title="Đội ngũ" desc="Quản lý nhân sự và phân quyền truy cập hệ thống." icon={<Users />} onClick={() => setShowInviteModal(true)} />
                                </div>
                             </div>
 
-                            <div className="space-y-8">
-                               <section className="bg-white rounded-[2rem] border border-slate-100 p-8 flex flex-col shadow-sm">
-                                  <div className="flex items-center justify-between mb-10">
+                            <div className="space-y-6">
+                               <section className="bg-white rounded-[2rem] border border-slate-100 p-6 flex flex-col shadow-sm">
+                                  <div className="flex items-center justify-between mb-6">
                                      <h3 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.2em] font-mono">Nhật ký vận hành</h3>
                                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
                                   </div>
-                                  <div className="flex-1 space-y-8">
-                                     {projectLogs.slice(0, 5).map((log, i) => (
+                                  <div className="flex-1 space-y-5">
+                                     {projectLogs.slice(0, 3).map((log, i) => (
                                         <div key={log.id} className="flex gap-4 group">
                                            <div className="relative">
-                                              <div className="w-9 h-9 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-brand-600 group-hover:border-brand-100 transition-all">
-                                                 <Orbit size={14} />
+                                              <div className="w-8 h-8 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-brand-600 group-hover:border-brand-100 transition-all">
+                                                 <Orbit size={12} />
                                               </div>
-                                              {i !== projectLogs.slice(0, 5).length - 1 && <div className="absolute top-9 left-1/2 -translate-x-1/2 w-px h-8 bg-slate-100" />}
+                                              {i !== projectLogs.slice(0, 3).length - 1 && <div className="absolute top-8 left-1/2 -translate-x-1/2 w-px h-6 bg-slate-100" />}
                                            </div>
                                            <div className="flex-1 min-w-0">
-                                              <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">{log.action}</div>
-                                              <p className="text-[13px] text-slate-600 font-medium leading-tight group-hover:text-slate-950 transition-colors line-clamp-2">{log.details}</p>
-                                              <div className="text-[8px] font-bold text-slate-300 mt-2 font-mono uppercase">{log.createdAt?.toDate ? new Date(log.createdAt.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '...'}</div>
+                                              <div className="text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">{log.action}</div>
+                                              <p className="text-[12px] text-slate-600 font-medium leading-tight group-hover:text-slate-950 transition-colors line-clamp-1">{log.details}</p>
+                                              <div className="text-[8px] font-bold text-slate-300 mt-1 font-mono uppercase">{log.createdAt?.toDate ? new Date(log.createdAt.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '...'}</div>
                                            </div>
                                         </div>
                                      ))}
                                   </div>
-                                  <button onClick={() => setActiveTab('logs')} className="mt-10 w-full py-4 bg-slate-50 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-all rounded-2xl border border-slate-100/50">
+                                  <button onClick={() => setActiveTab('logs')} className="mt-6 w-full py-3 bg-slate-50 text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-all rounded-2xl border border-slate-100/50">
                                      Xem tất cả nhật ký
                                   </button>
                                </section>
 
-                               {urgentTasks.length > 0 && (
-                                 <section className="bg-rose-50 border border-rose-100 rounded-[2rem] p-8 space-y-6 relative overflow-hidden group">
-                                    <div className="absolute top-0 right-0 p-6 opacity-[0.05] text-rose-600">
-                                       <AlertTriangle size={80} />
-                                    </div>
-                                    <div className="relative">
-                                       <div className="flex items-center justify-between mb-6">
-                                          <h3 className="text-xs font-bold text-rose-600 uppercase tracking-widest leading-none">Nhiệm vụ trễ hạn</h3>
-                                          <div className="px-2 py-0.5 bg-rose-600 text-white rounded text-[8px] font-bold uppercase">{urgentTasks.length} NODES</div>
-                                       </div>
-                                       <div className="space-y-3">
-                                          {urgentTasks.slice(0, 3).map(task => (
-                                            <div key={task.id} onClick={() => setActiveTab('board')} className="bg-white p-4 rounded-2xl border border-rose-200/50 shadow-sm cursor-pointer hover:border-rose-400 transition-all transform hover:-translate-y-0.5">
-                                               <h4 className="text-[12px] font-bold text-slate-900 line-clamp-1 mb-1 group-hover:text-rose-600 transition-colors">{task.title}</h4>
-                                               <div className="flex items-center justify-between text-[8px] font-bold text-slate-400 uppercase tracking-tight">
-                                                  <span className="text-rose-500">QUÁ HẠN</span>
-                                                  <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
-                                               </div>
-                                            </div>
-                                          ))}
-                                       </div>
-                                       <button onClick={() => setActiveTab('board')} className="mt-8 w-full py-4 bg-slate-900 text-white text-[10px] font-bold uppercase tracking-widest rounded-2xl shadow-xl shadow-slate-900/10 active:scale-95 transition-all">
-                                          Xử lý ngay lập tức
-                                       </button>
-                                    </div>
-                                 </section>
-                               )}
+                                {urgentTasks.length > 0 && (
+                                  <section className="bg-rose-50 border border-rose-100 rounded-[2rem] p-8 space-y-6 relative overflow-hidden group flex-1 flex flex-col min-h-[320px]">
+                                     <div className="absolute top-0 right-0 p-6 opacity-[0.05] text-rose-600">
+                                        <AlertTriangle size={80} />
+                                     </div>
+                                     <div className="relative flex-1 flex flex-col">
+                                        <div className="flex items-center justify-between mb-6">
+                                           <h3 className="text-xs font-bold text-rose-600 uppercase tracking-widest leading-none">Nhiệm vụ trễ hạn</h3>
+                                           <div className="px-2 py-0.5 bg-rose-600 text-white rounded text-[8px] font-bold uppercase">{urgentTasks.length} NODES</div>
+                                        </div>
+                                        <div className="space-y-3 flex-1">
+                                           {urgentTasks.slice(0, 3).map(task => (
+                                             <div key={task.id} onClick={() => setActiveTab('board')} className="bg-white p-4 rounded-2xl border border-rose-200/50 shadow-sm cursor-pointer hover:border-rose-400 transition-all transform hover:-translate-y-0.5">
+                                                <h4 className="text-[12px] font-bold text-slate-900 line-clamp-1 mb-1 group-hover:text-rose-600 transition-colors">{task.title}</h4>
+                                                <div className="flex items-center justify-between text-[8px] font-bold text-slate-400 uppercase tracking-tight">
+                                                   <span className="text-rose-500 font-black">QUÁ HẠN</span>
+                                                   <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
+                                                </div>
+                                             </div>
+                                           ))}
+                                        </div>
+                                        <button onClick={() => setActiveTab('board')} className="mt-8 w-full py-4 bg-slate-900 text-white text-[10px] font-bold uppercase tracking-widest rounded-2xl shadow-xl shadow-slate-900/10 active:scale-95 transition-all">
+                                           Xử lý ngay lập tức
+                                        </button>
+                                     </div>
+                                  </section>
+                                )}
                             </div>
                           </div>
                         </motion.div>
@@ -1026,15 +1026,15 @@ export default function App() {
 
                          <div className="bg-white border border-slate-100 rounded-[2.5rem] overflow-hidden shadow-sm hover:border-slate-300 transition-all">
                            <div className="overflow-x-auto no-scrollbar">
-                             <table className="w-full text-left min-w-[800px]">
-                               <thead>
-                                 <tr className="bg-slate-50/50 border-b border-slate-100">
-                                   <th className="px-10 py-8 text-[10px] font-black text-slate-400 tracking-[0.3em] uppercase font-mono">Timestamp_Iso</th>
-                                   <th className="px-10 py-8 text-[10px] font-black text-slate-400 tracking-[0.3em] uppercase font-mono">Protocol_Action</th>
-                                   <th className="px-10 py-8 text-[10px] font-black text-slate-400 tracking-[0.3em] uppercase font-mono">Operator_Identity</th>
-                                   <th className="px-10 py-8 text-[10px] font-black text-slate-400 tracking-[0.3em] uppercase font-mono">Audit_Details_Stream</th>
-                                 </tr>
-                               </thead>
+                      <table className="w-full text-left min-w-[800px]">
+                        <thead>
+                          <tr className="bg-slate-50/50 border-b border-slate-100">
+                            <th className="px-10 py-8 text-[10px] font-black text-slate-400 tracking-[0.3em] uppercase font-mono">DẤU_THỜI_GIAN_ISO</th>
+                            <th className="px-10 py-8 text-[10px] font-black text-slate-400 tracking-[0.3em] uppercase font-mono">HÀNH_ĐỘNG_HỆ_THỐNG</th>
+                            <th className="px-10 py-8 text-[10px] font-black text-slate-400 tracking-[0.3em] uppercase font-mono">ĐỊNH_DANH_NHÂN_SỰ</th>
+                            <th className="px-10 py-8 text-[10px] font-black text-slate-400 tracking-[0.3em] uppercase font-mono">CHI_TIẾT_TRUY_XUẤT</th>
+                          </tr>
+                        </thead>
                                <tbody className="divide-y divide-slate-50">
                                  {projectLogs.length === 0 ? (
                                    <tr>
@@ -1154,21 +1154,21 @@ export default function App() {
                 className="w-full max-w-lg p-14 relative z-[510] bg-white border border-slate-200/60 shadow-5xl rounded-[3rem]"
               >
                 <div className="flex flex-col text-center space-y-6 mb-12">
-                  <div className="w-20 h-20 bg-slate-950 text-white flex items-center justify-center rounded-[1.75rem] mx-auto shadow-2xl mb-4 group rotate-[-8deg] hover:rotate-0 transition-transform duration-700">
-                     <FolderPlus size={32} />
+                    <div className="w-20 h-20 bg-slate-950 text-white flex items-center justify-center rounded-[1.75rem] mx-auto shadow-2xl mb-4 group rotate-[-8deg] hover:rotate-0 transition-transform duration-700">
+                       <FolderPlus size={32} />
+                    </div>
+                    <h3 className="text-3xl font-black text-slate-950 tracking-tight uppercase italic leading-none">Khởi_Tạo_Dự_Án</h3>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] font-mono">Thiết lập không gian làm việc cộng tác.</p>
                   </div>
-                  <h3 className="text-3xl font-black text-slate-950 tracking-tight uppercase italic leading-none">New_Deployment</h3>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] font-mono">Initialize collaborative matrix node.</p>
-                </div>
-                <div className="space-y-10">
-                  <div className="space-y-4">
-                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono ml-1">Workspace_Callsign</label>
-                     <input autoFocus placeholder="..." className="w-full h-16 bg-slate-50 border border-slate-100 rounded-2xl px-8 text-xl text-center font-black text-slate-950 outline-none focus:bg-white focus:border-brand-500 transition-all placeholder:text-slate-100 font-mono italic uppercase" value={newProjectName} onChange={(e) => setNewProjectName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleCreateProject()} />
-                  </div>
-                  <div className="flex gap-4">
-                    <button onClick={handleCreateProject} disabled={!newProjectName.trim()} className="flex-1 h-14 bg-slate-950 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] font-mono hover:bg-brand-600 shadow-xl disabled:opacity-30 transition-all">Execute_Init</button>
-                    <button onClick={() => setShowProjectModal(false)} className="px-8 text-[10px] font-black text-slate-400 hover:text-slate-950 transition-colors uppercase tracking-[0.3em] font-mono italic">Cancel</button>
-                  </div>
+                  <div className="space-y-10">
+                    <div className="space-y-4">
+                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono ml-1">Tên_Dự_Án_Định_Danh</label>
+                       <input autoFocus placeholder="..." className="w-full h-16 bg-slate-50 border border-slate-100 rounded-2xl px-8 text-xl text-center font-black text-slate-950 outline-none focus:bg-white focus:border-brand-500 transition-all placeholder:text-slate-100 font-mono italic uppercase" value={newProjectName} onChange={(e) => setNewProjectName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleCreateProject()} />
+                    </div>
+                    <div className="flex gap-4">
+                      <button onClick={handleCreateProject} disabled={!newProjectName.trim()} className="flex-1 h-14 bg-slate-950 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] font-mono hover:bg-brand-600 shadow-xl disabled:opacity-30 transition-all">KHỞI_TẠO_NGAY</button>
+                      <button onClick={() => setShowProjectModal(false)} className="px-8 text-[10px] font-black text-slate-400 hover:text-slate-950 transition-colors uppercase tracking-[0.3em] font-mono italic">HỦY_BỎ</button>
+                    </div>
                 </div>
               </motion.div>
             </div>
@@ -1217,17 +1217,17 @@ export default function App() {
                    <div className="w-20 h-20 bg-slate-950 text-white flex items-center justify-center rounded-[2rem] mx-auto mb-8 shadow-2xl group rotate-6 hover:rotate-0 transition-transform duration-700">
                       <UserPlus size={32} />
                    </div>
-                   <h3 className="text-3xl font-black text-slate-950 tracking-tight uppercase italic leading-none">Add_Operator</h3>
-                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] font-mono">Expand matrix node member registry.</p>
+                   <h3 className="text-3xl font-black text-slate-950 tracking-tight uppercase italic leading-none">Thêm_Nhân_Sự</h3>
+                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] font-mono">Mở rộng cơ sở dữ liệu nhân sự của hệ thống.</p>
                 </div>
                 <div className="space-y-10">
                    <div className="space-y-4">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono ml-1">Identity_Endpoint_Email</label>
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono ml-1">Email_Định_Danh_Nhân_Sự</label>
                       <input autoFocus placeholder="..." className="w-full h-16 bg-slate-50 border border-slate-100 rounded-2xl px-8 text-xl text-center font-black text-slate-950 outline-none focus:bg-white focus:border-brand-500 transition-all placeholder:text-slate-100 font-mono italic" value={inviteUserEmail} onChange={(e) => setInviteUserEmail(e.target.value)} />
                    </div>
                    <div className="flex gap-4">
-                      <button onClick={handleInviteMember} disabled={!inviteUserEmail.trim()} className="flex-1 h-14 bg-slate-950 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] font-mono hover:bg-brand-600 transition-all shadow-xl disabled:opacity-30">Grant_Access</button>
-                      <button onClick={() => setShowInviteModal(false)} className="px-8 text-[10px] font-black text-slate-400 hover:text-slate-950 transition-colors uppercase tracking-[0.3em] font-mono italic">Resume</button>
+                      <button onClick={handleInviteMember} disabled={!inviteUserEmail.trim()} className="flex-1 h-14 bg-slate-950 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] font-mono hover:bg-brand-600 transition-all shadow-xl disabled:opacity-30">CẤP_QUYỀN_TRUY_CẬP</button>
+                      <button onClick={() => setShowInviteModal(false)} className="px-8 text-[10px] font-black text-slate-400 hover:text-slate-950 transition-colors uppercase tracking-[0.3em] font-mono italic">QUAY_LẠI</button>
                    </div>
                 </div>
               </motion.div>
@@ -1308,10 +1308,11 @@ export default function App() {
 }
 
 function StatsCard({ label, value, icon, trend }: { label: string; value: any; icon: any; trend?: string }) {
+  const nodeId = useMemo(() => Math.floor(Math.random() * 255).toString(16).toUpperCase(), [label]);
   return (
     <motion.div 
       whileHover={{ y: -8 }}
-      className="surface-precision p-6 flex flex-col justify-between h-[200px] group bg-white"
+      className="surface-precision p-6 flex flex-col justify-between min-h-[160px] group bg-white"
     >
       <div className="flex justify-between items-start relative z-10">
         <div className="w-10 h-10 bg-slate-950 text-white flex items-center justify-center rounded-xl shadow-lg group-hover:bg-brand-600 transition-all duration-500">
@@ -1321,23 +1322,23 @@ function StatsCard({ label, value, icon, trend }: { label: string; value: any; i
           {trend && (
             <div className={cn(
               "px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-[0.2em] border backdrop-blur-md mb-2 shadow-sm",
-              trend === "ACTIVE" || trend === "SYNC" || trend === "SAFE" || trend === "STABLE" || trend === "ĐỒNG BỘ" ? "bg-emerald-50 text-emerald-600 border-emerald-100/50" :
-              trend === "WARNING" ? "bg-rose-50 text-rose-600 border-rose-100/50 animate-pulse" : "bg-slate-50 text-slate-400 border-slate-100/50"
+              trend === "HOẠT ĐỘNG" || trend === "ĐỒNG BỘ" || trend === "AN TOÀN" || trend === "ỔN ĐỊNH" || trend === "ĐÃ GHI" || trend === "TUYẾN TÍNH" ? "bg-emerald-50 text-emerald-600 border-emerald-100/50" :
+              trend === "CẢNH BÁO" || trend === "KHẨN CẤP" || trend === "NGUY HIỂM" ? "bg-rose-50 text-rose-600 border-rose-100/50 animate-pulse" : "bg-slate-50 text-slate-400 border-slate-100/50"
             )}>
               {trend}
             </div>
           )}
           <div className="flex items-center gap-2">
-            <span className="text-[7px] font-black text-slate-300 uppercase tracking-[0.3em] font-mono opacity-80 leading-none group-hover:text-brand-500 transition-colors">ACTIVE</span>
+            <span className="text-[7px] font-black text-slate-300 uppercase tracking-[0.3em] font-mono opacity-80 leading-none group-hover:text-brand-500 transition-colors">ĐANG_HOẠT_ĐỘNG</span>
             <div className="w-1 h-1 rounded-full bg-brand-500 animate-ping" />
           </div>
         </div>
       </div>
       
       <div className="space-y-1 relative z-10 text-left">
-         <div className="text-[8px] font-black text-slate-300 font-mono tracking-[0.3em] uppercase leading-none mb-2">NODE_REF::0x{Math.floor(Math.random() * 255).toString(16).toUpperCase()}</div>
+         <div className="text-[8px] font-black text-slate-300 font-mono tracking-[0.3em] uppercase leading-none mb-2">ĐỊNH_DANH_NÚT::0x{nodeId}</div>
          <div className="flex items-baseline gap-3">
-           <span className="text-5xl font-heading font-black text-slate-950 tracking-[-0.05em] leading-none transition-all group-hover:text-brand-600 duration-1000">{value}</span>
+           <span className="text-4xl md:text-5xl font-heading font-black text-slate-950 tracking-[-0.05em] leading-none transition-all group-hover:text-brand-600 duration-1000">{value}</span>
            <span className="text-[8px] font-black text-slate-300 uppercase tracking-[0.4em] font-mono opacity-40">MTRX</span>
          </div>
          <div className="text-[10px] font-black text-slate-950 uppercase tracking-[0.3em] font-mono mt-4 flex items-center gap-2 transition-all group-hover:translate-x-1">
@@ -1353,7 +1354,7 @@ function QuickAction({ title, desc, icon, onClick }: { title: string; desc: stri
   return (
     <button 
       onClick={onClick}
-      className="surface-precision p-6 flex flex-col justify-between h-[240px] group hover:border-brand-500/40 hover:shadow-2xl transition-all duration-700 bg-white relative overflow-hidden text-left"
+      className="surface-precision p-6 flex flex-col justify-between min-h-[220px] group hover:border-brand-500/40 hover:shadow-2xl transition-all duration-700 bg-white relative overflow-hidden text-left"
     >
       <div className="absolute inset-0 bg-slate-50 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
       
@@ -1365,7 +1366,7 @@ function QuickAction({ title, desc, icon, onClick }: { title: string; desc: stri
         <div className="flex items-center gap-3 text-[8px] font-black text-slate-300 uppercase tracking-[0.4em] font-mono mb-1 group-hover:text-brand-500 transition-colors">
            CMD::READY
         </div>
-        <h3 className="text-2xl font-heading font-black text-slate-950 uppercase tracking-tighter leading-[1] transition-transform duration-700">{title}</h3>
+        <h3 className="text-xl md:text-2xl font-heading font-black text-slate-950 uppercase tracking-tighter leading-[1] transition-transform duration-700">{title}</h3>
         <p className="text-[12px] font-medium text-slate-500 leading-relaxed max-w-[200px] border-l-2 border-slate-100 pl-4 group-hover:border-brand-500 transition-all duration-700">{desc}</p>
       </div>
       
