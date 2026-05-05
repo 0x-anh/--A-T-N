@@ -419,20 +419,20 @@ export default function App() {
                      <Orbit size={24} strokeWidth={2.5} />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-xl font-heading font-extrabold text-slate-950 tracking-[-0.06em] uppercase leading-none">Zenith</span>
-                    <span className="text-[8px] font-bold text-brand-600 uppercase tracking-[0.3em] font-mono leading-none mt-1.5 opacity-80">Protocol_v4.2</span>
+                    <span className="text-xl font-heading font-black text-slate-950 tracking-[-0.08em] uppercase leading-none">Zenith</span>
+                    <span className="text-[7px] font-black text-brand-600 uppercase tracking-[0.5em] font-mono leading-none mt-1.5 italic">Protocol_v4.2</span>
                   </div>
                </div>
 
-               <div className="hidden lg:flex items-center gap-12">
-                 <div className="flex items-center gap-10">
-                   <button className="text-[9px] font-bold text-slate-400 hover:text-slate-950 transition-all uppercase tracking-[0.3em] font-mono">Reference_</button>
-                   <button className="text-[9px] font-bold text-slate-400 hover:text-slate-950 transition-all uppercase tracking-[0.3em] font-mono">Nodes_</button>
+               <div className="hidden lg:flex items-center gap-16">
+                 <div className="flex items-center gap-12">
+                   <button className="text-[9px] font-black text-slate-400 hover:text-slate-950 transition-all uppercase tracking-[0.4em] font-mono italic">Library_</button>
+                   <button className="text-[9px] font-black text-slate-400 hover:text-slate-950 transition-all uppercase tracking-[0.4em] font-mono italic">Nodes_</button>
                  </div>
                  <div className="w-px h-6 bg-slate-100" />
-                 <div className="flex items-center gap-8">
-                   <button onClick={() => handleLogin()} className="text-[9px] font-bold text-slate-500 hover:text-slate-950 transition-all uppercase tracking-[0.3em] font-mono">Access_</button>
-                   <button onClick={() => handleLogin()} className="h-11 px-8 bg-slate-900 text-white rounded-xl text-[9px] font-bold uppercase tracking-[0.2em] font-mono hover:bg-brand-600 hover:shadow-lg hover:shadow-brand-500/10 active:scale-95 transition-all duration-300">Deploy_System</button>
+                 <div className="flex items-center gap-10">
+                   <button onClick={() => handleLogin()} className="text-[9px] font-black text-slate-500 hover:text-slate-950 transition-all uppercase tracking-[0.4em] font-mono italic">Access_</button>
+                   <button onClick={() => handleLogin()} className="h-12 px-10 bg-slate-950 text-white rounded-xl text-[9px] font-black uppercase tracking-[0.3em] font-mono hover:bg-brand-600 hover:shadow-2xl hover:shadow-brand-500/20 active:scale-95 transition-all duration-500">Initialize_Protocol</button>
                  </div>
                </div>
             </nav>
@@ -440,35 +440,34 @@ export default function App() {
             <main className="relative pt-32 lg:pt-60 px-6 lg:px-32 max-w-[1400px] mx-auto flex flex-col min-h-screen">
                <div className="flex flex-col items-center text-center space-y-20">
                  <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }} className="space-y-12 max-w-5xl">
-                    <div className="inline-flex items-center gap-3 px-4 py-2 rounded-xl bg-slate-50 border border-slate-100 text-slate-400 text-[8px] font-bold uppercase tracking-[0.4em] font-mono shadow-sm">
-                      <div className="h-1 w-1 rounded-full bg-brand-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
-                      Zenith_Matrix::Core_v4.2.1
+                    <div className="inline-flex items-center gap-3 px-5 py-2 rounded-xl bg-white border border-slate-200/50 text-slate-400 text-[8px] font-black uppercase tracking-[0.5em] font-mono shadow-sm">
+                      <div className="h-1 w-1 rounded-full bg-brand-500 animate-pulse shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
+                      Zenith::Matrix_Core_v4.2.1
                     </div>
                     
-                    <h1 className="text-6xl md:text-8xl lg:text-[10rem] font-heading font-extrabold tracking-[-0.07em] text-slate-900 leading-[0.85] uppercase">
-                       Precision <br />
-                       <span className="text-brand-600 relative inline-block">
-                         Operating
+                    <h1 className="text-6xl md:text-9xl lg:text-[12rem] font-heading font-black tracking-[-0.09em] text-slate-950 leading-[0.75] uppercase italic">
+                       The <span className="text-brand-600 relative inline-block">
+                         Zenith
                          <motion.div 
-                           className="absolute -bottom-2 left-0 w-full h-1.5 bg-brand-500/10"
+                           className="absolute -bottom-2 left-0 w-full h-2 bg-brand-500/20"
                            initial={{ width: 0 }}
                            animate={{ width: '100%' }}
-                           transition={{ duration: 1.5, delay: 0.5 }}
+                           transition={{ duration: 2, delay: 1 }}
                          />
                        </span> <br />
-                       System.
+                       <span className="text-white bg-slate-950 px-12 py-6 inline-block -rotate-2 mt-12 shadow-5xl ring-1 ring-white/10">Operating.</span>
                     </h1>
                     
-                    <p className="text-xl lg:text-3xl text-slate-500 max-w-3xl mx-auto leading-relaxed tracking-tight font-medium mt-8">
+                    <p className="text-xl lg:text-3xl text-slate-500 max-w-3xl mx-auto leading-relaxed tracking-tight font-medium opacity-80 italic mt-8">
                        Hệ điều hành quản trị tối ưu cho đội ngũ tinh hoa. <br />
-                       <span className="text-brand-500 font-bold text-xs uppercase tracking-[0.3em] font-mono">Engineering_Intelligence_Suite</span>
+                       <span className="text-brand-500 not-italic font-black text-sm uppercase tracking-[0.4em] font-mono">Precision_Engineering_System</span>
                     </p>
 
                     <div className="flex flex-wrap items-center justify-center gap-8 pt-16">
-                       <button onClick={() => handleLogin()} className="h-16 px-12 bg-slate-950 text-white rounded-2xl text-[11px] font-bold hover:bg-brand-600 transition-all flex items-center gap-5 shadow-2xl shadow-slate-950/20 active:scale-95 uppercase tracking-[0.3em] group duration-500">
+                       <button onClick={() => handleLogin()} className="h-16 px-12 bg-slate-950 text-white rounded-2xl text-[11px] font-black hover:bg-brand-600 transition-all flex items-center gap-5 shadow-2xl shadow-slate-950/20 active:scale-95 uppercase tracking-[0.3em] group duration-500">
                           Deploy Matrix <ArrowRight size={18} className="group-hover:translate-x-2 transition-transform duration-500" />
                        </button>
-                       <button onClick={() => setShowDocsModal(true)} className="h-16 px-12 border border-slate-200 bg-white text-slate-950 text-[11px] font-bold hover:bg-slate-50 transition-all rounded-2xl flex items-center gap-5 uppercase tracking-[0.3em] shadow-sm duration-500">
+                       <button onClick={() => setShowDocsModal(true)} className="h-16 px-12 border border-slate-200 bg-white text-slate-950 text-[11px] font-black hover:bg-slate-50 transition-all rounded-2xl flex items-center gap-5 uppercase tracking-[0.3em] shadow-sm duration-500 italic">
                           Technical_Doc
                        </button>
                     </div>
@@ -489,12 +488,12 @@ export default function App() {
                                    <Cpu size={48} strokeWidth={1.5} className="group-hover:scale-110 transition-transform" />
                                 </div>
                                 <div className="space-y-4">
-                                  <h3 className="text-4xl font-heading font-extrabold text-slate-900 uppercase tracking-tight leading-none group-hover:text-brand-600 transition-colors">System_Core</h3>
-                                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.4em] font-mono leading-none mt-1 opacity-60">Kernel_Distribution::Node_0x1</p>
+                                  <h3 className="text-7xl font-heading font-black text-slate-950 uppercase tracking-tighter leading-none italic">System_Core</h3>
+                                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.6em] font-mono leading-none italic opacity-60">Kernel_Distribution::Node_0x1</p>
                                 </div>
                              </div>
-                             <div className="px-8 py-3 bg-emerald-50 text-emerald-600 rounded-2xl text-[9px] font-bold uppercase tracking-[0.4em] border border-emerald-100 flex items-center gap-4 shadow-sm relative overflow-hidden transition-colors">
-                                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                             <div className="px-10 py-4 bg-emerald-50/80 backdrop-blur-md text-emerald-600 rounded-3xl text-[10px] font-black uppercase tracking-[0.5em] border border-emerald-100 flex items-center gap-5 shadow-inner-glow italic overflow-hidden">
+                                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_12px_rgba(16,185,129,0.5)]" />
                                 OPERATIONAL::TX_ESTABLISHED
                                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                              </div>
@@ -504,12 +503,12 @@ export default function App() {
                              <div className="space-y-10">
                                 <div className="flex justify-between items-end">
                                    <div className="space-y-6">
-                                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.4em] font-mono leading-none block">Throughput Metrics</span>
-                                     <div className="h-0.5 w-16 bg-brand-500 rounded-full" />
+                                     <span className="text-[11px] font-black text-slate-300 uppercase tracking-[0.6em] font-mono leading-none italic block">Throughput Metrics</span>
+                                     <div className="h-1 w-20 bg-brand-500 rounded-full" />
                                    </div>
-                                   <div className="flex items-baseline gap-4">
-                                     <span className="text-[10rem] font-heading font-extrabold text-slate-900 tracking-[-0.05em] leading-none transition-all duration-700 group-hover:text-brand-600">98.2</span>
-                                     <span className="text-3xl text-slate-300 font-mono font-bold uppercase tracking-tight">Tbps</span>
+                                   <div className="flex items-baseline gap-6">
+                                     <span className="text-[12rem] font-heading font-black text-slate-950 tracking-[-0.08em] leading-none italic transition-all duration-700 group-hover:tracking-[-0.1em]">98.2</span>
+                                     <span className="text-4xl text-slate-300 font-mono font-black uppercase tracking-tighter italic">Tbps</span>
                                    </div>
                                 </div>
                                 <div className="h-10 w-full bg-slate-50/80 rounded-[2rem] overflow-hidden border border-slate-200/50 shadow-inner p-2">
@@ -519,18 +518,18 @@ export default function App() {
                                 </div>
                              </div>
                              
-                             <div className="grid grid-cols-3 gap-12 pt-10 border-t border-slate-100">
-                                <div className="flex flex-col gap-4">
-                                   <div className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.4em] leading-none font-mono">Terminal_Nodes</div>
-                                   <div className="text-6xl font-extrabold text-slate-900 uppercase tracking-tight leading-none group-hover:text-brand-600 transition-colors">4.5K</div>
+                             <div className="grid grid-cols-3 gap-16 pt-12 border-t border-slate-100/50">
+                                <div className="flex flex-col gap-6">
+                                   <div className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] leading-none font-mono italic">Terminal_Nodes</div>
+                                   <div className="text-7xl font-black text-slate-950 uppercase tracking-tighter italic leading-none">4.5K</div>
                                 </div>
-                                <div className="flex flex-col gap-4 border-l border-slate-100 pl-12">
-                                   <div className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.4em] leading-none font-mono">Latency_μs</div>
-                                   <div className="text-6xl font-extrabold text-slate-900 uppercase tracking-tight leading-none group-hover:text-brand-600 transition-colors">0.2</div>
+                                <div className="flex flex-col gap-6 border-l border-slate-100 pl-16">
+                                   <div className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] leading-none font-mono italic">Latency_μs</div>
+                                   <div className="text-7xl font-black text-slate-950 uppercase tracking-tighter italic leading-none">0.2</div>
                                 </div>
-                                <div className="flex flex-col gap-4 border-l border-slate-100 pl-12">
-                                   <div className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.4em] leading-none font-mono">Encryption</div>
-                                   <div className="text-6xl font-extrabold text-indigo-500 uppercase tracking-tight leading-none group-hover:text-brand-600 transition-colors">RSA</div>
+                                <div className="flex flex-col gap-6 border-l border-slate-100 pl-16">
+                                   <div className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] leading-none font-mono italic">Encryption</div>
+                                   <div className="text-7xl font-black text-indigo-500 uppercase tracking-tighter italic leading-none">RSA</div>
                                 </div>
                              </div>
                           </div>
@@ -544,7 +543,7 @@ export default function App() {
                       <div className="w-8 h-8 bg-slate-950 text-white flex items-center justify-center rounded-lg">
                          <Orbit size={16} />
                       </div>
-                      <span className="text-lg font-heading font-extrabold text-slate-900 tracking-tighter">ZENITH</span>
+                      <span className="text-lg font-heading font-black text-slate-950 tracking-tighter">ZENITH</span>
                    </div>
                    <div className="flex items-center gap-12 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
                       <a href="#" className="hover:text-slate-900 transition-colors">Twitter</a>
@@ -558,21 +557,21 @@ export default function App() {
            <motion.div key="dashboard" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex h-screen overflow-hidden bg-white relative">
             <aside className="hidden md:flex w-80 h-full flex-col bg-white/80 backdrop-blur-3xl border-r border-slate-200/50 relative z-50 overflow-hidden">
                <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-brand-500/5 to-transparent pointer-events-none" />
-               <div className="p-12 pb-14 flex items-center gap-5 relative">
-                  <div className="w-14 h-14 bg-slate-950 text-white flex items-center justify-center rounded-[1.25rem] shadow-3xl shadow-slate-950/20 rotate-[-8deg] group hover:rotate-0 transition-all duration-700">
-                     <Orbit size={28} strokeWidth={2.5} className="group-hover:animate-spin-slow" />
+               <div className="p-6 pb-8 flex items-center gap-5 relative">
+                  <div className="w-12 h-12 bg-slate-950 text-white flex items-center justify-center rounded-[1.25rem] shadow-3xl shadow-slate-950/20 rotate-[-8deg] group hover:rotate-0 transition-all duration-700">
+                     <Orbit size={24} strokeWidth={2.5} className="group-hover:animate-spin-slow" />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-xl font-bold text-slate-950 tracking-[-0.05em] uppercase leading-none group-hover:text-brand-600 transition-colors">ZENITH</span>
-                    <span className="text-[10px] font-bold text-brand-600 uppercase tracking-[0.3em] font-mono mt-1.5 opacity-60">SYSTEM_X</span>
+                    <span className="text-lg font-bold text-slate-950 tracking-[-0.05em] uppercase leading-none group-hover:text-brand-600 transition-colors">ZENITH</span>
+                    <span className="text-[9px] font-black text-brand-600 uppercase tracking-[0.4em] font-mono mt-1.5 opacity-60">SYSTEM_X</span>
                   </div>
                </div>
 
-               <div className="flex-1 px-5 space-y-1 mt-4">
+                <div className="flex-1 px-4 space-y-1 mt-2">
                   {[
                     { id: 'dashboard', icon: LayoutGrid, label: 'Overview' },
                     { id: 'board', icon: FolderKanban, label: 'Task Matrix' },
-                    { id: 'metrics', icon: PieChart, label: 'Analytics' },
+                    { id: 'metrics', icon: PieChart, label: 'Analytics Hub' },
                     { id: 'logs', icon: Activity, label: 'System Logs' },
                     { id: 'members', icon: Users, label: 'Operators' },
                   ].map(item => (
@@ -580,10 +579,10 @@ export default function App() {
                       key={item.id} 
                       onClick={() => setActiveTab(item.id as any)}
                       className={cn(
-                        "relative flex items-center gap-3.5 w-full px-5 py-3 rounded-xl transition-all duration-300 group outline-none",
+                        "relative flex items-center gap-4 w-full px-4 py-2.5 rounded-xl transition-all duration-300 group outline-none",
                         activeTab === item.id 
-                          ? "bg-slate-950 text-white shadow-lg shadow-slate-900/10" 
-                          : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+                          ? "bg-slate-950 text-white shadow-lg shadow-slate-950/10" 
+                          : "text-slate-500 hover:text-slate-950 hover:bg-slate-50/50"
                       )}
                     >
                       <item.icon 
@@ -591,10 +590,10 @@ export default function App() {
                         strokeWidth={activeTab === item.id ? 2.5 : 2}
                         className={cn(
                           "transition-all duration-300",
-                          activeTab === item.id ? "text-brand-400" : "group-hover:translate-x-0.5"
+                          activeTab === item.id ? "text-white" : "group-hover:scale-110"
                         )}
                       />
-                      <span className="text-[12px] font-semibold uppercase tracking-wide">{item.label}</span>
+                      <span className="text-[12px] font-bold uppercase tracking-wide">{item.label}</span>
                       {activeTab === item.id && (
                         <motion.div layoutId="activeTabIndicator" className="absolute right-4 w-1 h-1 rounded-full bg-brand-400" />
                       )}
@@ -609,8 +608,8 @@ export default function App() {
                       <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full" />
                     </div>
                     <div className="min-w-0 flex-1">
-                       <div className="text-[12px] font-bold text-slate-950 truncate uppercase tracking-tight">{user.displayName}</div>
-                       <button onClick={handleLogout} className="text-[9px] font-bold text-slate-400 hover:text-rose-600 transition-colors uppercase tracking-[0.3em] font-mono leading-none">SIGN_OUT</button>
+                       <div className="text-[12px] font-black text-slate-950 truncate uppercase tracking-tight italic">{user.displayName}</div>
+                       <button onClick={handleLogout} className="text-[9px] font-black text-slate-400 hover:text-rose-600 transition-colors uppercase tracking-[0.3em] font-mono leading-none">SIGN_OUT</button>
                     </div>
                   </div>
                </div>
@@ -639,7 +638,7 @@ export default function App() {
             </nav>
 
             <main className="flex-1 overflow-hidden flex flex-col bg-slate-50 pattern-zenith pb-16 md:pb-0">
-               <header className="h-28 md:h-36 bg-white/80 backdrop-blur-3xl shrink-0 border-b border-slate-100/80 flex items-center justify-between px-8 md:px-14 lg:px-20 sticky top-0 z-[60] shadow-sm">
+               <header className="h-20 md:h-24 bg-white/80 backdrop-blur-3xl shrink-0 border-b border-slate-100/80 flex items-center justify-between px-8 md:px-14 sticky top-0 z-[60] shadow-sm">
                   <div className="flex items-center gap-6">
                     <div className="relative">
                       <button 
@@ -697,71 +696,69 @@ export default function App() {
                   </div>
                </header>
 
-               <div className="flex-1 overflow-auto custom-scrollbar p-6 lg:p-8">
+               <div className="flex-1 overflow-auto custom-scrollbar p-4 lg:p-6">
                    <AnimatePresence mode="wait">
                     {activeTab === 'dashboard' && (
-                         <motion.div 
-                            key="dashboard"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
-                            className="space-y-12 pb-24"
-                         >
-                            <div className="space-y-10">
+                        <motion.div 
+                           initial={{ opacity: 0, y: 10 }} 
+                           animate={{ opacity: 1, y: 0 }} 
+                           exit={{ opacity: 0, y: -20 }} 
+                           className="space-y-6 w-full max-w-7xl mx-auto py-2"
+                        >
+                           <header className="flex flex-col gap-4 mb-4">
                                 <div className="flex items-center gap-6">
-                                  <div className="w-1 h-8 bg-slate-900 rounded-full" />
-                                  <div className="space-y-0.5">
-                                    <h3 className="text-[10px] font-bold text-slate-900 uppercase tracking-[0.3em] font-mono leading-none">Command_Protocol</h3>
+                                  <div className="w-1.5 h-6 bg-slate-950 rounded-full" />
+                                  <div className="space-y-1">
+                                    <h3 className="text-[10px] font-black text-slate-950 uppercase tracking-[0.4em] font-mono leading-none">Command_Protocol</h3>
                                     <div className="flex items-center gap-2">
                                       <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                      <span className="text-[9px] font-semibold text-slate-500 uppercase tracking-widest font-mono">Telemetry_Sync_Established</span>
+                                      <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest font-mono">Telemetry_Sync_Established</span>
                                     </div>
                                   </div>
                                 </div>
-                                <h2 className="text-5xl md:text-7xl lg:text-8xl font-heading font-extrabold tracking-[-0.03em] uppercase leading-[0.9] text-slate-900">
+                                <h2 className="text-4xl md:text-5xl lg:text-7xl font-heading font-black tracking-[-0.06em] uppercase leading-[0.8] text-slate-950">
                                   Command.<br/>Center
                                 </h2>
-                                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-12">
-                                  <p className="text-xl md:text-2xl text-slate-500 font-medium tracking-tight max-w-2xl leading-relaxed">
+                                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                                  <p className="text-base md:text-lg text-slate-500 font-medium tracking-tight max-w-xl leading-relaxed">
                                     Giám sát rơ-le dữ liệu thời gian thực và phân bổ tài nguyên tối ưu cho đội ngũ tinh hoa. 
-                                    <span className="block mt-3 text-[10px] font-bold uppercase tracking-[0.3em] font-mono text-slate-300">System_Core v4.2.1-Alpha</span>
+                                    <span className="block mt-1 text-[10px] font-black uppercase tracking-[0.4em] font-mono text-slate-300">System_Core v4.2.1</span>
                                   </p>
                                   <motion.div 
-                                    className="flex flex-col items-start lg:items-end gap-3 px-8 py-6 bg-white border border-slate-100 rounded-2xl min-w-[280px] shadow-sm overflow-hidden"
+                                    className="flex flex-col items-start lg:items-end gap-1 px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl min-w-[260px] relative overflow-hidden"
                                   >
-                                     <span className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] font-mono leading-none">Atomic_Clock</span>
-                                     <span className="text-4xl font-heading font-bold text-slate-900 tracking-tight leading-none">{currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
-                                     <div className="flex items-center gap-2.5 mt-1">
-                                        <div className="w-1 h-1 rounded-full bg-brand-500" />
-                                        <span className="text-[9px] font-bold text-brand-500 uppercase tracking-[0.3em] font-mono">Sync_Active</span>
+                                     <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono leading-none">Atomic_Clock</span>
+                                     <span className="text-4xl font-heading font-black text-slate-950 tracking-tighter leading-none">{currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                                     <div className="flex items-center gap-3 mt-1">
+                                        <div className="w-1 h-1 rounded-full bg-brand-500 animate-ping" />
+                                        <span className="text-[9px] font-black text-brand-500 uppercase tracking-[0.4em] font-mono">Sync_Active</span>
                                      </div>
                                   </motion.div>
                                 </div>
-                              </div>
+                             </header>
 
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                              <StatsCard label="Năng suất" value={`${appStats.resolutionRate}%`} icon={<Cpu />} trend="STABLE" />
                              <StatsCard label="Xử lý" value={appStats.open} icon={<Activity />} trend="ACTIVE" />
-                             <StatsCard label="Khẩn cấp" value={appStats.critical} icon={<Zap />} trend={appStats.critical > 3 ? "WARNING" : "SAFE"} />
-                             <StatsCard label="Đồng bộ" value={appStats.activeEvents} icon={<Orbit />} trend="SYNC" />
+                             <StatsCard label="Khẩn cấp" value={appStats.critical} icon={<Zap />} trend="URGENT" />
+                             <StatsCard label="Hoàn thành" value={appStats.resolved} icon={<CheckCircle2 />} trend="STABLE" />
                           </div>
-
-                          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                            <div className="lg:col-span-2 space-y-8">
-                               <section className="bg-white rounded-[2rem] border border-slate-100 p-8 shadow-sm">
-                                  <div className="flex items-center justify-between mb-8">
+                          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <div className="lg:col-span-2 space-y-6">
+                               <section className="bg-white rounded-[1.5rem] border border-slate-100 p-6 shadow-sm">
+                                  <div className="flex items-center justify-between mb-6">
                                      <div className="space-y-1">
                                         <h3 className="text-xs font-bold text-slate-900 uppercase tracking-widest flex items-center gap-2">
                                            Lịch trình dự án
                                         </h3>
-                                        <p className="text-[10px] font-medium text-slate-400 uppercase tracking-tight">Timeline vận hành cấp độ Delta</p>
+                                        <p className="text-[9px] font-medium text-slate-400 uppercase tracking-tight">Timeline vận hành cấp độ Delta</p>
                                      </div>
-                                     <div className="text-[10px] font-bold text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100 uppercase tracking-widest">{currentTime.toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' })}</div>
+                                     <div className="text-[9px] font-bold text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100 uppercase tracking-widest">{currentTime.toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' })}</div>
                                   </div>
                                   
-                                  <div className="grid grid-cols-7 gap-px bg-slate-100 border border-slate-100 rounded-3xl overflow-hidden">
+                                  <div className="grid grid-cols-7 gap-px bg-slate-100 border border-slate-100 rounded-2xl overflow-hidden">
                                      {['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map(day => (
-                                        <div key={day} className="bg-slate-50 py-3 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest border-r border-slate-100 last:border-0">{day}</div>
+                                        <div key={day} className="bg-slate-50 py-2 text-center text-[9px] font-bold text-slate-400 uppercase tracking-widest border-r border-slate-100 last:border-0">{day}</div>
                                      ))}
                                      {Array.from({ length: 35 }).map((_, i) => {
                                         const dayNum = i - 2; 
@@ -772,9 +769,9 @@ export default function App() {
                                         
                                         return (
                                            <div key={i} className={cn(
-                                              "h-28 p-3 bg-white flex flex-col gap-1 transition-all hover:bg-slate-50/50 relative group/cell",
+                                              "h-20 p-2 bg-white flex flex-col gap-1 transition-all hover:bg-slate-50/50 relative group/cell",
                                               !isCurrentMonth && "bg-slate-50/10 opacity-30 pointer-events-none"
-                                           )}>
+                                            )}>
                                               <span className={cn(
                                                  "text-[10px] font-bold font-mono text-slate-200",
                                                  isToday && "text-brand-600 font-extrabold"
@@ -804,7 +801,7 @@ export default function App() {
                             <div className="space-y-8">
                                <section className="bg-white rounded-[2rem] border border-slate-100 p-8 flex flex-col shadow-sm">
                                   <div className="flex items-center justify-between mb-10">
-                                     <h3 className="text-[11px] font-bold text-slate-900 uppercase tracking-[0.2em] font-mono">Nhật ký vận hành</h3>
+                                     <h3 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.2em] font-mono">Nhật ký vận hành</h3>
                                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
                                   </div>
                                   <div className="flex-1 space-y-8">
@@ -866,9 +863,9 @@ export default function App() {
                         <header className="space-y-6">
                            <div className="flex items-center gap-4">
                               <div className="h-0.5 w-12 bg-slate-950 rounded-full" />
-                              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em] font-mono">Operations Analytics Registry</span>
+                              <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] font-mono">Operations Analytics Registry</span>
                            </div>
-                           <h2 className="text-4xl md:text-8xl font-heading font-extrabold tracking-tighter uppercase leading-[0.8] text-slate-950">Chỉ số phân tích</h2>
+                           <h2 className="text-4xl md:text-8xl font-heading font-black tracking-tighter uppercase leading-[0.8] text-slate-950">Chỉ số phân tích</h2>
                            <p className="text-lg md:text-xl text-slate-500 font-medium tracking-tight max-w-2xl leading-relaxed">Trực quan hóa hiệu suất vận hành hệ thống Zenith thông qua các rơ-le dữ liệu thời gian thực.</p>
                         </header>
  
@@ -882,13 +879,13 @@ export default function App() {
                            <div className="card-smart min-h-[350px] md:h-[520px] flex flex-col bg-white border border-slate-200 p-6 md:p-12 rounded-3xl overflow-hidden shadow-sm">
                              <div className="flex items-center justify-between mb-8 md:mb-12">
                                 <h3 className="text-[11px] font-bold text-slate-900 uppercase tracking-[0.3em] font-mono">Tốc độ giải quyết</h3>
-                                <div className="px-3 py-1 bg-slate-50 rounded-xl text-[9px] font-bold text-brand-600 tracking-widest border border-slate-100">ALPHA-CHART</div>
+                                <div className="px-3 py-1 bg-slate-50 rounded-xl text-[9px] font-black text-brand-600 tracking-widest border border-slate-100">ALPHA-CHART</div>
                              </div>
                              <div className="flex-1 w-full translate-x-[-15px]">
                                 <ResponsiveContainer width="100%" height="100%">
                                   <BarChart data={resolutionChartData}>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.03)" />
-                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 700, fill: '#64748b', fontFamily: 'JetBrains Mono' }} dy={10} />
+                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 900, fill: '#64748b', fontFamily: 'JetBrains Mono' }} dy={10} />
                                     <Tooltip cursor={{ fill: 'rgba(0,0,0,0.02)' }} contentStyle={{ backgroundColor: '#fff', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '24px' }} />
                                     <Bar dataKey="value" fill="#8b5cf6" radius={[10, 10, 0, 0]} barSize={34} />
                                   </BarChart>
@@ -920,8 +917,8 @@ export default function App() {
                                    </RePieChart>
                                 </ResponsiveContainer>
                                   <div className="absolute flex flex-col items-center justify-center gap-1">
-                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em]">Payloads</span>
-                                    <span className="text-6xl font-heading font-extrabold text-slate-950 leading-none">{bugs.length}</span>
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Payloads</span>
+                                    <span className="text-6xl font-heading font-black text-slate-950 italic leading-none">{bugs.length}</span>
                                  </div>
                               </div>
                             </div>
@@ -935,9 +932,9 @@ export default function App() {
                             <div className="space-y-6">
                                <div className="flex items-center gap-4">
                                   <div className="h-0.5 w-12 bg-slate-950 rounded-full" />
-                                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em] font-mono">Operator Deployment Registry</span>
+                                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] font-mono">Operator Deployment Registry</span>
                                </div>
-                               <h2 className="text-4xl md:text-8xl font-heading font-extrabold tracking-tighter uppercase leading-[0.8] text-slate-900">System Operators</h2>
+                               <h2 className="text-4xl md:text-8xl font-heading font-black tracking-tighter uppercase leading-[0.8] text-slate-950">System Operators</h2>
                                <p className="text-lg md:text-xl text-slate-500 font-medium tracking-tight max-w-xl leading-relaxed">Directory of authorized engine operators assigned to this matrix node.</p>
                             </div>
                             <button onClick={() => setShowInviteModal(true)} className="h-14 px-10 bg-slate-950 text-white rounded-2xl text-[12px] font-bold hover:bg-brand-600 transition-all flex items-center gap-3 uppercase tracking-widest shadow-xl shadow-slate-950/10">
@@ -956,10 +953,10 @@ export default function App() {
                                       </div>
                                     </div>
                                  <div className="space-y-4">
-                                       <div className="text-2xl font-heading font-extrabold text-slate-900 tracking-tighter uppercase group-hover:text-brand-600 transition-colors">{profile.displayName}</div>
+                                       <div className="text-2xl font-heading font-black text-slate-950 tracking-tighter uppercase group-hover:text-brand-600 transition-colors">{profile.displayName}</div>
                                        <div className="flex items-center gap-3 py-2 px-4 bg-slate-50 rounded-xl w-fit border border-slate-100">
                                           <Mail size={12} className="text-slate-400" />
-                                          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] font-mono">{profile.email}</div>
+                                          <div className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] font-mono">{profile.email}</div>
                                        </div>
                                     </div>
                                  </div>
@@ -973,7 +970,7 @@ export default function App() {
                                               key={role}
                                               onClick={() => handleUpdateUserRoles(profile.userId, profile.roles || [], role)}
                                               className={cn(
-                                                "px-3 py-1 rounded-lg text-[9px] font-bold uppercase tracking-widest flex items-center gap-1 transition-all border",
+                                                "px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-1 transition-all border",
                                                 isAssigned 
                                                   ? cn(ROLE_CONFIG[role].color, "text-white border-transparent shadow-md shadow-current/10")
                                                   : "bg-white text-slate-300 border-slate-100 hover:border-indigo-300 hover:text-indigo-600"
@@ -986,7 +983,7 @@ export default function App() {
                                        })
                                       ) : (
                                         profile.roles?.map(role => (
-                                          <div key={role} className={cn("px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-widest text-white", ROLE_CONFIG[role].color)}>
+                                          <div key={role} className={cn("px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest text-white", ROLE_CONFIG[role].color)}>
                                             {ROLE_CONFIG[role].label}
                                           </div>
                                         ))
@@ -1021,9 +1018,9 @@ export default function App() {
                         <header className="space-y-6">
                            <div className="flex items-center gap-4">
                               <div className="h-0.5 w-12 bg-slate-900 rounded-full" />
-                              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em] font-mono">Protocol Event Ledger</span>
+                              <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] font-mono">Protocol Event Ledger</span>
                            </div>
-                           <h2 className="text-4xl md:text-8xl font-heading font-extrabold tracking-tighter uppercase leading-[0.8] text-slate-950">System Logs</h2>
+                           <h2 className="text-4xl md:text-8xl font-heading font-black tracking-tighter uppercase leading-[0.8] text-slate-950">System Logs</h2>
                            <p className="text-lg md:text-xl text-slate-500 font-medium tracking-tight max-w-2xl leading-relaxed">Ghi chép toàn diện các sự kiện hệ thống và quá trình chuyển đổi trạng thái mạng lưới.</p>
                          </header>
 
@@ -1032,26 +1029,26 @@ export default function App() {
                              <table className="w-full text-left min-w-[800px]">
                                <thead>
                                  <tr className="bg-slate-50/50 border-b border-slate-100">
-                                   <th className="px-10 py-8 text-[10px] font-bold text-slate-400 tracking-[0.3em] uppercase font-mono">Timestamp_Iso</th>
-                                   <th className="px-10 py-8 text-[10px] font-bold text-slate-400 tracking-[0.3em] uppercase font-mono">Protocol_Action</th>
-                                   <th className="px-10 py-8 text-[10px] font-bold text-slate-400 tracking-[0.3em] uppercase font-mono">Operator_Identity</th>
-                                   <th className="px-10 py-8 text-[10px] font-bold text-slate-400 tracking-[0.3em] uppercase font-mono">Audit_Details_Stream</th>
+                                   <th className="px-10 py-8 text-[10px] font-black text-slate-400 tracking-[0.3em] uppercase font-mono">Timestamp_Iso</th>
+                                   <th className="px-10 py-8 text-[10px] font-black text-slate-400 tracking-[0.3em] uppercase font-mono">Protocol_Action</th>
+                                   <th className="px-10 py-8 text-[10px] font-black text-slate-400 tracking-[0.3em] uppercase font-mono">Operator_Identity</th>
+                                   <th className="px-10 py-8 text-[10px] font-black text-slate-400 tracking-[0.3em] uppercase font-mono">Audit_Details_Stream</th>
                                  </tr>
                                </thead>
                                <tbody className="divide-y divide-slate-50">
                                  {projectLogs.length === 0 ? (
                                    <tr>
-                                     <td colSpan={4} className="px-10 py-24 text-center text-[10px] font-bold text-slate-300 uppercase tracking-widest">Hệ thống đang chờ lệnh... Không có hồ sơ hoạt động.</td>
+                                     <td colSpan={4} className="px-10 py-24 text-center text-[10px] font-bold text-slate-300 uppercase tracking-widest italic">Hệ thống đang chờ lệnh... Không có hồ sơ hoạt động.</td>
                                    </tr>
                                  ) : projectLogs.map((log) => (
                                    <tr key={log.id} className="hover:bg-slate-50/50 transition-colors group/row">
                                      <td className="px-10 py-8 font-mono text-[11px] text-slate-400 font-medium">{log.createdAt?.toDate ? new Date(log.createdAt.toDate()).toLocaleString() : 'FETCHING...'}</td>
                                      <td className="px-10 py-8">
-                                       <span className="px-3 py-1 bg-slate-100 rounded-lg text-[9px] font-mono font-bold text-slate-500 group-hover/row:bg-slate-950 group-hover/row:text-white transition-all uppercase tracking-widest">{log.action?.toUpperCase() || 'MOD'}</span>
+                                       <span className="px-3 py-1 bg-slate-100 rounded-lg text-[9px] font-mono font-black text-slate-500 group-hover/row:bg-slate-950 group-hover/row:text-white transition-all uppercase tracking-widest">{log.action?.toUpperCase() || 'MOD'}</span>
                                      </td>
                                      <td className="px-10 py-8">
                                         <div className="flex items-center gap-4">
-                                           <div className="w-8 h-8 rounded-xl bg-slate-950 text-white flex items-center justify-center text-[10px] font-bold shadow-lg shadow-slate-950/10">
+                                           <div className="w-8 h-8 rounded-xl bg-slate-950 text-white flex items-center justify-center text-[10px] font-black shadow-lg shadow-slate-950/10 italic">
                                               {userProfiles.find(u => u.userId === log.userId)?.displayName?.slice(0, 2).toUpperCase() || 'SY'}
                                            </div>
                                            <span className="font-bold text-slate-950 text-sm tracking-tight">{userProfiles.find(u => u.userId === log.userId)?.displayName || 'SYSTEM_CORE'}</span>
@@ -1059,7 +1056,7 @@ export default function App() {
                                      </td>
                                      <td className="px-10 py-8">
                                         <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 group-hover/row:bg-white transition-all">
-                                           <span className="text-xs font-medium text-slate-500 leading-relaxed font-mono">{log.details || 'Không có mô tả chi tiết được mã hóa.'}</span>
+                                           <span className="text-xs font-medium text-slate-500 leading-relaxed font-mono italic">{log.details || 'Không có mô tả chi tiết được mã hóa.'}</span>
                                         </div>
                                      </td>
                                    </tr>
@@ -1093,8 +1090,8 @@ export default function App() {
                            <Settings size={22} />
                         </div>
                         <div>
-                          <h3 className="text-xl font-bold text-slate-900 tracking-tight uppercase">Settings_Control</h3>
-                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] font-mono">System Configuration Matrix</p>
+                          <h3 className="text-xl font-black text-slate-950 tracking-tight uppercase italic">Settings_Control</h3>
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] font-mono">System Configuration Matrix</p>
                         </div>
                      </div>
                      <button onClick={() => setShowSettingsModal(false)} className="w-12 h-12 rounded-2xl hover:bg-slate-100 transition-all flex items-center justify-center text-slate-400 hover:text-slate-950">
@@ -1103,7 +1100,7 @@ export default function App() {
                   </div>
                   <div className="p-12 space-y-12">
                      <div className="space-y-4">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.4em] font-mono ml-1">Workspace_Identity</label>
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono ml-1">Workspace_Identity</label>
                         <input 
                           className="w-full h-16 bg-slate-50 border border-slate-100 rounded-2xl px-8 text-2xl font-black text-slate-950 outline-none focus:bg-white focus:border-brand-500 transition-all placeholder:text-slate-200 font-mono italic"
                           value={selectedProject?.name} 
@@ -1160,8 +1157,8 @@ export default function App() {
                   <div className="w-20 h-20 bg-slate-950 text-white flex items-center justify-center rounded-[1.75rem] mx-auto shadow-2xl mb-4 group rotate-[-8deg] hover:rotate-0 transition-transform duration-700">
                      <FolderPlus size={32} />
                   </div>
-                       <h3 className="text-3xl font-bold text-slate-900 tracking-tight uppercase leading-none">New_Deployment</h3>
-                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] font-mono">Initialize collaborative matrix node.</p>
+                  <h3 className="text-3xl font-black text-slate-950 tracking-tight uppercase italic leading-none">New_Deployment</h3>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] font-mono">Initialize collaborative matrix node.</p>
                 </div>
                 <div className="space-y-10">
                   <div className="space-y-4">
@@ -1220,8 +1217,8 @@ export default function App() {
                    <div className="w-20 h-20 bg-slate-950 text-white flex items-center justify-center rounded-[2rem] mx-auto mb-8 shadow-2xl group rotate-6 hover:rotate-0 transition-transform duration-700">
                       <UserPlus size={32} />
                    </div>
-                       <h3 className="text-3xl font-bold text-slate-900 tracking-tight uppercase leading-none text-center">Add_Operator</h3>
-                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] font-mono text-center">Expand matrix node member registry.</p>
+                   <h3 className="text-3xl font-black text-slate-950 tracking-tight uppercase italic leading-none">Add_Operator</h3>
+                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] font-mono">Expand matrix node member registry.</p>
                 </div>
                 <div className="space-y-10">
                    <div className="space-y-4">
@@ -1252,8 +1249,8 @@ export default function App() {
                       <Terminal size={28} />
                     </div>
                     <div>
-                      <h3 className="text-4xl font-extrabold text-slate-900 tracking-[-0.05em] uppercase leading-none">System_Core v4.2</h3>
-                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.4em] font-mono mt-2">Internal_Reference_Protocol</p>
+                      <h3 className="text-4xl font-black text-slate-950 tracking-[-0.05em] uppercase italic leading-none">System_Core v4.2</h3>
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono mt-2">Internal_Reference_Protocol</p>
                     </div>
                   </div>
                   <button onClick={() => setShowDocsModal(false)} className="w-14 h-14 rounded-2xl hover:bg-white hover:shadow-xl transition-all flex items-center justify-center text-slate-400 hover:text-slate-950 border border-transparent hover:border-slate-100">
@@ -1282,21 +1279,21 @@ export default function App() {
                           <Activity size={14} className="animate-pulse" /> Live_Telemetry_Active
                        </div>
                        <div className="grid grid-cols-2 md:grid-cols-4 gap-10">
-                          <div className="space-y-3">
-                             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Uptime</div>
-                             <div className="text-3xl font-bold tracking-tight">99.998<span className="text-brand-500">%</span></div>
+                          <div className="space-y-1">
+                             <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest leading-none">Uptime</div>
+                             <div className="text-4xl font-black italic tracking-tighter">99.998<span className="text-brand-500">%</span></div>
                           </div>
-                          <div className="space-y-3">
-                             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Latency</div>
-                             <div className="text-3xl font-bold tracking-tight">12<span className="text-brand-500">ms</span></div>
+                          <div className="space-y-1">
+                             <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest leading-none">Latency</div>
+                             <div className="text-4xl font-black italic tracking-tighter">12<span className="text-brand-500">ms</span></div>
                           </div>
-                          <div className="space-y-3">
-                             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Security</div>
-                             <div className="text-3xl font-bold tracking-tight text-emerald-500">PASS</div>
+                          <div className="space-y-1">
+                             <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest leading-none">Security</div>
+                             <div className="text-4xl font-black italic tracking-tighter text-emerald-400">PASS</div>
                           </div>
-                          <div className="space-y-3">
-                              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Status</div>
-                              <div className="text-3xl font-bold tracking-tight text-indigo-500">READY</div>
+                          <div className="space-y-1">
+                              <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest leading-none">Status</div>
+                              <div className="text-4xl font-black italic tracking-tighter text-indigo-400">READY</div>
                            </div>
                         </div>
                      </section>
@@ -1313,28 +1310,38 @@ export default function App() {
 function StatsCard({ label, value, icon, trend }: { label: string; value: any; icon: any; trend?: string }) {
   return (
     <motion.div 
-      whileHover={{ y: -4 }}
-      className="surface-precision p-6 flex flex-col justify-between h-[220px] group bg-white"
+      whileHover={{ y: -8 }}
+      className="surface-precision p-6 flex flex-col justify-between h-[200px] group bg-white"
     >
-      <div className="flex justify-between items-start">
-        <div className="w-10 h-10 bg-slate-900 text-white flex items-center justify-center rounded-xl shadow-lg transition-colors duration-300">
-          {React.cloneElement(icon as React.ReactElement, { size: 20, strokeWidth: 2 })}
+      <div className="flex justify-between items-start relative z-10">
+        <div className="w-10 h-10 bg-slate-950 text-white flex items-center justify-center rounded-xl shadow-lg group-hover:bg-brand-600 transition-all duration-500">
+          {React.cloneElement(icon as React.ReactElement, { size: 20, strokeWidth: 1.5 })}
         </div>
-        {trend && (
-          <div className={cn(
-            "px-2.5 py-1 rounded-lg text-[8px] font-bold uppercase tracking-widest border",
-            trend === "ACTIVE" || trend === "SYNC" || trend === "SAFE" || trend === "STABLE" || trend === "ĐỒNG BỘ" ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
-            trend === "WARNING" ? "bg-rose-50 text-rose-600 border-rose-100 animate-pulse" : "bg-slate-50 text-slate-400 border-slate-100"
-          )}>
-            {trend}
+        <div className="flex flex-col items-end">
+          {trend && (
+            <div className={cn(
+              "px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-[0.2em] border backdrop-blur-md mb-2 shadow-sm",
+              trend === "ACTIVE" || trend === "SYNC" || trend === "SAFE" || trend === "STABLE" || trend === "ĐỒNG BỘ" ? "bg-emerald-50 text-emerald-600 border-emerald-100/50" :
+              trend === "WARNING" ? "bg-rose-50 text-rose-600 border-rose-100/50 animate-pulse" : "bg-slate-50 text-slate-400 border-slate-100/50"
+            )}>
+              {trend}
+            </div>
+          )}
+          <div className="flex items-center gap-2">
+            <span className="text-[7px] font-black text-slate-300 uppercase tracking-[0.3em] font-mono opacity-80 leading-none group-hover:text-brand-500 transition-colors">ACTIVE</span>
+            <div className="w-1 h-1 rounded-full bg-brand-500 animate-ping" />
           </div>
-        )}
+        </div>
       </div>
       
-      <div className="space-y-1 text-left">
-         <div className="text-5xl font-heading font-extrabold text-slate-900 tracking-tight leading-none group-hover:text-brand-600 transition-colors duration-300">{value}</div>
-         <div className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2 mt-4">
-            <div className="w-1 h-1 bg-slate-900 rounded-full" />
+      <div className="space-y-1 relative z-10 text-left">
+         <div className="text-[8px] font-black text-slate-300 font-mono tracking-[0.3em] uppercase leading-none mb-2">NODE_REF::0x{Math.floor(Math.random() * 255).toString(16).toUpperCase()}</div>
+         <div className="flex items-baseline gap-3">
+           <span className="text-5xl font-heading font-black text-slate-950 tracking-[-0.05em] leading-none transition-all group-hover:text-brand-600 duration-1000">{value}</span>
+           <span className="text-[8px] font-black text-slate-300 uppercase tracking-[0.4em] font-mono opacity-40">MTRX</span>
+         </div>
+         <div className="text-[10px] font-black text-slate-950 uppercase tracking-[0.3em] font-mono mt-4 flex items-center gap-2 transition-all group-hover:translate-x-1">
+            <div className="w-1.5 h-1.5 bg-slate-950 rounded-full group-hover:bg-brand-600 transition-colors" />
             {label}
          </div>
       </div>
@@ -1346,20 +1353,25 @@ function QuickAction({ title, desc, icon, onClick }: { title: string; desc: stri
   return (
     <button 
       onClick={onClick}
-      className="surface-precision p-8 flex flex-col justify-between h-[260px] group hover:border-brand-500/30 hover:shadow-xl transition-all duration-300 bg-white text-left"
+      className="surface-precision p-6 flex flex-col justify-between h-[240px] group hover:border-brand-500/40 hover:shadow-2xl transition-all duration-700 bg-white relative overflow-hidden text-left"
     >
-      <div className="w-12 h-12 bg-slate-900 text-white flex items-center justify-center rounded-xl shadow-lg group-hover:bg-brand-600 transition-colors duration-300">
-         {React.cloneElement(icon as React.ReactElement, { size: 24, strokeWidth: 2 })}
+      <div className="absolute inset-0 bg-slate-50 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+      
+      <div className="w-12 h-12 bg-slate-950 text-white flex items-center justify-center rounded-2xl shadow-xl group-hover:bg-brand-600 transition-all duration-500 relative z-10">
+         {React.cloneElement(icon as React.ReactElement, { size: 24, strokeWidth: 1.5 })}
       </div>
       
-      <div className="space-y-3">
-        <h3 className="text-3xl font-heading font-extrabold text-slate-900 tracking-tight leading-none">{title}</h3>
-        <p className="text-[13px] font-medium text-slate-500 leading-relaxed max-w-[220px]">{desc}</p>
+      <div className="space-y-3 relative z-10">
+        <div className="flex items-center gap-3 text-[8px] font-black text-slate-300 uppercase tracking-[0.4em] font-mono mb-1 group-hover:text-brand-500 transition-colors">
+           CMD::READY
+        </div>
+        <h3 className="text-2xl font-heading font-black text-slate-950 uppercase tracking-tighter leading-[1] transition-transform duration-700">{title}</h3>
+        <p className="text-[12px] font-medium text-slate-500 leading-relaxed max-w-[200px] border-l-2 border-slate-100 pl-4 group-hover:border-brand-500 transition-all duration-700">{desc}</p>
       </div>
       
-      <div className="flex items-center justify-end w-full">
-         <div className="w-10 h-10 bg-slate-50 flex items-center justify-center rounded-xl text-slate-400 group-hover:bg-slate-900 group-hover:text-white transition-all shadow-sm">
-            <ArrowRight size={18} className="group-hover:translate-x-0.5 transition-transform" />
+      <div className="flex items-center justify-end w-full relative z-10">
+         <div className="w-10 h-10 bg-slate-50 flex items-center justify-center rounded-xl text-slate-400 group-hover:bg-slate-950 group-hover:text-white transition-all shadow-sm duration-500">
+            <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform duration-500" />
          </div>
       </div>
     </button>

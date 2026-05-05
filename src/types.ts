@@ -41,10 +41,10 @@ export interface UserProfile {
 }
 
 export const ROLE_CONFIG: Record<UserRole, { label: string, color: string }> = {
-  admin: { label: 'Admin / Quản trị', color: 'bg-indigo-500' },
-  developer: { label: 'Dev / Lập trình', color: 'bg-emerald-500' },
-  qa: { label: 'QA / Kiểm thử', color: 'bg-amber-500' },
-  viewer: { label: 'View / Quan sát', color: 'bg-slate-400' }
+  admin: { label: 'Quản trị viên', color: 'bg-indigo-500' },
+  developer: { label: 'Lập trình viên', color: 'bg-emerald-500' },
+  qa: { label: 'Kiểm thử viên', color: 'bg-amber-500' },
+  viewer: { label: 'Người quan sát', color: 'bg-slate-400' }
 };
 
 export const ROLE_PERMISSIONS: Record<UserRole, BugStatus[]> = {
@@ -98,15 +98,15 @@ export interface Bug {
 }
 
 export const STATUS_COLUMNS: { id: BugStatus, label: string }[] = [
-  { id: 'backlog', label: 'Hàng Đợi / Nghỉ' },
+  { id: 'backlog', label: 'Hàng Đợi' },
   { id: 'in-progress', label: 'Đang Xử Lý' },
-  { id: 'in-review', label: 'Đang Xác Minh' },
-  { id: 'done', label: 'Đã Giải Quyết' }
+  { id: 'in-review', label: 'Đang Kiểm Tra' },
+  { id: 'done', label: 'Đã Hoàn Thành' }
 ];
 
 export const PRIORITY_CONFIG: Record<BugPriority, { label: string, color: string, icon: any }> = {
-  low: { label: 'P-04 / Thường Nhật', color: 'text-slate-400', icon: Zap },
-  medium: { label: 'P-03 / Bình Thường', color: 'text-blue-400', icon: ChevronUp },
-  high: { label: 'P-02 / Ưu Tiên Cao', color: 'text-orange-400', icon: AlertTriangle },
-  critical: { label: 'P-01 / Nghiêm Trọng', color: 'text-red-400', icon: AlertCircle }
+  low: { label: 'Ưu tiên thấp', color: 'text-slate-400', icon: Zap },
+  medium: { label: 'Trung bình', color: 'text-blue-400', icon: ChevronUp },
+  high: { label: 'Ưu tiên cao', color: 'text-orange-400', icon: AlertTriangle },
+  critical: { label: 'Nghiêm trọng', color: 'text-red-400', icon: AlertCircle }
 };

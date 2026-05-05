@@ -56,7 +56,7 @@ const BugCard: React.FC<{ bug: Bug, index: number, userProfiles: UserProfile[], 
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           className={cn(
-            "mb-6 outline-none",
+            "mb-4 outline-none",
             snapshot.isDragging ? "z-[210]" : ""
           )}
           style={{ ...provided.draggableProps.style }}
@@ -66,7 +66,7 @@ const BugCard: React.FC<{ bug: Bug, index: number, userProfiles: UserProfile[], 
             transition={{ type: "spring", stiffness: 400, damping: 30 }}
             onClick={() => !snapshot.isDragging && onSelect(bug)}
             className={cn(
-               "relative overflow-hidden group p-6 rounded-[1.75rem] border transition-all duration-500",
+               "relative overflow-hidden group p-4 rounded-3xl border transition-all duration-500",
                snapshot.isDragging 
                 ? "shadow-5xl shadow-slate-950/20 border-slate-950/30 rotate-[0.5deg] scale-105 bg-white z-[300]" 
                 : "bg-white/80 backdrop-blur-md border-slate-200/60 hover:border-brand-500/30 hover:shadow-2xl hover:shadow-slate-200/60",
@@ -76,51 +76,51 @@ const BugCard: React.FC<{ bug: Bug, index: number, userProfiles: UserProfile[], 
           >
             <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-brand-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
             
-            <div className="space-y-5 relative">
+            <div className="space-y-4 relative">
               <div className="flex items-center justify-between">
                  <div className="flex items-center gap-3">
                     <div className={cn(
-                      "w-1.5 h-4 rounded-full transition-all duration-500 group-hover:scale-y-125",
+                      "w-1 h-3 rounded-full transition-all duration-500 group-hover:scale-y-125",
                       isOverdue ? "bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]" :
                       bug.priority === 'critical' ? "bg-rose-500" : 
                       bug.priority === 'high' ? "bg-amber-400" : "bg-emerald-400"
                     )} />
-                    <span className="text-[10px] font-bold text-slate-300 font-mono tracking-widest uppercase opacity-60">NODE::0x{bug.id.slice(-4).toUpperCase()}</span>
+                    <span className="text-[9px] font-black text-slate-300 font-mono tracking-widest uppercase italic opacity-60">NODE::0x{bug.id.slice(-4).toUpperCase()}</span>
                  </div>
                  
                  {bug.assigneeId && (
                    <div className="relative group/avatar">
                       <img 
                         src={assignee?.photoURL || `https://api.dicebear.com/7.x/notionists/svg?seed=${bug.assigneeId}`} 
-                        className="w-10 h-10 rounded-2xl bg-white border border-slate-100 shadow-sm transition-all duration-500 group-hover:rotate-6 group-hover:scale-110" 
+                        className="w-8 h-8 rounded-xl bg-white border border-slate-100 shadow-sm transition-all duration-500 group-hover:rotate-6 group-hover:scale-110" 
                         alt=""
                       />
-                      <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full scale-0 group-hover/avatar:scale-100 transition-transform" />
+                      <div className="absolute -bottom-1 -right-1 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full scale-0 group-hover/avatar:scale-100 transition-transform" />
                    </div>
                  )}
               </div>
   
-              <h4 className="text-base font-semibold text-slate-900 leading-snug tracking-tight group-hover:text-brand-600 transition-colors line-clamp-2">
+              <h4 className="text-base md:text-lg font-heading font-black text-slate-950 leading-tight tracking-tight group-hover:text-brand-600 transition-colors uppercase line-clamp-2">
                 {bug.title}
               </h4>
   
-              <div className="flex items-center justify-between pt-5 border-t border-slate-100">
+              <div className="flex items-center justify-between pt-3 border-t border-slate-100">
                   <div className="flex items-center gap-3">
                     {bug.comments?.length > 0 && (
                       <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-100 transition-colors group-hover:bg-brand-50 group-hover:border-brand-100">
                         <MessageSquare size={10} className="text-slate-400 group-hover:text-brand-500" />
-                        <span className="text-[9px] font-bold text-slate-500 font-mono group-hover:text-brand-600">{bug.comments.length}</span>
+                        <span className="text-[9px] font-black text-slate-400 font-mono group-hover:text-brand-600">{bug.comments.length}</span>
                       </div>
                     )}
-                    <div className="px-2 py-0.5 rounded border border-slate-100 text-[8px] font-bold text-slate-400 uppercase tracking-widest font-mono group-hover:text-slate-600 transition-colors">
-                       {bug.priority.toUpperCase()}
+                    <div className="px-2 py-0.5 rounded border border-slate-100 text-[8px] font-black text-slate-300 uppercase tracking-widest font-mono italic group-hover:text-slate-500 transition-colors">
+                       {PRIORITY_CONFIG[bug.priority].label.toUpperCase()}
                     </div>
                   </div>
 
                   {bug.dueDate && (
                     <div className={cn(
-                      "flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest font-mono",
-                      bug.status !== 'done' && new Date(bug.dueDate) < new Date() ? "text-rose-500 animate-pulse" : "text-slate-400"
+                      "flex items-center gap-2 text-[9px] font-black uppercase tracking-widest font-mono italic",
+                      bug.status !== 'done' && new Date(bug.dueDate) < new Date() ? "text-rose-500 animate-pulse" : "text-slate-300"
                     )}>
                       <Clock size={10} />
                       {new Date(bug.dueDate).toLocaleDateString([], { month: 'short', day: 'numeric' }).toUpperCase()}
@@ -137,8 +137,8 @@ const BugCard: React.FC<{ bug: Bug, index: number, userProfiles: UserProfile[], 
 
 const KanbanColumn: React.FC<ColumnProps & { isAdmin: boolean }> = ({ title, tasks, status, userProfiles, onSelect, isAdding, setIsAdding, newBugTitle, setNewBugTitle, handleAddBug, userId, isAdmin }) => {
    return (
-    <div className="w-[320px] md:w-[460px] shrink-0 h-full flex flex-col px-4 md:px-8">
-      <div className="py-12 md:py-20 flex items-center justify-between px-6">
+    <div className="w-[85vw] sm:w-[350px] md:w-[400px] lg:w-[450px] shrink-0 h-full flex flex-col px-2 md:px-4">
+      <div className="py-4 md:py-6 flex items-center justify-between px-4">
         <div className="flex items-center gap-6">
            <div className="relative flex items-center justify-center">
               <div className={cn(
@@ -149,12 +149,12 @@ const KanbanColumn: React.FC<ColumnProps & { isAdmin: boolean }> = ({ title, tas
               )} />
            </div>
            <div>
-              <h3 className="text-2xl font-heading font-extrabold text-slate-900 uppercase tracking-tight leading-none mb-2">{title}</h3>
-              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.3em] font-mono leading-none opacity-50">NODE_STATUS::0{['backlog', 'in-progress', 'in-review', 'done'].indexOf(status)}</p>
+              <h3 className="text-xl md:text-2xl font-heading font-black text-slate-950 uppercase tracking-tighter leading-none mb-2">{title}</h3>
+              <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono leading-none opacity-40">NODE_STATUS::0{['backlog', 'in-progress', 'in-review', 'done'].indexOf(status)}</p>
            </div>
         </div>
-        <div className="flex items-center gap-4">
-           <div className="px-3 py-1.5 bg-slate-900 text-white rounded-xl text-[10px] font-bold font-mono shadow-lg shadow-slate-950/10">
+        <div className="flex items-center gap-5">
+           <div className="px-3 py-1.5 bg-slate-950 text-white rounded-xl text-[10px] font-black font-mono shadow-xl shadow-slate-950/20">
               {tasks.length.toString().padStart(2, '0')}
            </div>
            <button 
@@ -175,7 +175,7 @@ const KanbanColumn: React.FC<ColumnProps & { isAdmin: boolean }> = ({ title, tas
             {...provided.droppableProps}
             ref={provided.innerRef}
             className={cn(
-              "flex-1 overflow-y-auto no-scrollbar transition-all duration-700 bg-white/20 backdrop-blur-3xl rounded-[3.5rem] p-8 border border-white/40 shadow-[inset_0_-20px_40px_-20px_rgba(0,0,0,0.02)]",
+              "flex-1 overflow-y-auto no-scrollbar transition-all duration-700 bg-white/20 backdrop-blur-3xl rounded-[2rem] p-4 border border-white/40 shadow-[inset_0_-20px_40px_-20px_rgba(0,0,0,0.02)]",
               snapshot.isDraggingOver && "bg-slate-100/30 border-brand-200/40 translate-y-[-2px]"
             )}
           >
@@ -188,15 +188,15 @@ const KanbanColumn: React.FC<ColumnProps & { isAdmin: boolean }> = ({ title, tas
                   className="p-1 bg-white border border-brand-500/20 rounded-[2.5rem] mb-8 shadow-3xl shadow-brand-500/10 overflow-hidden"
                 >
                   <div className="p-8">
-                    <div className="text-[9px] font-bold text-brand-600 uppercase tracking-[0.2em] mb-4 font-mono flex items-center gap-2">
-                       <div className="w-1 h-1 rounded-full bg-brand-500 animate-pulse" />
-                       ENTRY_LOG
+                    <div className="text-[10px] font-black text-brand-600 uppercase tracking-[0.3em] mb-6 font-mono flex items-center gap-3">
+                       <div className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse" />
+                       THIẾT LẬP MỚI
                     </div>
                     <textarea
                       autoFocus
                       rows={3}
-                      className="w-full bg-transparent border-none p-0 text-base font-medium text-slate-950 outline-none placeholder:text-slate-200 mb-6 resize-none font-sans tracking-tight"
-                      placeholder="Ghi chú nhiệm vụ..."
+                      className="w-full bg-transparent border-none p-0 text-lg font-bold text-slate-950 outline-none placeholder:text-slate-200 mb-8 resize-none font-sans tracking-tight italic"
+                      placeholder="Nhập nội dung công việc..."
                       value={newBugTitle}
                       onChange={(e) => setNewBugTitle(e.target.value)}
                       onKeyDown={(e) => {
@@ -207,16 +207,16 @@ const KanbanColumn: React.FC<ColumnProps & { isAdmin: boolean }> = ({ title, tas
                         if (e.key === 'Escape') setIsAdding(null);
                       }}
                     />
-                    <div className="flex gap-3">
+                    <div className="flex gap-4">
                       <button 
                         onClick={() => handleAddBug(status)} 
-                        className="flex-1 h-11 bg-slate-900 text-white rounded-xl text-[10px] font-bold hover:bg-brand-600 transition-all uppercase tracking-[0.2em] shadow-lg shadow-slate-900/10 active:scale-95"
+                        className="flex-1 h-14 bg-slate-950 text-white rounded-[1.5rem] text-[11px] font-black hover:bg-brand-600 transition-all uppercase tracking-[0.3em] shadow-2xl shadow-slate-950/20 active:scale-95 italic"
                       >
                         Khởi tạo
                       </button>
                       <button 
                         onClick={() => setIsAdding(null)} 
-                        className="h-11 px-6 text-[10px] font-bold text-slate-400 hover:text-slate-950 transition-all uppercase tracking-widest font-mono"
+                        className="h-14 px-8 text-[11px] font-black text-slate-400 hover:text-slate-950 transition-all uppercase tracking-widest font-mono italic"
                       >
                         Hủy
                       </button>
@@ -453,74 +453,75 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
 
    return (
      <div className="flex-1 w-full flex flex-col overflow-hidden bg-slate-50">
-      <div className="h-28 md:h-36 px-6 md:px-14 flex flex-col items-center justify-center md:flex-row md:justify-between border-b border-slate-100 bg-white/80 backdrop-blur-2xl shrink-0 z-20 gap-4 md:gap-0 shadow-sm relative">
-        <div className="absolute top-0 right-0 p-8 opacity-[0.02] pointer-events-none">
+      <div className="min-h-[5rem] md:h-24 px-4 md:px-10 flex flex-col md:flex-row items-center justify-between border-b border-slate-100 bg-white/80 backdrop-blur-2xl shrink-0 z-20 gap-4 md:gap-0 shadow-sm relative py-4 md:py-0">
+        <div className="absolute top-0 right-0 p-8 opacity-[0.02] pointer-events-none hidden md:block">
            <LayoutGrid size={120} />
         </div>
-        <div className="flex items-center justify-between md:justify-start gap-10 md:gap-14 w-full md:w-auto mt-2 md:mt-0">
-          <div className="flex flex-col">
-              <h2 className="text-lg md:text-2xl font-extrabold text-slate-950 tracking-tight flex items-center gap-3 uppercase">
-                <span>Task_Matrix</span>
-                <div className="w-1.5 h-1.5 rounded-full bg-brand-500 shadow-[0_0_8px_rgba(99,102,241,0.6)]" />
+        <div className="flex items-center justify-between md:justify-start gap-4 md:gap-14 w-full md:w-auto">
+           <div className="flex flex-col">
+              <h2 className="text-base md:text-2xl font-black text-slate-950 tracking-tighter flex items-center gap-2 uppercase italic leading-none">
+                <span>QUẢN_LÝ_CÔNG_VIỆC</span>
+                <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-brand-500 animate-pulse shrink-0 shadow-[0_0_12px_rgba(99,102,241,0.6)]" />
               </h2>
-              <p className="text-[8px] md:text-[9px] font-bold text-slate-400 uppercase tracking-[0.3em] font-mono mt-1.5 opacity-60">Distribution_Relay / Node_0x{projectId.slice(0, 4).toUpperCase()}</p>
+              <p className="text-[7px] md:text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono mt-1 opacity-60">TRẠM-TRUNG-CHUYỂN / NÚT_0x{projectId.slice(0, 4).toUpperCase()}</p>
            </div>
 
-           <div className="hidden lg:block h-8 w-px bg-slate-100" />
+           <div className="hidden lg:block h-10 w-px bg-slate-100/80" />
            
-           <div className="flex items-center bg-slate-50 border border-slate-100 p-1 rounded-2xl shadow-sm shrink-0 self-center">
+           <div className="flex items-center bg-slate-100/50 border border-slate-100 p-1 rounded-xl md:rounded-2xl shadow-inner shrink-0 scale-90 md:scale-100 transition-transform">
              <button 
                onClick={() => setViewMode('board')}
                className={cn(
-                 "px-4 py-2 rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all flex items-center gap-3",
-                 viewMode === 'board' ? "bg-slate-900 text-white shadow-lg shadow-slate-900/10" : "text-slate-400 hover:text-slate-900 hover:bg-white"
+                 "px-3 md:px-4 py-1.5 md:py-2.5 rounded-lg md:rounded-xl text-[8px] md:text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2 italic",
+                 viewMode === 'board' ? "bg-slate-950 text-white shadow-2xl shadow-slate-950/20" : "text-slate-400 hover:text-slate-950 hover:bg-white/50"
                )}
              >
-               <LayoutGrid size={14} />
-               <span className="hidden sm:inline">Visual_Grid</span>
+               <LayoutGrid size={12} md:size={14} className={viewMode === 'board' ? "animate-pulse" : ""} />
+               <span className="hidden sm:inline">BẢNG</span>
              </button>
              <button 
                onClick={() => setViewMode('list')}
                className={cn(
-                 "px-4 py-2 rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all flex items-center gap-3",
-                 viewMode === 'list' ? "bg-slate-900 text-white shadow-lg shadow-slate-900/10" : "text-slate-400 hover:text-slate-900 hover:bg-white"
+                 "px-3 md:px-4 py-1.5 md:py-2.5 rounded-lg md:rounded-xl text-[8px] md:text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2 italic",
+                 viewMode === 'list' ? "bg-slate-950 text-white shadow-2xl shadow-slate-950/20" : "text-slate-400 hover:text-slate-950 hover:bg-white/50"
                )}
              >
-               <List size={14} />
-               <span className="hidden sm:inline">Data_Stream</span>
+               <List size={12} md:size={14} className={viewMode === 'list' ? "animate-pulse" : ""} />
+               <span className="hidden sm:inline">DANH SÁCH</span>
              </button>
            </div>
         </div>
 
-        <div className="flex items-center gap-3 md:gap-6 w-full md:w-auto overflow-x-auto no-scrollbar pb-3 md:pb-0">
+        <div className="flex items-center gap-3 md:gap-6 w-full md:w-auto overflow-x-auto no-scrollbar scroll-smooth">
           <button 
             onClick={() => setShowOverdueOnly(!showOverdueOnly)}
             className={cn(
-              "h-10 md:h-14 px-5 md:px-8 rounded-2xl text-[8px] md:text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-3 border shrink-0 italic",
+              "h-10 md:h-14 px-4 md:px-8 rounded-xl md:rounded-2xl text-[8px] md:text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 border shrink-0 italic",
               showOverdueOnly 
                 ? "bg-rose-500 text-white border-transparent shadow-2xl shadow-rose-500/20 animate-pulse" 
                 : "bg-white text-slate-400 border-slate-100 hover:border-rose-300 hover:text-rose-600 hover:bg-rose-50/10"
             )}
           >
-            <Clock size={14} className={showOverdueOnly ? "text-white" : "text-rose-400"} />
-            <span className="whitespace-nowrap">Overdue {bugs.filter(b => b.status !== 'done' && b.dueDate && new Date(b.dueDate) < new Date()).length > 0 && `:: 0${bugs.filter(b => b.status !== 'done' && b.dueDate && new Date(b.dueDate) < new Date()).length}`}</span>
+            <Clock size={12} md:size={14} className={showOverdueOnly ? "text-white" : "text-rose-400"} />
+            <span className="whitespace-nowrap">QUÁ-HẠN {bugs.filter(b => b.status !== 'done' && b.dueDate && new Date(b.dueDate) < new Date()).length > 0 && `:: 0${bugs.filter(b => b.status !== 'done' && b.dueDate && new Date(b.dueDate) < new Date()).length}`}</span>
           </button>
 
           <div className="relative group shrink-0 self-center">
-             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-brand-500 transition-colors" />
+             <Search className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 w-3 h-3 md:w-4 md:h-4 text-slate-300 group-focus-within:text-brand-500 transition-colors" />
              <input 
-               type="text" placeholder="Matrix_Search..." value={searchTerm}
+               type="text" placeholder="Tìm kiếm..." value={searchTerm}
                onChange={(e) => setSearchTerm(e.target.value)}
-               className="h-10 md:h-14 bg-slate-50 border border-slate-100 rounded-2xl pl-12 pr-6 text-[10px] md:text-sm font-bold text-slate-950 focus:bg-white focus:border-brand-500 transition-all w-32 md:w-72 outline-none font-mono italic"
+               className="h-10 md:h-14 bg-slate-50 border border-slate-100 rounded-xl md:rounded-2xl pl-10 md:pl-12 pr-4 md:pr-6 text-[9px] md:text-sm font-bold text-slate-950 focus:bg-white focus:border-brand-500 transition-all w-32 md:w-72 outline-none font-mono italic"
              />
           </div>
 
           <button 
             onClick={() => setShowQuickAdd(true)}
-            className="h-10 md:h-14 px-6 md:px-10 bg-slate-950 text-white rounded-2xl text-[9px] md:text-[11px] font-black hover:bg-brand-600 hover:translate-y-[-2px] transition-all flex items-center gap-3 shadow-2xl shadow-slate-950/20 active:translate-y-[1px] uppercase tracking-widest md:tracking-[0.3em] italic group"
+            className="h-10 md:h-14 px-5 md:px-10 bg-slate-950 text-white rounded-xl md:rounded-2xl text-[8px] md:text-[11px] font-black hover:bg-brand-600 hover:translate-y-[-2px] transition-all flex items-center gap-2 shadow-2xl shadow-slate-950/20 active:translate-y-[1px] uppercase tracking-widest md:tracking-[0.3em] italic group shrink-0"
           >
-             <Plus size={16} strokeWidth={3} className="group-hover:rotate-90 transition-transform duration-500" /> 
-             <span className="hidden sm:inline">DEPLOY_NODE</span>
+             <Plus size={14} md:size={16} strokeWidth={3} className="group-hover:rotate-90 transition-transform duration-500" /> 
+             <span className="hidden sm:inline">KHỞI TẠO NÚT</span>
+             <span className="sm:hidden">THÊM</span>
           </button>
         </div>
       </div>
@@ -548,7 +549,7 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
                      <Shield size={20} md:size={28} />
                    </div>
                    <div>
-                     <h2 className="text-sm md:text-xl font-bold text-slate-900 uppercase tracking-widest md:tracking-[0.2em]">Cơ sở dữ liệu nhân sự</h2>
+                     <h2 className="text-sm md:text-xl font-black text-slate-900 uppercase tracking-widest md:tracking-[0.2em]">Cơ sở dữ liệu nhân sự</h2>
                      <p className="text-[8px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1 opacity-60">Control Panel / Security v4.0</p>
                    </div>
                 </div>
@@ -580,7 +581,7 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
                                )}
                              </div>
                              <div className="min-w-0">
-                               <div className="text-sm md:text-base font-bold text-slate-900 uppercase tracking-tight truncate">{profile.displayName}</div>
+                               <div className="text-sm md:text-base font-black text-slate-900 uppercase tracking-tight truncate">{profile.displayName}</div>
                                <div className="text-[8px] md:text-[9px] font-bold text-slate-400 truncate mt-1 tracking-widest font-mono opacity-50">{profile.email}</div>
                              </div>
                            </div>
@@ -589,7 +590,7 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
                              {isGlobalAdmin ? (
                                <div className="flex items-center gap-3 px-4 py-2 md:px-6 md:py-3 bg-amber-50 border border-amber-100 rounded-xl md:rounded-2xl">
                                  <Shield size={14} md:size={16} className="text-amber-500" />
-                                 <span className="text-[8px] md:text-[10px] font-bold text-amber-700 uppercase tracking-widest md:tracking-[0.2em]">Cấp quyền tối cao</span>
+                                 <span className="text-[8px] md:text-[10px] font-black text-amber-700 uppercase tracking-widest md:tracking-[0.2em]">Cấp quyền tối cao</span>
                                </div>
                              ) : (
                                (Object.keys(ROLE_CONFIG) as UserRole[]).map(role => {
@@ -599,7 +600,7 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
                                      key={role}
                                      onClick={() => handleUpdateUserRoles(profile.userId, profile.roles || [], role)}
                                      className={cn(
-                                       "px-3 md:px-5 h-8 md:h-11 rounded-lg md:rounded-[1.25rem] text-[8px] md:text-[10px] font-bold uppercase tracking-widest md:tracking-[0.15em] flex items-center gap-1.5 md:gap-2 transition-all border outline-none active:scale-95",
+                                       "px-3 md:px-5 h-8 md:h-11 rounded-lg md:rounded-[1.25rem] text-[8px] md:text-[10px] font-black uppercase tracking-widest md:tracking-[0.15em] flex items-center gap-1.5 md:gap-2 transition-all border outline-none active:scale-95",
                                        isAssigned 
                                          ? cn(ROLE_CONFIG[role].color, "text-white border-transparent shadow-lg shadow-current/20")
                                          : "bg-slate-50 text-slate-400 border-slate-100 hover:border-indigo-300 hover:text-indigo-600 hover:bg-white"
@@ -614,7 +615,7 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
                            </div>
 
                            <div className="hidden md:block w-40 text-right opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-x-4 group-hover:translate-x-0">
-                              <span className="text-[9px] font-bold text-slate-300 uppercase tracking-[0.3em]">Authorized Access_</span>
+                              <span className="text-[9px] font-black text-slate-300 uppercase tracking-[0.3em]">Truy cập được phép_</span>
                            </div>
                          </div>
                       </div>
@@ -627,12 +628,12 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
                  <div className="flex items-center gap-4 md:gap-6">
                     <div className="flex items-center gap-2 md:gap-3">
                        <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                       <span className="text-[8px] md:text-[10px] font-bold text-slate-900 uppercase tracking-widest">Protocol Secured</span>
+                       <span className="text-[8px] md:text-[10px] font-black text-slate-900 uppercase tracking-widest">Giao thức bảo mật</span>
                     </div>
                     <div className="hidden sm:block h-4 w-px bg-slate-100" />
-                    <span className="hidden sm:block text-[8px] md:text-[9px] font-bold text-slate-300 font-mono">Encryption: AES-256-Bit_</span>
+                    <span className="hidden sm:block text-[8px] md:text-[9px] font-bold text-slate-300 font-mono">Mã hóa: AES-256-Bit_</span>
                  </div>
-                 <div className="text-[8px] md:text-[10px] font-bold text-slate-300 uppercase tracking-[0.2em] md:tracking-[0.4em]">Matrix Personnel Records</div>
+                 <div className="text-[8px] md:text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] md:tracking-[0.4em]">Hồ sơ nhân sự hệ thống</div>
               </div>
             </motion.div>
           </div>
@@ -717,24 +718,26 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
       <div className="flex-1 overflow-y-auto custom-scrollbar">
         <DragDropContext onDragEnd={onDragEnd}>
           {viewMode === 'board' ? (
-            <div className="flex h-full p-6 md:p-20 gap-6 md:gap-16 min-w-fit mx-auto justify-start items-start pb-40 overflow-x-auto no-scrollbar">
-              {STATUS_COLUMNS.map(col => (
-                 <KanbanColumn 
-                    key={col.id}
-                    title={col.label}
-                    tasks={getFilteredTasks(col.id)}
-                    status={col.id}
-                    userProfiles={userProfiles}
-                    onSelect={setSelectedBug}
-                    isAdding={isAdding === col.id}
-                    setIsAdding={setIsAdding}
-                    newBugTitle={newBugTitle}
-                    setNewBugTitle={setNewBugTitle}
-                    handleAddBug={handleAddBug}
-                    userId={userId}
-                    isAdmin={isAdmin}
-                 />
-              ))}
+            <div className="flex h-full p-2 sm:p-6 md:p-10 pb-40 overflow-x-auto no-scrollbar justify-start md:justify-center">
+              <div className="flex gap-4 md:gap-8 items-start">
+                {STATUS_COLUMNS.map(col => (
+                   <KanbanColumn 
+                      key={col.id}
+                      title={col.label}
+                      tasks={getFilteredTasks(col.id)}
+                      status={col.id}
+                      userProfiles={userProfiles}
+                      onSelect={setSelectedBug}
+                      isAdding={isAdding === col.id}
+                      setIsAdding={setIsAdding}
+                      newBugTitle={newBugTitle}
+                      setNewBugTitle={setNewBugTitle}
+                      handleAddBug={handleAddBug}
+                      userId={userId}
+                      isAdmin={isAdmin}
+                   />
+                ))}
+              </div>
             </div>
           ) : (
             <div className="p-6 md:p-20 max-w-[1400px] mx-auto w-full space-y-20 md:space-y-32 pb-40">
@@ -742,25 +745,25 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
                 const columnTasks = getFilteredTasks(col.id);
                 return (
                   <div key={col.id} className="space-y-10">
-                    <div className="flex items-center justify-between px-6 border-l-2 border-brand-500">
+                    <div className="flex items-center justify-between px-6 border-l-4 border-brand-500">
                        <div className="flex flex-col">
-                          <h3 className="text-xl font-heading font-bold text-slate-900 uppercase tracking-tight leading-none">{col.label}</h3>
-                          <span className="text-[8px] font-bold text-slate-300 font-mono tracking-[0.2em] mt-1.5 ">Matrix_Protocol::Nodes</span>
+                          <h3 className="text-3xl font-heading font-black text-slate-900 uppercase tracking-[-0.05em] leading-none italic">{col.label}</h3>
+                          <span className="text-[9px] font-black text-slate-300 font-mono tracking-[0.5em] mt-2 italic">GIAO_THỨC_HỆ_THỐNG::PHÂN_BỔ_NÚT</span>
                        </div>
-                       <div className="flex items-baseline gap-3">
-                          <span className="text-3xl font-heading font-bold text-slate-900 leading-none">{columnTasks.length.toString().padStart(2, '0')}</span>
-                          <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest font-mono">Nodes</span>
+                       <div className="flex items-baseline gap-4">
+                          <span className="text-5xl font-heading font-black text-slate-900 leading-none italic">{columnTasks.length.toString().padStart(2, '0')}</span>
+                          <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest font-mono">ĐANG_HOẠT_ĐỘNG</span>
                        </div>
                     </div>
                     
                     <div className="bg-white/40 backdrop-blur-3xl rounded-[3rem] border border-slate-200/50 overflow-hidden shadow-sm">
-                      <div className="grid grid-cols-[80px_1fr_140px_180px_180px_140px] bg-slate-50 text-slate-400 border-b border-slate-100">
-                        <div className="px-8 py-5 text-[9px] font-bold uppercase tracking-[0.2em] font-mono">ID</div>
-                        <div className="px-8 py-5 text-[9px] font-bold uppercase tracking-[0.2em] font-mono text-slate-600">Objective</div>
-                        <div className="px-8 py-5 text-[9px] font-bold uppercase tracking-[0.2em] font-mono text-center">Status</div>
-                        <div className="px-8 py-5 text-[9px] font-bold uppercase tracking-[0.2em] font-mono">Priority</div>
-                        <div className="px-8 py-5 text-[9px] font-bold uppercase tracking-[0.2em] font-mono">Operator</div>
-                        <div className="px-8 py-5 text-[9px] font-bold uppercase tracking-[0.2em] font-mono text-right">Deadline</div>
+                      <div className="grid grid-cols-[80px_1fr_140px_180px_180px_140px] bg-slate-950 text-white border-b border-slate-800">
+                        <div className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.3em] font-mono text-slate-500">ID</div>
+                        <div className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.4em] font-mono">Nội dung công việc</div>
+                        <div className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.4em] font-mono text-center">Trạng thái</div>
+                        <div className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.4em] font-mono">Mức độ ưu tiên</div>
+                        <div className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.4em] font-mono">Người thực hiện</div>
+                        <div className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.4em] font-mono text-right">Hạn chót</div>
                       </div>
 
                       <Droppable droppableId={col.id}>
@@ -774,8 +777,8 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
                             )}
                           >
                             {columnTasks.length === 0 ? (
-                              <div className="flex items-center justify-center h-40 text-[11px] font-bold text-slate-200 uppercase tracking-[0.5em] select-none">
-                                Thả mục tiêu vào đây để đồng bộ sang {col.label.toUpperCase()}
+                              <div className="flex items-center justify-center h-40 text-[11px] font-black text-slate-200 uppercase tracking-[0.5em] italic select-none text-center px-6">
+                                Kéo thả nhiệm vụ vào đây để đồng bộ sang {col.label.toUpperCase()}
                               </div>
                             ) : columnTasks.map((bug, index) => (
                                 <DraggableAny 
@@ -806,8 +809,8 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
                                       </div>
                                       <div className="px-8 py-8">
                                         <div className="flex flex-col gap-2">
-                                          <span className="text-[11px] font-bold text-slate-300 uppercase tracking-[0.2em] font-mono leading-none opacity-0 group-hover:opacity-100 transition-opacity">Task_Header_id</span>
-                                          <span className="text-lg font-heading font-bold text-slate-900 group-hover:text-brand-600 transition-colors uppercase leading-none">{bug.title}</span>
+                                          <span className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] font-mono leading-none opacity-0 group-hover:opacity-100 transition-opacity">Task_Header_id</span>
+                                          <span className="text-lg font-heading font-black text-slate-950 group-hover:text-brand-600 transition-colors uppercase italic leading-none">{bug.title}</span>
                                         </div>
                                       </div>
                                       <div className="px-8 py-8 flex justify-center">
@@ -901,13 +904,13 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
                    <div className="flex items-center gap-4">
                      <div className="w-2.5 h-2.5 rounded-full bg-brand-500 animate-pulse shadow-[0_0_15px_rgba(99,102,241,0.5)]" />
                      <div className="flex flex-col">
-                       <span className="text-[10px] md:text-[11px] font-black text-slate-950 uppercase tracking-[0.3em] font-mono leading-none">NODE_ID: {selectedBug.id.slice(-6).toUpperCase()}</span>
-                       <span className="text-[8px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono leading-none mt-1.5">v4.2.0::ACTIVE</span>
+                       <span className="text-[10px] md:text-[11px] font-black text-slate-950 uppercase tracking-[0.3em] font-mono leading-none">MÃ_NÚT: {selectedBug.id.slice(-6).toUpperCase()}</span>
+                       <span className="text-[8px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono leading-none mt-1.5">v4.2.0::ĐANG_CHẠY</span>
                      </div>
                    </div>
                    <div className="hidden sm:block h-6 w-px bg-slate-100" />
                    <div className="hidden lg:flex flex-col">
-                     <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.5em] font-mono italic">SyncStatus::Established</span>
+                     <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.5em] font-mono italic">Đồng_Bộ::Hoàn_Tất</span>
                    </div>
                 </div>
                 <button 
@@ -929,10 +932,10 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
                             "px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border",
                             selectedBug.priority === 'critical' ? "bg-rose-50 text-rose-600 border-rose-100" : "bg-slate-50 text-slate-500 border-slate-100"
                           )}>
-                            {selectedBug.priority.toUpperCase()}
+                            {PRIORITY_CONFIG[selectedBug.priority].label.toUpperCase()}
                           </div>
                           <div className="w-1.5 h-1.5 rounded-full bg-slate-200" />
-                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Protocol Priority</span>
+                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Độ ưu tiên hệ thống</span>
                         </div>
                         {(isAdmin || canDeleteBug(userProfiles.find(u => u.userId === userId)?.roles)) && (
                           <button 
@@ -1074,21 +1077,21 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
                   <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-white/50 backdrop-blur-sm">
                     <div className="flex items-center gap-3">
                       <div className="w-1 h-3 bg-brand-500 rounded-full" />
-                      <h3 className="text-[10px] font-black text-slate-900 uppercase tracking-[0.3em]">Protocol Log</h3>
+                      <h3 className="text-[10px] font-black text-slate-900 uppercase tracking-[0.3em]">NHẬT KÝ HỆ THỐNG</h3>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      <span className="text-[8px] font-bold text-slate-400 uppercase font-mono tracking-tighter">Sync Active_</span>
+                      <span className="text-[8px] font-bold text-slate-400 uppercase font-mono tracking-tighter">ĐANG ĐỒNG BỘ_</span>
                     </div>
                   </div>
 
                   <div className="flex-1 overflow-y-auto p-8 space-y-10 custom-scrollbar">
                     {comments.length === 0 ? (
-                      <div className="h-full flex flex-col items-center justify-center opacity-20 py-20">
-                        <div className="w-12 h-12 border-2 border-slate-300 rounded-2xl flex items-center justify-center mb-4 rotate-12">
+                      <div className="h-full flex flex-col items-center justify-center opacity-20 py-20 text-center">
+                        <div className="w-12 h-12 border-2 border-slate-300 rounded-2xl flex items-center justify-center mb-4 rotate-12 mx-auto">
                           <MessageSquare size={20} className="text-slate-400" />
                         </div>
-                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em]">Empty Log Sequence_</p>
+                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em]">Dữ liệu trống_</p>
                       </div>
                     ) : (
                       <div className="space-y-8">
@@ -1100,7 +1103,7 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
                               </div>
                               <span className="text-[9px] font-black text-slate-900 uppercase tracking-wider">{c.userName}</span>
                               <span className="text-[8px] font-bold text-slate-300 font-mono ml-auto">
-                                {c.createdAt?.toDate ? new Date(c.createdAt.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'NOW_'}
+                                {c.createdAt?.toDate ? new Date(c.createdAt.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'VỪA XONG_'}
                               </span>
                             </div>
                             <div className="pl-[30px] relative">
@@ -1133,7 +1136,7 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
                         }}
                       />
                       <div className="absolute top-4 right-4 pointer-events-none opacity-0 group-focus-within:opacity-100 transition-opacity">
-                         <span className="text-[8px] font-bold text-slate-300 bg-white px-2 py-1 border border-slate-100 rounded-md">⏎ Enter to send</span>
+                         <span className="text-[8px] font-bold text-slate-300 bg-white px-2 py-1 border border-slate-100 rounded-md">⏎ Enter để gửi</span>
                       </div>
                     </div>
                     
@@ -1142,10 +1145,10 @@ export default function KanbanBoard({ projectId, userId, userProfiles, bugs, isP
                       disabled={!newComment.trim()}
                       className="w-full h-11 bg-slate-900 text-white rounded-xl text-[9px] font-black hover:bg-black transition-all shadow-xl shadow-slate-900/10 disabled:opacity-20 active:scale-95 uppercase tracking-[0.3em] flex items-center justify-center gap-2"
                     >
-                      Xác nhận gửi phản hồi
+                      Gửi phản hồi
                     </button>
                     <div className="flex justify-center">
-                      <span className="text-[8px] font-bold text-slate-300 uppercase tracking-widest font-mono">Terminal Input v1.0.4</span>
+                      <span className="text-[8px] font-bold text-slate-300 uppercase tracking-widest font-mono">Nhập liệu hệ thống v1.0.4</span>
                     </div>
                   </div>
                 </div>
