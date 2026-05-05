@@ -21,7 +21,7 @@
 
 @layer base {
   body {
-    @apply bg-white text-slate-950 antialiased selection:bg-brand-500 selection:text-white font-sans;
+    @apply bg-transparent text-slate-950 antialiased selection:bg-brand-500 selection:text-white font-sans;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11", "ss01";
   }
 }
