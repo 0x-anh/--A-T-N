@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { 
-  Orbit, LayoutGrid, FolderKanban, PieChart, Activity, Users, Github 
+  Orbit, LayoutGrid, FolderKanban, PieChart, Activity, Users, LogOut
 } from "lucide-react";
 import { cn } from '../../lib/utils';
 
@@ -63,33 +63,45 @@ const Sidebar = ({ activeTab, setActiveTab, user, handleLogout }: SidebarProps) 
       </div>
 
       <div className="p-8 mt-auto border-t border-slate-50 space-y-4">
-        <div className="p-5 bg-slate-50 border border-slate-100 rounded-3xl flex items-center gap-4 group cursor-pointer hover:bg-slate-100/80 transition-all">
-          <div className="relative">
-            <img 
-              className="w-11 h-11 rounded-2xl border-2 border-white shadow-xl group-hover:scale-105 transition-transform" 
-              src={user?.photoURL || `https://api.dicebear.com/7.x/notionists/svg?seed=${user?.uid}`} 
-              alt="" 
-            />
-            <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full" />
+        <div className="flex items-center gap-3 py-6 px-1 border-t border-slate-100/50 group/profile">
+          <div className="relative flex-shrink-0">
+            <div className="w-11 h-11 rounded-full overflow-hidden border-2 border-white shadow-sm transition-transform duration-500 group-hover/profile:scale-105">
+              <img 
+                src={user?.photoURL || `https://api.dicebear.com/7.x/notionists/svg?seed=${user?.email || 'user'}`} 
+                alt="User Avatar" 
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full shadow-sm" />
           </div>
+          
           <div className="min-w-0 flex-1">
-             <div className="text-[12px] font-black text-slate-950 truncate uppercase tracking-tight">{user?.displayName}</div>
-             <button onClick={handleLogout} className="text-[9px] font-black text-slate-400 hover:text-rose-600 transition-colors uppercase tracking-[0.3em] font-mono leading-none">ĐĂNG_XUẤT</button>
+             <div className="text-[14px] font-bold text-slate-950 leading-none tracking-tight mb-1.5 truncate" title={user?.displayName || 'User'}>
+               {user?.displayName || 'Guest User'}
+             </div>
+             <div className="flex items-center gap-3">
+               <span className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] font-mono">
+                 {user?.email ? 'Authorized' : 'Guest Mode'}
+               </span>
+               <button 
+                 onClick={handleLogout}
+                 className="flex items-center gap-1 text-[9px] font-bold text-rose-500 hover:text-rose-700 transition-colors uppercase tracking-widest font-mono opacity-60 group-hover/profile:opacity-100 flex-shrink-0"
+               >
+                 <LogOut size={10} />
+                 [EXIT]
+               </button>
+             </div>
           </div>
         </div>
-        <a 
-          href="https://github.com/0x-anh" 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="flex flex-col items-center gap-3 group/git transition-all"
-        >
-          <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-300 group-hover/git:bg-slate-900 group-hover/git:text-white transition-all shadow-sm">
-            <Github size={14} />
-          </div>
-          <p className="text-[8px] font-black text-slate-300 uppercase tracking-[0.2em] font-mono text-center group-hover/git:text-slate-900 transition-colors">
-            © 2026 ZENITH_X - NGUYỄN ĐỨC ANH
+        
+        <div className="flex flex-col gap-1 pt-2 opacity-30">
+          <p className="text-[8px] font-bold text-slate-400 uppercase tracking-[0.3em] font-mono text-center">
+            ZENITH_X • SYSTEM_STABLE
           </p>
-        </a>
+          <p className="text-[7px] font-medium text-slate-300 uppercase tracking-[0.2em] text-center">
+            DEVELOPED BY NGUYỄN ĐỨC ANH
+          </p>
+        </div>
       </div>
     </aside>
   );
