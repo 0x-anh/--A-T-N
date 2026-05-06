@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'motion/react';
 import { Activity, Clock, User, Shield, Terminal, Filter, Cpu, Mail, Zap, CheckCircle2 } from 'lucide-react';
 import { useLogs } from '../hooks/useLogs';
@@ -13,6 +14,7 @@ interface LogsPageProps {
 }
 
 const LogsPage = ({ selectedProject, projects, userId, userProfiles }: LogsPageProps) => {
+  const { t, i18n } = useTranslation();
   const { logs } = useLogs();
   const [projectFilter, setProjectFilter] = useState<string>('all');
   const [filterType, setFilterType] = useState<'all' | 'system' | 'admin'>('all');
@@ -38,11 +40,11 @@ const LogsPage = ({ selectedProject, projects, userId, userProfiles }: LogsPageP
             </div>
 
             <h2 className="text-4xl md:text-6xl font-heading font-black tracking-tight uppercase leading-tight text-slate-950">
-              NHẬT KÝ <br/> <span className="text-slate-300">VẬN HÀNH</span>
+              {t('logs.title').split(' ')[0]} <br/> <span className="text-slate-300">{t('logs.title').split(' ')[1]}</span>
             </h2>
 
-            <p className="max-w-md mx-auto text-slate-400 text-sm font-bold uppercase tracking-widest leading-relaxed">
-              Dòng dữ liệu nhật ký đang ở trạng thái chờ. Vui lòng thiết lập dự án để bắt đầu giám sát các luồng tương tác và quản trị hệ thống.
+            <p className="max-w-md mx-auto text-slate-400 text-sm font-bold uppercase tracking-wide leading-relaxed">
+              {t('logs.subtitle')}
             </p>
 
             <div className="pt-8">
@@ -53,7 +55,7 @@ const LogsPage = ({ selectedProject, projects, userId, userProfiles }: LogsPageP
                   <div className="absolute inset-0 bg-gradient-to-r from-brand-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   <div className="relative flex items-center gap-4 tracking-[0.3em]">
                     <Terminal size={20} className="text-brand-400 group-hover:text-white transition-colors" />
-                    KÍCH HOẠT DỰ ÁN
+                    {t('dashboard.new_project').toUpperCase()}
                   </div>
                </button>
             </div>
@@ -127,15 +129,15 @@ const LogsPage = ({ selectedProject, projects, userId, userProfiles }: LogsPageP
         <div className="flex items-center justify-between border-b border-slate-200/50 pb-8">
           <div className="flex items-center gap-8">
             <div className="flex flex-col shrink-0">
-              <h3 className="text-[11px] font-black text-brand-600 uppercase tracking-[0.5em] font-mono leading-none mb-2">QUẢN TRỊ RƠ-LE</h3>
+              <h3 className="text-[11px] font-black text-brand-600 uppercase tracking-[0.5em] font-mono leading-none mb-2">{t('logs.relay_administration')}</h3>
               <h2 className="text-4xl md:text-5xl font-heading font-black tracking-tighter uppercase leading-none text-slate-950">
-                NHẬT KÝ <span className="text-slate-400">VẬN HÀNH</span>
+                {t('logs.title').split(' ')[0]} <span className="text-slate-400">{t('logs.title').split(' ')[1]}</span>
               </h2>
             </div>
             <div className="hidden lg:block w-[1px] h-16 bg-slate-200 shrink-0" />
             <div className="hidden lg:block max-w-sm">
               <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest leading-relaxed break-all line-clamp-2">
-                Giám sát toàn bộ luồng dữ liệu và lịch sử tương tác trên các Node dự án {projectFilter === 'all' ? 'Hệ thống' : projects.find(p => p.id === projectFilter)?.name}.
+                {t('logs.monitoring_description')} {projectFilter === 'all' ? t('metrics.global_system') : projects.find(p => p.id === projectFilter)?.name}.
               </p>
             </div>
           </div>
@@ -156,7 +158,7 @@ const LogsPage = ({ selectedProject, projects, userId, userProfiles }: LogsPageP
                   >
                      <Zap size={16} className={cn("transition-transform duration-500 shrink-0", showProjectMenu && "rotate-90 text-brand-400")} />
                      <span className="text-[9px] font-black uppercase tracking-widest truncate">
-                       {projectFilter === 'all' ? 'Tất cả Dự án' : `Node: ${projects.find(p => p.id === projectFilter)?.name}`}
+                       {projectFilter === 'all' ? t('metrics.all_projects') : `Node: ${projects.find(p => p.id === projectFilter)?.name}`}
                      </span>
                   </button>
 
@@ -176,7 +178,7 @@ const LogsPage = ({ selectedProject, projects, userId, userProfiles }: LogsPageP
                            )}
                          >
                            <Terminal size={14} className="shrink-0" />
-                           <span className="truncate">HỆ THỐNG TỔNG (GLOBAL)</span>
+                           <span className="truncate">{t('metrics.global_system').toUpperCase()}</span>
                          </button>
                          <div className="my-1.5 h-[1px] bg-slate-100" />
                          <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
@@ -212,7 +214,7 @@ const LogsPage = ({ selectedProject, projects, userId, userProfiles }: LogsPageP
                   >
                      <Filter size={16} className={cn("transition-transform duration-500", showFilterMenu && "rotate-180")} />
                      <span className="text-[9px] font-black uppercase tracking-widest">
-                       {filterType === 'all' ? 'Bộ lọc luồng' : `Đang lọc: ${filterType === 'system' ? 'Hệ thống' : 'Quản trị'}`}
+                       {filterType === 'all' ? t('logs.flow_filter') : `${t('logs.filtering')}: ${filterType === 'system' ? t('logs.system_flow') : t('logs.admin_command')}`}
                      </span>
                   </button>
 
@@ -225,9 +227,9 @@ const LogsPage = ({ selectedProject, projects, userId, userProfiles }: LogsPageP
                         className="absolute right-0 mt-3 w-52 bg-white/90 backdrop-blur-3xl rounded-2xl border border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.1)] z-50 overflow-hidden p-1.5"
                       >
                          {[
-                           { id: 'all', label: 'Tất cả dữ liệu', icon: Activity },
-                           { id: 'system', label: 'Luồng hệ thống', icon: Shield },
-                           { id: 'admin', label: 'Lệnh quản trị', icon: Cpu },
+                           { id: 'all', label: t('logs.filter_all'), icon: Activity },
+                           { id: 'system', label: t('logs.system_flow'), icon: Shield },
+                           { id: 'admin', label: t('logs.admin_command'), icon: Cpu },
                          ].map((f) => (
                            <button
                              key={f.id}
@@ -261,7 +263,7 @@ const LogsPage = ({ selectedProject, projects, userId, userProfiles }: LogsPageP
                 </div>
                 <div className="flex items-center gap-2 px-3 py-1 bg-brand-500/5 border border-brand-500/10 rounded-full">
                    <div className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse" />
-                   <span className="text-[8px] font-black text-brand-600 uppercase tracking-[0.2em] font-mono">DÒNG DỮ LIỆU LIVE</span>
+                   <span className="text-[8px] font-black text-brand-600 uppercase tracking-[0.2em] font-mono">LIVE_STREAM_OK</span>
                 </div>
              </div>
           </div>
@@ -271,10 +273,10 @@ const LogsPage = ({ selectedProject, projects, userId, userProfiles }: LogsPageP
       {/* Stats Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 px-4">
         {[
-          { label: 'Tổng sự kiện', value: stats.total, icon: <Activity />, trend: 'DỮ LIỆU' },
-          { label: 'Log Hệ thống', value: stats.system, icon: <Shield />, trend: 'AN TOÀN' },
-          { label: 'Log Quản trị', value: stats.admin, icon: <Cpu />, trend: 'QUYỀN HẠN' },
-          { label: 'Trạng thái', value: `${stats.health}%`, icon: <CheckCircle2 />, trend: 'HOẠT ĐỘNG' },
+          { label: t('logs.total_events'), value: stats.total, icon: <Activity />, trend: 'DATA' },
+          { label: t('logs.system_logs'), value: stats.system, icon: <Shield />, trend: 'SAFE' },
+          { label: t('logs.admin_logs'), value: stats.admin, icon: <Cpu />, trend: 'AUTH' },
+          { label: t('logs.status'), value: `${stats.health}%`, icon: <CheckCircle2 />, trend: 'ACTIVE' },
         ].map((s, i) => (
           <motion.div 
             key={i}
@@ -315,14 +317,13 @@ const LogsPage = ({ selectedProject, projects, userId, userProfiles }: LogsPageP
                  <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
                     <Terminal size={32} className="text-slate-200" />
                  </div>
-                 <h3 className="text-lg font-bold text-slate-400 uppercase tracking-widest">Không có luồng dữ liệu</h3>
+                 <h3 className="text-lg font-bold text-slate-400 uppercase tracking-widest">{t('logs.no_data_flow')}</h3>
                  <p className="text-slate-300 text-xs mt-2 font-mono">AWAITING_SYSTEM_ACTIVITY...</p>
               </motion.div>
             ) : (
               filteredLogs.map((log, idx) => {
                 const date = log.timestamp?.toDate?.() || new Date();
-                const timeStr = date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                const dateStr = date.toLocaleDateString('vi-VN');
+                const timeStr = date.toLocaleTimeString(i18n.language === 'vi' ? 'vi-VN' : 'en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
                 const isRemoval = 
                   log.action?.toLowerCase().includes('remove') || 
                   log.action?.toLowerCase().includes('decline') ||
@@ -331,7 +332,7 @@ const LogsPage = ({ selectedProject, projects, userId, userProfiles }: LogsPageP
                   log.details?.toLowerCase().includes('từ chối');
                 
                 const userPhoto = log.userPhoto || userProfiles.find(u => u.userId === log.userId)?.photoURL;
-                const userEmail = log.userEmail || userProfiles.find(u => u.userId === log.userId)?.email || 'Hệ thống';
+                const userEmail = log.userEmail || userProfiles.find(u => u.userId === log.userId)?.email || t('logs.system_user');
 
                 return (
                   <motion.div 
@@ -386,7 +387,7 @@ const LogsPage = ({ selectedProject, projects, userId, userProfiles }: LogsPageP
                              </div>
                           </div>
                           <div className="text-right">
-                             <span className="block text-[8px] font-black text-slate-300 uppercase tracking-widest mb-0.5">MÃ NHẬT KÝ</span>
+                             <span className="block text-[8px] font-black text-slate-300 uppercase tracking-widest mb-0.5">{t('logs.id_prefix')}</span>
                              <span className="text-[9px] font-bold text-slate-400 font-mono">{log.id?.slice(0, 8).toUpperCase()}</span>
                           </div>
                        </div>

@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { Plus, Bug as BugIcon, Search, LayoutDashboard, ListFilter, Activity, Grid, List, Terminal, LayoutList, CheckCircle2 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
+import { useTranslation } from 'react-i18next';
 
 // Import sub-components
 import KanbanHeader from './kanban/KanbanHeader';
@@ -50,12 +51,14 @@ const KanbanBoard = ({
   const [newComment, setNewComment] = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
 
+  const { t } = useTranslation();
+
   // Mapping labels
   const statusLabels: Record<BugStatus, string> = {
-    'backlog': 'HÀNG ĐỢI MỚI',
-    'in-progress': 'ĐANG THỰC HIỆN',
-    'in-review': 'ĐANG KIỂM TRA',
-    'done': 'ĐÃ HOÀN TẤT'
+    'backlog': t('kanban.backlog'),
+    'in-progress': t('kanban.in_progress'),
+    'in-review': t('kanban.in_review'),
+    'done': t('kanban.done')
   };
 
   const filteredBugs = useMemo(() => {
@@ -98,7 +101,7 @@ const KanbanBoard = ({
       if (!prevAssignments.current.has(bugId)) {
         const bug = bugs.find(b => b.id === bugId);
         if (bug) {
-          toast.info("NHIỆM VỤ MỚI: Bạn đã được phân công vào một nút dữ liệu mới.", {
+          toast.info(t('toasts.new_assignment_title'), {
             description: bug.title,
             icon: <Terminal className="text-brand-500" />,
             duration: 8000
@@ -108,7 +111,7 @@ const KanbanBoard = ({
     });
 
     prevAssignments.current = new Set(currentAssignments);
-  }, [bugs, userId]);
+  }, [bugs, userId, t]);
 
   useEffect(() => {
     if (!selectedBug) return;
@@ -131,15 +134,15 @@ const KanbanBoard = ({
           <div className="relative space-y-6">
             <div className="inline-flex items-center gap-3 px-4 py-2 bg-slate-900 border border-brand-500/30 rounded-full shadow-2xl">
                <div className="w-2 h-2 rounded-full bg-brand-500 animate-pulse" />
-               <span className="text-[10px] font-black text-brand-400 uppercase tracking-[0.3em] font-mono">HỆ THỐNG_ĐANG_SẴN_SÀNG</span>
+               <span className="text-[10px] font-black text-brand-400 uppercase tracking-[0.3em] font-mono">{t('kanban.system_ready')}</span>
             </div>
 
             <h2 className="text-4xl md:text-6xl font-heading font-black tracking-tight uppercase leading-tight text-slate-950">
-              CHƯA CÓ <br/> <span className="text-slate-300">DỰ ÁN NÀO</span>
+              {t('kanban.no_project_title_1')} <br/> <span className="text-slate-300">{t('kanban.no_project_title_2')}</span>
             </h2>
 
             <p className="max-w-md mx-auto text-slate-400 text-sm font-bold uppercase tracking-widest leading-relaxed">
-              Vui lòng chọn một dự án từ danh sách phía trên hoặc khởi tạo một nút dữ liệu mới để bắt đầu quy trình vận hành.
+              {t('kanban.no_project_subtitle')}
             </p>
 
             <div className="pt-8">
@@ -150,7 +153,7 @@ const KanbanBoard = ({
                   <div className="absolute inset-0 bg-gradient-to-r from-brand-600 to-violet-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   <div className="relative flex items-center gap-4 tracking-[0.3em]">
                     <Plus size={20} strokeWidth={3} className="group-hover:rotate-90 transition-transform duration-500" />
-                    KHỞI TẠO DỰ ÁN MỚI
+                    {t('dashboard.new_project')}
                   </div>
                </button>
             </div>
@@ -183,7 +186,7 @@ const KanbanBoard = ({
         action: type,
         details: content,
         userId,
-        userName: profile?.displayName || 'Unknown',
+        userName: profile?.displayName || t('logs.system_user'),
         userEmail: profile?.email || '',
         userPhoto: profile?.photoURL || '',
         createdAt: serverTimestamp()
@@ -200,11 +203,11 @@ const KanbanBoard = ({
       
       if (!isOwner && !isAdmin) {
         if (!isAssignee) {
-          toast.error("TRUY CẬP BỊ TỪ CHỐI: Bạn chỉ có quyền điều phối các nhiệm vụ được phân công cho mình.");
+          toast.error(t('toasts.access_denied_assigned_only'));
           return;
         }
         if (bug && !canUserMoveTo(currentUserProfile?.roles, bug.status, updates.status)) {
-          toast.error("TRUY CẬP BỊ TỪ CHỐI: Luồng nghiệp vụ này không nằm trong quyền hạn của bạn.");
+          toast.error(t('toasts.access_denied_role_limit'));
           return;
         }
       }
@@ -212,7 +215,7 @@ const KanbanBoard = ({
 
     try {
       await updateDoc(doc(db, 'bugs', bugId), { ...updates, updatedAt: serverTimestamp() });
-    } catch (e) { toast.error("Cập nhật thất bại"); }
+    } catch (e) { toast.error(t('toasts.update_failed')); }
   };
 
   const onDragEnd = async (result: DropResult) => {
@@ -229,11 +232,11 @@ const KanbanBoard = ({
 
     if (!isOwner && !isAdmin) {
       if (!isAssignee) {
-        toast.error("TRUY CẬP BỊ TỪ CHỐI: Bạn chỉ có quyền điều phối các nhiệm vụ được phân công cho mình.");
+        toast.error(t('toasts.access_denied_assigned_only'));
         return;
       }
       if (!canUserMoveTo(currentUserProfile?.roles, fromStatus, toStatus)) {
-        toast.error("GIAO THỨC BỊ TỪ CHỐI: Luồng di chuyển này không hợp lệ với vai trò của bạn.");
+        toast.error(t('toasts.protocol_denied_role_limit'));
         return;
       }
     }
@@ -246,27 +249,27 @@ const KanbanBoard = ({
 
       // Giao thức thông báo thông minh
       if (toStatus === 'in-review') {
-        toast.info("YÊU CẦU KIỂM THỬ: Đã chuyển Node cho bộ phận TESTER phê duyệt.", {
+        toast.info(t('toasts.review_requested'), {
           icon: <Activity className="text-brand-500" />,
-          description: "Đang chờ xác nhận chất lượng vận hành."
+          description: t('toasts.review_requested_desc')
         });
-        logActivity(draggableId, 'CMD_TRANSFER', `Gửi yêu cầu kiểm thử: ${fromStatus} -> ${toStatus}`);
+        logActivity(draggableId, 'CMD_TRANSFER', `${t('logs.review_request')}: ${fromStatus} -> ${toStatus}`);
       } else if (toStatus === 'backlog' && fromStatus === 'in-review') {
-        toast.error("PHÁT HIỆN LỖI: TESTER đã bác bỏ kết quả. EDITOR cần FIX LỖI ngay lập tức!", {
+        toast.error(t('toasts.review_rejected'), {
           duration: 7000,
-          description: "Cảnh báo hệ thống: Node bị lỗi kỹ thuật."
+          description: t('toasts.review_rejected_desc')
         });
-        logActivity(draggableId, 'SECURITY_ALERT', `Bác bỏ kết quả: Yêu cầu sửa lỗi khẩn cấp.`);
+        logActivity(draggableId, 'SECURITY_ALERT', t('logs.review_rejected_log'));
       } else if (toStatus === 'done') {
-        toast.success("HOÀN TẤT: Nhiệm vụ đã được xác nhận và lưu trữ thành công.", {
+        toast.success(t('toasts.task_finalized'), {
           icon: <CheckCircle2 className="text-emerald-500" />
         });
-        logActivity(draggableId, 'CMD_FINALIZED', `Xác nhận hoàn tất: ${fromStatus} -> ${toStatus}`);
+        logActivity(draggableId, 'CMD_FINALIZED', `${t('logs.task_finalized_log')}: ${fromStatus} -> ${toStatus}`);
       } else {
-        logActivity(draggableId, 'STATUS_CHANGE', `Cập nhật lộ trình: ${fromStatus} -> ${toStatus}`);
+        logActivity(draggableId, 'STATUS_CHANGE', `${t('logs.status_change')}: ${fromStatus} -> ${toStatus}`);
       }
 
-    } catch (e) { toast.error("Lỗi đồng bộ dữ liệu"); }
+    } catch (e) { toast.error(t('toasts.sync_failed')); }
   };
 
   const handleAddBug = async (status: BugStatus) => {
@@ -282,39 +285,39 @@ const KanbanBoard = ({
         createdAt: serverTimestamp(), 
         updatedAt: serverTimestamp()
       });
-      logActivity(docRef.id, 'BUG_CREATED', `Khởi tạo nhiệm vụ: ${newBugTitle.trim()}`);
+      logActivity(docRef.id, 'BUG_CREATED', `${t('logs.task_init')}: ${newBugTitle.trim()}`);
       setNewBugTitle('');
       setIsAdding(null);
-      toast.success("Nút dữ liệu mới đã được khởi tạo");
-    } catch (e) { toast.error("Lỗi khởi tạo"); }
+      toast.success(t('toasts.task_initialized'));
+    } catch (e) { toast.error(t('toasts.init_failed')); }
   };
 
   const handleDeleteBug = async (bugId: string) => {
     const bugToDelete = bugs.find(b => b.id === bugId);
-    const bugTitle = bugToDelete?.title || "Nút dữ liệu";
+    const bugTitle = bugToDelete?.title || t('kanban.node_identity');
 
     const deleteTimeout = setTimeout(async () => {
       try {
         await deleteDoc(doc(db, 'bugs', bugId));
-        logActivity(bugId, 'BUG_DELETED', `Đã xóa nút dữ liệu: ${bugTitle}`);
+        logActivity(bugId, 'BUG_DELETED', `${t('logs.task_deleted')}: ${bugTitle}`);
         setSelectedBugId(null);
-        toast.success(`Đã chính thức giải phóng ${bugTitle}.`);
-      } catch (e) { toast.error("Lỗi giải phóng dữ liệu."); }
+        toast.success(t('toasts.task_released', { name: bugTitle }));
+      } catch (e) { toast.error(t('toasts.release_failed')); }
       delete (window as any)[`timeout_bug_${bugId}`];
     }, 5000);
 
     (window as any)[`timeout_bug_${bugId}`] = deleteTimeout;
 
-    toast(`Đang giải phóng ${bugTitle}...`, {
+    toast(t('toasts.task_releasing', { name: bugTitle }), {
       duration: 5000,
       action: {
-        label: "HOÀN TÁC",
+        label: t('common.undo'),
         onClick: () => {
           const tId = (window as any)[`timeout_bug_${bugId}`];
           if (tId) {
             clearTimeout(tId);
             delete (window as any)[`timeout_bug_${bugId}`];
-            toast.info(`Đã khôi phục ${bugTitle}.`);
+            toast.info(t('toasts.task_restored', { name: bugTitle }));
           }
         }
       }
@@ -331,13 +334,13 @@ const KanbanBoard = ({
       const profile = userProfiles.find(u => u.userId === userId);
       await addDoc(collection(db, 'bugs', selectedBugId, 'comments'), {
         userId,
-        userName: profile?.displayName || 'Unknown',
+        userName: profile?.displayName || t('logs.system_user'),
         content: newComment.trim(), 
         createdAt: serverTimestamp()
       });
-      logActivity(selectedBugId, 'COMMENT_ADDED', `Thêm phản hồi: ${newComment.trim().slice(0, 20)}...`);
+      logActivity(selectedBugId, 'COMMENT_ADDED', `${t('logs.comment_added')}: ${newComment.trim().slice(0, 20)}...`);
       setNewComment('');
-    } catch (e) { toast.error("Gửi phản hồi thất bại"); }
+    } catch (e) { toast.error(t('toasts.comment_failed')); }
   };
 
   return (
@@ -352,15 +355,15 @@ const KanbanBoard = ({
         <div className="flex items-center justify-between border-b border-slate-200 pb-4">
           <div className="flex items-center gap-10">
             <div className="flex flex-col">
-              <h3 className="text-[10px] font-black text-brand-500 uppercase tracking-[0.4em] font-mono leading-none mb-3">TRUNG TÂM ĐIỀU PHỐI</h3>
+              <h3 className="text-[10px] font-black text-brand-500 uppercase tracking-[0.4em] font-mono leading-none mb-3">{t('kanban.coordination_center')}</h3>
               <h2 className="text-3xl font-heading font-black tracking-tight uppercase leading-normal text-slate-950 flex items-center gap-3 py-2">
-                BẢNG <span className="bg-gradient-to-r from-brand-600 to-indigo-600 bg-clip-text text-transparent pb-1">CHIẾN LƯỢC</span>
+                {t('kanban.view_board')} <span className="bg-gradient-to-r from-brand-600 to-indigo-600 bg-clip-text text-transparent pb-1">{t('kanban.strategic_board_suffix')}</span>
               </h2>
             </div>
             <div className="hidden lg:block w-[1px] h-12 bg-slate-200" />
             <div className="hidden lg:block max-w-xs">
               <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-relaxed">
-                Quản lý tiến trình vận hành, phân bổ nhiệm vụ và giám sát chất lượng thực thi.
+                {t('kanban.description')}
               </p>
             </div>
           </div>
@@ -374,7 +377,7 @@ const KanbanBoard = ({
                   </div>
                   <input 
                     type="text" 
-                    placeholder="TÌM KIẾM NHIỆM VỤ..."
+                    placeholder={t('kanban.search_tasks')}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-black text-slate-950 outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500/50 transition-all w-[240px] uppercase tracking-widest"
@@ -391,7 +394,7 @@ const KanbanBoard = ({
                   <div className="absolute inset-0 bg-gradient-to-r from-brand-600 to-violet-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   <div className="relative flex items-center gap-2 whitespace-nowrap tracking-[0.2em]">
                     <Plus size={14} strokeWidth={3} className="group-hover:rotate-90 transition-transform duration-500" />
-                    TRIỂN KHAI NHIỆM VỤ
+                    {t('kanban.deploy_task')}
                   </div>
                 </button>
 
@@ -407,7 +410,7 @@ const KanbanBoard = ({
                     )}
                   >
                     <Grid size={12} />
-                    BẢNG
+                    {t('kanban.view_board')}
                   </button>
                   <button 
                     onClick={() => setViewMode('list')}
@@ -417,7 +420,7 @@ const KanbanBoard = ({
                     )}
                   >
                     <List size={12} />
-                    DANH SÁCH
+                    {t('kanban.view_list')}
                   </button>
                 </div>
              </div>
@@ -425,7 +428,7 @@ const KanbanBoard = ({
              <div className="flex items-center gap-6">
                 <div className="flex items-center gap-2 px-4 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                   <span className="text-[8px] font-black text-emerald-600 uppercase tracking-[0.2em] font-mono">DỮ LIỆU_ĐANG_XỬ_LÝ: RT_SYNC_OK</span>
+                   <span className="text-[8px] font-black text-emerald-600 uppercase tracking-[0.2em] font-mono">{t('kanban.data_processing')}: {t('kanban.sync_ok')}</span>
                 </div>
                 
                 <div className="flex items-baseline gap-2">
@@ -591,7 +594,7 @@ const KanbanBoard = ({
                     <div className="w-56 flex items-center justify-end gap-5 border-l border-white/5 pl-8">
                        <div className="text-right">
                           <div className="text-[12px] font-black text-white uppercase tracking-widest group-hover:text-brand-400 transition-colors mb-1.5 drop-shadow-sm">
-                             {userProfiles.find(p => p.userId === bug.assigneeId && selectedProject?.members?.includes(p.userId))?.displayName || 'CHƯA PHÂN CÔNG'}
+                             {userProfiles.find(p => p.userId === bug.assigneeId && selectedProject?.members?.includes(p.userId))?.displayName || t('kanban.unassigned')}
                           </div>
                           <div className="inline-flex items-center gap-2 px-2 py-0.5 bg-emerald-500/10 rounded border border-emerald-500/20">
                              <div className="w-1 h-1 rounded-full bg-emerald-500 shadow-[0_0_5px_rgba(16,185,129,0.8)]" />
@@ -600,7 +603,7 @@ const KanbanBoard = ({
                        </div>
                        <div className="w-12 h-12 rounded-xl bg-slate-900 border-2 border-slate-800 p-0.5 shadow-2xl group-hover:border-brand-500 transition-all overflow-hidden">
                          {userProfiles.find(p => p.userId === bug.assigneeId && selectedProject?.members?.includes(p.userId))?.photoURL ? (
-                           <img src={userProfiles.find(p => p.userId === bug.assigneeId && selectedProject?.members?.includes(p.userId))?.photoURL} className="w-full h-full object-cover rounded-lg" />
+                           <img src={userProfiles.find(p => p.userId === bug.assigneeId && selectedProject?.members?.includes(p.userId))?.photoURL} className="w-full h-full object-cover rounded-lg" alt="" />
                          ) : (
                            <div className="w-full h-full bg-slate-800 rounded-lg flex items-center justify-center">
                               <Activity size={18} className="text-slate-600" />

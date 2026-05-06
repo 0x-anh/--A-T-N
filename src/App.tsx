@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from "motion/react";
+import { useTranslation } from 'react-i18next';
 import { Toaster, toast } from 'sonner';
 
 // Hooks
@@ -31,6 +32,7 @@ import { addDoc, collection, serverTimestamp, doc, setDoc, deleteDoc, getDocs, w
 import { handleFirestoreError } from './lib/firebase';
 
 export default function App() {
+  const { t } = useTranslation();
   const { user, loading, userProfiles, isAdmin, handleLogin, handleLogout } = useAuth();
   const { 
     projects, selectedProject, setSelectedProject, 
@@ -67,15 +69,15 @@ export default function App() {
     try {
       await addDoc(collection(db, 'projects'), {
         name: newProjectName,
-        description: 'Dự án mới',
+        description: t('projects.default_description'),
         createdAt: serverTimestamp(),
         ownerId: user.uid,
         members: [user.uid]
       });
       setNewProjectName('');
       setShowProjectModal(false);
-      toast.success("Không gian làm việc đã được tạo");
-    } catch (error) { toast.error("Không thể tạo không gian làm việc."); }
+      toast.success(t('toasts.project_created'));
+    } catch (error) { toast.error(t('toasts.project_create_failed')); }
   };
 
   const handleInviteMember = async () => {
@@ -91,7 +93,7 @@ export default function App() {
     try {
       const projectRef = doc(db, 'projects', selectedProject.id);
       await setDoc(projectRef, { name: selectedProject.name }, { merge: true });
-      toast.success("Cập nhật dự án thành công.");
+      toast.success(t('toasts.project_updated'));
     } catch (error) { handleFirestoreError(error, 'update', 'projects'); }
   };
 
@@ -121,14 +123,14 @@ export default function App() {
           
           await batch.commit();
           
-          toast.success(`Dự án ${projectName} và toàn bộ dữ liệu đã được giải phóng.`);
+          toast.success(t('toasts.project_deleted', { name: projectName }));
           if (selectedProject?.id === projectId) {
             setSelectedProject(null);
             setActiveTab('dashboard');
           }
         } catch (error) { 
           console.error("Cleanup error:", error);
-          toast.error("Lỗi giải phóng dữ liệu hệ thống.");
+          toast.error(t('toasts.project_delete_failed'));
         }
         delete (window as any)[`timeout_project_${projectId}`];
       })();
@@ -136,16 +138,16 @@ export default function App() {
 
     (window as any)[`timeout_project_${projectId}`] = deleteTimeout;
 
-    toast(`Đang giải phóng Dự án: ${projectName}...`, {
+    toast(t('toasts.project_deleting', { name: projectName }), {
       duration: 5000,
       action: {
-        label: "HOÀN TÁC",
+        label: t('common.undo'),
         onClick: () => {
           const tId = (window as any)[`timeout_project_${projectId}`];
           if (tId) {
             clearTimeout(tId);
             delete (window as any)[`timeout_project_${projectId}`];
-            toast.info(`Đã khôi phục Dự án: ${projectName}.`);
+            toast.info(t('toasts.project_restored', { name: projectName }));
           }
         }
       }
@@ -155,7 +157,7 @@ export default function App() {
   const handleQuickAdd = async () => {
     if (!quickAddTitle.trim() || !user) return;
     if (!selectedProject) {
-      toast.error("Vui lòng chọn không gian làm việc để triển khai.");
+      toast.error(t('toasts.quick_add_no_project'));
       return;
     }
     
@@ -164,7 +166,7 @@ export default function App() {
       const docRef = await addDoc(collection(db, 'bugs'), {
         projectId: selectedProject.id,
         title: quickAddTitle.trim(),
-        description: 'Khởi tạo nhiệm vụ chiến lược qua giao thức nhanh.',
+        description: t('kanban.quick_add_description'),
         status: 'backlog',
         priority: quickAddPriority,
         creatorId: user.uid,
@@ -179,27 +181,27 @@ export default function App() {
       setQuickAddTitle('');
       setQuickAddDueDate('');
       setShowQuickAdd(false);
-      toast.success("Nhiệm vụ chiến lược đã được triển khai");
+      toast.success(t('toasts.task_deployed'));
     } catch (e: any) { 
       handleFirestoreError(e, 'create', 'bugs');
-      toast.error(`Lỗi nhiệm vụ: ${e.code}`);
+      toast.error(t('toasts.task_failed', { code: e.code }));
       return;
     }
 
     try {
-      const logMessage = `Triển khai nhiệm vụ chiến lược: ${quickAddTitle.trim()}`;
+      const logMessage = t('logs.task_deployed_log', { title: quickAddTitle.trim() });
       await addDoc(collection(db, 'activity_logs'), {
         projectId: selectedProject.id,
         bugId: docId,
         action: 'BUG_CREATED',
         details: logMessage,
         userId: user.uid,
-        userName: user.displayName || 'Hệ thống',
+        userName: user.displayName || t('logs.system_user'),
         userPhoto: user.photoURL || '',
         createdAt: serverTimestamp()
       });
     } catch (e: any) { 
-      console.warn("Lỗi nhật ký:", e.message);
+      console.warn("Log error:", e.message);
     }
   };
 
@@ -219,7 +221,7 @@ export default function App() {
             className="w-full h-full border border-slate-200 border-t-slate-900 rounded-full" 
           />
         </div>
-        <span className="text-[9px] font-bold text-slate-300 uppercase tracking-[0.3em] animate-pulse">Khởi tạo hệ thống Zenith</span>
+        <span className="text-[9px] font-bold text-slate-300 uppercase tracking-[0.3em] animate-pulse">{t('app.initializing')}</span>
       </div>
     );
   }

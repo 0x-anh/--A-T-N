@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { UserPlus, Shield, Trash2, Crown, Mail, ChevronRight, Activity, Users, Zap, CheckCircle2, Cpu } from 'lucide-react';
 import { UserProfile, Project } from '../types';
+import { useTranslation } from 'react-i18next';
 import { cn } from '../lib/utils';
 
 interface MembersPageProps {
@@ -27,6 +28,7 @@ const MembersPage = ({
   handleUpdateUserRoles,
   sentInvitations = []
 }: MembersPageProps) => {
+  const { t } = useTranslation();
   const [removingIds, setRemovingIds] = useState<string[]>([]);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [pendingRemovals, setPendingRemovals] = useState<Record<string, any>>({});
@@ -48,7 +50,7 @@ const MembersPage = ({
     total: projectMembers.length,
     admins: projectMembers.filter(p => p.roles?.includes('editor')).length,
     active: 100,
-    status: 'OPTIMAL'
+    status: t('members.node_optimal')
   };
 
   if (!selectedProject) {
@@ -64,11 +66,11 @@ const MembersPage = ({
             </div>
 
             <h2 className="text-4xl md:text-6xl font-heading font-black tracking-tight uppercase leading-tight text-slate-950">
-              ĐỘI NGŨ <br/> <span className="text-slate-300">TRỰC CHIẾN</span>
+              {t('kanban.team').split(' ')[0]} <br/> <span className="text-slate-300">{t('kanban.team').split(' ')[1] || 'STRATEGIC'}</span>
             </h2>
 
             <p className="max-w-md mx-auto text-slate-400 text-sm font-bold uppercase tracking-widest leading-relaxed">
-              Hệ thống nhân sự đang ở trạng thái chờ. Vui lòng thiết lập không gian dự án để phân bổ nguồn lực và điều hành đội ngũ.
+              {t('dashboard.no_projects')}
             </p>
 
             <div className="pt-8">
@@ -79,7 +81,7 @@ const MembersPage = ({
                   <div className="absolute inset-0 bg-gradient-to-r from-brand-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   <div className="relative flex items-center gap-4 tracking-[0.3em]">
                     <Zap size={20} className="text-brand-400 group-hover:text-white transition-colors" />
-                    KÍCH HOẠT DỰ ÁN
+                    {t('dashboard.new_project').toUpperCase()}
                   </div>
                </button>
             </div>
@@ -114,15 +116,15 @@ const MembersPage = ({
         <div className="flex items-center justify-between border-b border-slate-200/50 pb-8">
           <div className="flex items-center gap-8">
             <div className="flex flex-col">
-              <h3 className="text-[11px] font-black text-brand-600 uppercase tracking-[0.5em] font-mono leading-none mb-2">CHỈ HUY NHÂN SỰ</h3>
+              <h3 className="text-[11px] font-black text-brand-600 uppercase tracking-[0.5em] font-mono leading-none mb-2">{t('members.administrators')}</h3>
               <h2 className="text-4xl md:text-5xl font-heading font-black tracking-tighter uppercase leading-none text-slate-950">
-                QUẢN TRỊ <span className="text-slate-400">NHÂN SỰ</span>
+                {t('members.team_management').split(' ')[0]} <span className="text-slate-400">{t('members.team_management').split(' ')[1]}</span>
               </h2>
             </div>
             <div className="hidden lg:block w-[1px] h-16 bg-slate-200" />
             <div className="hidden lg:block max-w-xs">
               <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest leading-relaxed">
-                Giám sát và phân quyền nhân sự vận hành trên các Node của dự án {selectedProject?.name}.
+                {t('members.search_members')} {selectedProject?.name}.
               </p>
             </div>
           </div>
@@ -134,7 +136,7 @@ const MembersPage = ({
                  className="h-10 px-6 bg-slate-950 text-white rounded-xl flex items-center gap-3 hover:bg-brand-600 hover:shadow-xl hover:shadow-brand-500/20 transition-all duration-300 active:scale-95"
                >
                  <UserPlus size={16} />
-                 <span className="text-[10px] font-black uppercase tracking-widest">Mời nhân sự</span>
+                 <span className="text-[10px] font-black uppercase tracking-widest">{t('members.invite_member')}</span>
                </button>
              )}
 
@@ -147,7 +149,7 @@ const MembersPage = ({
                 </div>
                 <div className="flex items-center gap-2 px-3 py-1 bg-emerald-500/5 border border-emerald-500/10 rounded-full">
                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                   <span className="text-[8px] font-black text-emerald-600 uppercase tracking-[0.2em] font-mono">ĐỘI NGŨ ONLINE</span>
+                   <span className="text-[8px] font-black text-emerald-600 uppercase tracking-[0.2em] font-mono">{t('members.active')} ONLINE</span>
                 </div>
              </div>
           </div>
@@ -157,10 +159,10 @@ const MembersPage = ({
       {/* Stats Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 px-4">
         {[
-          { label: 'Tổng nhân sự', value: stats.total, icon: <Users />, trend: 'ĐỘI NGŨ' },
-          { label: 'Điều hành viên', value: stats.admins, icon: <Shield />, trend: 'QUYỀN HẠN' },
-          { label: 'Độ phủ dự án', value: `${stats.active}%`, icon: <Zap />, trend: 'HIỆU SUẤT' },
-          { label: 'Trạng thái Node', value: stats.status, icon: <CheckCircle2 />, trend: 'HỆ THỐNG' },
+          { label: t('members.total_members'), value: stats.total, icon: <Users />, trend: 'TEAM' },
+          { label: t('members.administrators'), value: stats.admins, icon: <Shield />, trend: 'ACCESS' },
+          { label: t('members.project_coverage'), value: `${stats.active}%`, icon: <Zap />, trend: 'EFFICIENCY' },
+          { label: t('members.node_status'), value: stats.status, icon: <CheckCircle2 />, trend: 'SYSTEM' },
         ].map((s, i) => (
           <motion.div 
             key={i}
@@ -224,7 +226,7 @@ const MembersPage = ({
                        <span className="text-[10px] font-black text-slate-300 font-mono tracking-widest">NODE_{idx + 1 < 10 ? `0${idx + 1}` : idx + 1}</span>
                        <div className="mt-1 flex items-center gap-1.5 px-2 py-0.5 bg-emerald-500/5 border border-emerald-500/10 rounded-full">
                           <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
-                          <span className="text-[8px] font-black text-emerald-600 tracking-tighter uppercase font-mono">ACTIVE</span>
+                          <span className="text-[8px] font-black text-emerald-600 tracking-tighter uppercase font-mono">{t('members.active')}</span>
                        </div>
                     </div>
                  </div>
@@ -243,7 +245,7 @@ const MembersPage = ({
                  {/* Protocol Control Area */}
                  <div className="space-y-3 mb-6 relative z-10">
                     <div className="flex items-center justify-between">
-                       <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest font-mono">PROTOCOL_LEVEL</span>
+                       <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest font-mono">{t('members.access_level')}</span>
                        {isTargetOwner && <span className="text-[8px] font-black text-amber-500 bg-amber-50 px-2 py-0.5 rounded border border-amber-100 uppercase tracking-widest">OWNER</span>}
                     </div>
                     
@@ -267,7 +269,7 @@ const MembersPage = ({
                     ) : (
                       <div className="py-3 px-5 bg-slate-950 rounded-2xl flex items-center justify-between shadow-2xl shadow-slate-900/30">
                          <span className="text-[10px] font-black text-white uppercase tracking-[0.2em] font-mono">
-                           {isTargetOwner ? "SYSTEM OWNER" : `${currentRole.toUpperCase()}_ACCESS`}
+                           {isTargetOwner ? t('members.system_owner') : `${currentRole.toUpperCase()}_ACCESS`}
                          </span>
                          <div className={cn(
                            "w-2 h-2 rounded-full shadow-[0_0_10px]",
@@ -282,7 +284,7 @@ const MembersPage = ({
                  <div className="flex items-center justify-between pt-5 border-t border-slate-100/50 relative z-10">
                     <div className="flex items-center gap-2 text-slate-400">
                        <Shield size={12} className="opacity-50" />
-                       <span className="text-[9px] font-black uppercase tracking-[0.2em] font-mono">SECURED_NODE</span>
+                       <span className="text-[9px] font-black uppercase tracking-[0.2em] font-mono">{t('members.secured_node')}</span>
                     </div>
                     
                     <div className="flex gap-2">
@@ -311,10 +313,10 @@ const MembersPage = ({
 
                               // 4. Show Toast with UNDO button
                               import('sonner').then(({ toast }) => {
-                                toast.warning(`Đang gỡ ${mName}...`, {
+                                toast.warning(`${t('topbar.loading')} ${mName}...`, {
                                   duration: 5000,
                                   action: {
-                                    label: 'HOÀN TÁC',
+                                    label: t('common.undo'),
                                     onClick: () => {
                                       // Cancel deletion
                                       clearTimeout(timer);
@@ -324,13 +326,14 @@ const MembersPage = ({
                                         delete next[mId];
                                         return next;
                                       });
-                                      toast.success(`Đã khôi phục ${mName}`);
+                                      toast.success(`${t('common.success')}: ${mName}`);
                                     }
                                   }
                                 });
                               });
                             }}
                             className="w-9 h-9 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-100 transition-all flex items-center justify-center group/del"
+                            title={t('members.remove_member')}
                           >
                             <Trash2 size={16} />
                           </button>
@@ -351,7 +354,7 @@ const MembersPage = ({
         <div className="px-4 space-y-6 pt-8 border-t-2 border-slate-200/50">
           <div className="flex items-center gap-3">
              <div className="w-1.5 h-6 bg-brand-500 rounded-full" />
-             <h3 className="text-sm font-black text-slate-900 uppercase tracking-[0.3em]">LỜI MỜI ĐANG CHỜ PHẢN HỒI_</h3>
+             <h3 className="text-sm font-black text-slate-900 uppercase tracking-[0.3em]">{t('modals.invite_title').toUpperCase()}_</h3>
              <span className="px-2 py-0.5 bg-slate-100 text-slate-500 rounded-lg text-[9px] font-black">{sentInvitations.length}</span>
           </div>
 
@@ -369,8 +372,8 @@ const MembersPage = ({
                       <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-amber-500 rounded-full border-2 border-white animate-pulse" />
                    </div>
                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-black text-slate-600 uppercase truncate">{targetProfile?.displayName || 'ĐANG TẢI...'}</p>
-                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest font-mono">TRẠNG THÁI: PENDING</p>
+                      <p className="text-xs font-black text-slate-600 uppercase truncate">{targetProfile?.displayName || t('topbar.loading')}</p>
+                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest font-mono">STATUS: PENDING</p>
                    </div>
                 </div>
               );

@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { X, Zap, Plus, Clock } from 'lucide-react';
 import { BugPriority, PRIORITY_CONFIG } from '../../types';
 import { cn } from '../../lib/utils';
+import { useTranslation } from 'react-i18next';
 
 interface QuickAddModalProps {
   show: boolean;
@@ -27,7 +28,16 @@ const QuickAddModal = ({
   setDueDate,
   onSubmit
 }: QuickAddModalProps) => {
+  const { t } = useTranslation();
+
   if (!show) return null;
+
+  const priorityLabels: Record<BugPriority, string> = {
+    'low': t('kanban.priority_low'),
+    'medium': t('kanban.priority_medium'),
+    'high': t('kanban.priority_high'),
+    'critical': t('kanban.priority_critical')
+  };
 
   return (
     <div className="fixed inset-0 z-[600] flex items-center justify-center p-6">
@@ -49,8 +59,8 @@ const QuickAddModal = ({
                     <Zap size={20} />
                   </div>
                   <div>
-                    <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Khởi tạo nhanh</h3>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1 opacity-60 font-mono">System Protocol v4.2</p>
+                    <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">{t('kanban.deploy_task')}</h3>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1 opacity-60 font-mono">System Protocol</p>
                   </div>
                </div>
                <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-50 transition-all">
@@ -60,19 +70,19 @@ const QuickAddModal = ({
 
             <div className="space-y-8">
                <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 block font-mono">Nội dung công việc</label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 block font-mono">{t('kanban.node_identity')}</label>
                   <textarea 
                     autoFocus
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Mô tả mục tiêu chiến lược tại đây..."
+                    placeholder={t('kanban.node_title_placeholder')}
                     className="w-full bg-slate-50 border-none rounded-3xl p-6 text-sm font-bold text-slate-900 placeholder:text-slate-200 focus:ring-4 focus:ring-slate-950/5 transition-all outline-none min-h-[100px] resize-none"
                   />
                </div>
 
                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div>
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 block font-mono">Độ ưu tiên</label>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 block font-mono">{t('kanban.priority')}</label>
                     <div className="flex gap-2">
                       {(['low', 'high', 'critical'] as BugPriority[]).map((p) => (
                           <button
@@ -86,9 +96,7 @@ const QuickAddModal = ({
                                 : "bg-white border-slate-100 text-slate-400 hover:border-slate-200"
                             )}
                           >
-                            {PRIORITY_CONFIG[p].label.includes('[') 
-                              ? PRIORITY_CONFIG[p].label.substring(PRIORITY_CONFIG[p].label.indexOf('[')) 
-                              : PRIORITY_CONFIG[p].label}
+                            {priorityLabels[p]}
                           </button>
                       ))}
                     </div>
@@ -97,7 +105,7 @@ const QuickAddModal = ({
                   <div>
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 block font-mono flex items-center gap-2">
                       <Clock size={10} />
-                      Giao thời gian
+                      {t('kanban.due_date')}
                     </label>
                     <input 
                       type="datetime-local"
@@ -114,7 +122,7 @@ const QuickAddModal = ({
               className="w-full h-16 bg-slate-950 text-white rounded-[1.5rem] mt-12 text-[11px] font-black uppercase tracking-[0.4em] hover:bg-brand-500 transition-all shadow-2xl shadow-slate-950/20 flex items-center justify-center gap-3 active:scale-95"
             >
                <Plus size={16} strokeWidth={3} />
-               Triển khai nhiệm vụ
+               {t('kanban.deploy_task')}
             </button>
          </div>
       </motion.div>

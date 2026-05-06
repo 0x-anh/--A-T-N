@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { Cpu, Activity, Zap, CheckCircle2, Plus, Users, ChevronRight } from 'lucide-react';
 import { StatsCard, QuickAction } from '../components/ui/Cards';
+import { useTranslation } from 'react-i18next';
 import { cn } from '../lib/utils';
 import { Bug } from '../types';
 
@@ -38,6 +39,8 @@ const DashboardPage = ({
   setShowInviteModal,
   setShowQuickAdd
 }: DashboardPageProps) => {
+  const { t, i18n } = useTranslation();
+  
   return (
     <motion.div 
       initial={{ opacity: 0, y: 10 }} 
@@ -49,21 +52,21 @@ const DashboardPage = ({
         <div className="flex items-center justify-between border-b border-slate-200/50 pb-8">
           <div className="flex items-center gap-8">
             <div className="flex flex-col">
-              <h3 className="text-[11px] font-black text-brand-600 uppercase tracking-[0.5em] font-mono leading-none mb-2">CHỈ HUY VẬN HÀNH</h3>
+              <h3 className="text-[11px] font-black text-brand-600 uppercase tracking-[0.5em] font-mono leading-none mb-2">{t('kanban.coordination_center')}</h3>
               <h2 className="text-3xl md:text-4xl font-heading font-black tracking-tighter uppercase leading-none text-slate-950">
-                TRUNG TÂM <span className="text-slate-400">ĐIỀU HÀNH</span>
+                {t('dashboard.project_management').split(' ')[0]} <span className="text-slate-400">{t('dashboard.project_management').split(' ')[1]}</span>
               </h2>
             </div>
             <div className="hidden lg:block w-[1px] h-16 bg-slate-200" />
             <div className="hidden lg:block max-w-xs">
               <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest leading-relaxed">
-                Giám sát rơ-le dữ liệu thời gian thực và phân bổ tài nguyên tối ưu.
+                {t('kanban.description')}
               </p>
             </div>
           </div>
 
           <div className="flex flex-col items-end gap-2 group cursor-default">
-             <div className="text-[10px] font-black text-slate-300 uppercase tracking-[0.6em] font-mono transition-colors group-hover:text-brand-500">ĐỒNG BỘ THỜI GIAN</div>
+             <div className="text-[10px] font-black text-slate-300 uppercase tracking-[0.6em] font-mono transition-colors group-hover:text-brand-500">TIME_SYNC_OK</div>
              <div className="flex items-baseline gap-2">
                 <span className="text-4xl font-heading font-black text-slate-950 tracking-tighter tabular-nums leading-none">
                   {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
@@ -72,7 +75,7 @@ const DashboardPage = ({
              </div>
              <div className="flex items-center gap-2 px-3 py-1 bg-emerald-500/5 border border-emerald-500/10 rounded-full">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[9px] font-black text-emerald-600 uppercase tracking-[0.2em] font-mono">KẾT NỐI ỔN ĐỊNH</span>
+                <span className="text-[9px] font-black text-emerald-600 uppercase tracking-[0.2em] font-mono">{t('sidebar.system_stable')}</span>
              </div>
           </div>
         </div>
@@ -92,9 +95,9 @@ const DashboardPage = ({
           <div className="relative z-10">
             <div className="flex items-center gap-4 mb-10">
                <div className="w-10 h-1 bg-brand-500 shadow-[0_0_15px_#10b981]" />
-               <h3 className="text-sm font-black uppercase tracking-[0.4em] font-mono text-brand-500">LỜI_MỜI_HỆ_THỐNG_ĐANG_CHỜ</h3>
+               <h3 className="text-sm font-black uppercase tracking-[0.4em] font-mono text-brand-500">SYSTEM_INVITE_PENDING</h3>
                <span className="px-3 py-1 bg-white/10 rounded-full text-[10px] font-black font-mono">
-                 {pendingInvitations.length} YÊU CẦU
+                 {pendingInvitations.length} {t('topbar.notifications').toUpperCase()}
                </span>
             </div>
 
@@ -116,7 +119,7 @@ const DashboardPage = ({
                     <div className="flex items-center gap-3 mb-8">
                        <div className="w-2 h-2 rounded-full bg-brand-500" />
                        <p className="text-[11px] font-bold text-slate-300">
-                         Yêu cầu kết nối từ: <span className="text-white font-black uppercase tracking-wider">{invite.inviterName}</span>
+                         {t('members.invite_member')}: <span className="text-white font-black uppercase tracking-wider">{invite.inviterName}</span>
                        </p>
                     </div>
 
@@ -125,13 +128,13 @@ const DashboardPage = ({
                          onClick={() => handleAcceptInvitation(invite.id)}
                          className="py-4 bg-brand-500 text-slate-950 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white transition-all shadow-lg shadow-brand-500/20 active:scale-95"
                        >
-                         CHẤP THUẬN
+                         {t('common.success').toUpperCase()}
                        </button>
                        <button 
                          onClick={() => handleDeclineInvitation(invite.id)}
                          className="py-4 bg-transparent text-white border border-white/20 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-500 hover:border-rose-500 transition-all active:scale-95"
                        >
-                         TỪ CHỐI
+                         {t('common.cancel').toUpperCase()}
                        </button>
                     </div>
                  </div>
@@ -155,8 +158,8 @@ const DashboardPage = ({
                 <Zap size={24} className="animate-pulse" />
               </div>
               <div>
-                <h3 className="text-sm font-black text-rose-600 uppercase tracking-[0.3em] mb-1">CẢNH BÁO QUÁ HẠN HỆ THỐNG</h3>
-                <p className="text-[11px] font-bold text-rose-400 font-mono">PHÁT HIỆN {overdueTasks.length} ĐIỂM NGHẼN CẦN XỬ LÝ NGAY LẬP TỨC</p>
+                <h3 className="text-sm font-black text-rose-600 uppercase tracking-[0.3em] mb-1">{t('kanban.overdue')} ALERT</h3>
+                <p className="text-[11px] font-bold text-rose-400 font-mono">{t('common.error').toUpperCase()} {overdueTasks.length} NODE(S) DETECTED</p>
               </div>
             </div>
 
@@ -165,7 +168,7 @@ const DashboardPage = ({
                 <div key={task.id} className="flex-1 min-w-[180px] max-w-[240px] p-3 bg-white/60 border border-rose-100 rounded-xl flex items-center justify-between group/task hover:bg-white transition-all overflow-hidden shadow-sm">
                   <div className="flex flex-col gap-0.5 flex-1 min-w-0 mr-2">
                     <span className="text-[11px] font-black text-slate-800 line-clamp-1 truncate break-all">{task.title}</span>
-                    <span className="text-[9px] font-bold text-rose-500 font-mono">HẠN: {task.dueDate ? new Date(task.dueDate).toLocaleDateString('vi-VN') : '---'}</span>
+                    <span className="text-[9px] font-bold text-rose-500 font-mono">{t('kanban.due_date').toUpperCase()}: {task.dueDate ? new Date(task.dueDate).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US') : '---'}</span>
                   </div>
                   <button 
                     onClick={() => setActiveTab('board')}
@@ -177,7 +180,7 @@ const DashboardPage = ({
               ))}
               {overdueTasks.length > 3 && (
                 <button onClick={() => setActiveTab('board')} className="px-4 text-[10px] font-black text-rose-400 uppercase tracking-widest hover:text-rose-600 transition-colors whitespace-nowrap">
-                  + {overdueTasks.length - 3} KHÁC
+                  + {overdueTasks.length - 3} MORE
                 </button>
               )}
             </div>
@@ -186,10 +189,10 @@ const DashboardPage = ({
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-        <StatsCard label="Năng suất" value={`${appStats.resolutionRate}%`} icon={<Cpu />} trend="ỔN ĐỊNH" />
-        <StatsCard label="Xử lý" value={appStats.open} icon={<Activity />} trend="HOẠT ĐỘNG" />
-        <StatsCard label="Khẩn cấp" value={appStats.critical} icon={<Zap />} trend="CẢNH BÁO" />
-        <StatsCard label="Hoàn thành" value={appStats.resolved} icon={<CheckCircle2 />} trend="HOÀN TẤT" />
+        <StatsCard label={t('metrics.completion_rate')} value={`${appStats.resolutionRate}%`} icon={<Cpu />} trend={t('sidebar.system_stable').split(' ')[1]} />
+        <StatsCard label={t('logs.action')} value={appStats.open} icon={<Activity />} trend={t('members.active')} />
+        <StatsCard label={t('kanban.priority')} value={appStats.critical} icon={<Zap />} trend={t('kanban.overdue')} />
+        <StatsCard label={t('kanban.done')} value={appStats.resolved} icon={<CheckCircle2 />} trend={t('common.success').toUpperCase()} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
@@ -201,29 +204,29 @@ const DashboardPage = ({
               <div className="space-y-1">
                 <h3 className="text-[13px] font-black text-slate-900 uppercase tracking-[0.3em] flex items-center gap-3">
                   <div className="w-8 h-[2px] bg-brand-500" />
-                  Lịch trình vận hành
+                  {t('logs.title')}
                 </h3>
                 {/* Color Legend */}
                 <div className="flex items-center gap-4 pl-11 pt-2">
                    <div className="flex items-center gap-1.5">
                       <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_5px_rgba(59,130,246,0.5)]" />
-                      <span className="text-[7px] font-bold text-slate-400 uppercase tracking-widest">Ngày khởi tạo</span>
+                      <span className="text-[7px] font-bold text-slate-400 uppercase tracking-widest">{t('dashboard.created_at')}</span>
                    </div>
                    <div className="flex items-center gap-1.5">
                       <div className="w-1.5 h-1.5 rounded-full bg-rose-500 shadow-[0_0_5px_rgba(244,63,94,0.5)] animate-pulse" />
-                      <span className="text-[7px] font-bold text-slate-400 uppercase tracking-widest">Ngày hết hạn</span>
+                      <span className="text-[7px] font-bold text-slate-400 uppercase tracking-widest">{t('kanban.due_date')}</span>
                    </div>
                 </div>
               </div>
               <div className="px-6 py-3 bg-white/80 rounded-2xl border border-slate-100 shadow-sm self-start">
                 <span className="text-[11px] font-black text-slate-900 uppercase tracking-widest font-mono">
-                  Tháng {currentTime.getMonth() + 1} Năm {currentTime.getFullYear()}
+                  {i18n.language === 'vi' ? `Tháng ${currentTime.getMonth() + 1} Năm ${currentTime.getFullYear()}` : `${currentTime.toLocaleString('default', { month: 'long' })} ${currentTime.getFullYear()}`}
                 </span>
               </div>
             </div>
             
             <div className="grid grid-cols-7 gap-1 bg-slate-200/20 p-1 rounded-2xl border border-white/40 relative z-10">
-              {['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map(day => (
+              {(i18n.language === 'vi' ? ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'] : ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN']).map(day => (
                 <div key={day} className="py-2 text-center text-[9px] font-black text-slate-400 uppercase tracking-widest font-mono">{day}</div>
               ))}
               {Array.from({ length: 35 }).map((_, i) => {
@@ -277,12 +280,12 @@ const DashboardPage = ({
                               {dueTasks.length > 0 && <div className="h-full bg-rose-500" style={{ width: '50%' }} />}
                            </div>
                            <div className="flex justify-between items-center text-[7px] font-black text-slate-400 uppercase font-mono tracking-tighter">
-                             <span>VẬN HÀNH</span>
+                             <span>OPS</span>
                              <span className="text-slate-900">{createdTasks.length + dueTasks.length}</span>
                            </div>
                         </div>
                       ) : isCurrentMonth && (
-                        <div className="text-[6px] font-bold text-slate-300 uppercase tracking-tighter opacity-0 group-hover/cell:opacity-100 transition-opacity">Sạch_</div>
+                        <div className="text-[6px] font-bold text-slate-300 uppercase tracking-tighter opacity-0 group-hover/cell:opacity-100 transition-opacity">CLEAR_</div>
                       )}
                     </div>
                   </div>
@@ -292,8 +295,8 @@ const DashboardPage = ({
           </section>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <QuickAction title="KHỞI TẠO NHIỆM VỤ" desc="Thiết lập mục tiêu chiến lược và triển khai nhân sự." icon={<Plus />} onClick={() => setShowQuickAdd(true)} />
-            <QuickAction title="QUẢN LÝ ĐỘI NGŨ" desc="Phân quyền và giám sát nhân sự vận hành." icon={<Users />} onClick={() => setShowInviteModal(true)} />
+            <QuickAction title={t('kanban.deploy_task')} desc={t('kanban.description')} icon={<Plus />} onClick={() => setShowQuickAdd(true)} />
+            <QuickAction title={t('members.team_management')} desc={t('members.search_members')} icon={<Users />} onClick={() => setShowInviteModal(true)} />
           </div>
         </div>
 
@@ -301,7 +304,7 @@ const DashboardPage = ({
           <section className="flex-1 bg-white/30 backdrop-blur-3xl rounded-3xl border border-white/60 p-8 shadow-sm tech-corners flex flex-col overflow-hidden relative">
             <div className="flex items-center justify-between mb-8 relative z-10">
               <div className="space-y-1">
-                <h3 className="text-sm font-black text-slate-950 uppercase tracking-[0.3em] font-heading">NHẬT KÝ VẬN HÀNH</h3>
+                <h3 className="text-sm font-black text-slate-950 uppercase tracking-[0.3em] font-heading">{t('logs.title')}</h3>
                 <div className="w-8 h-1 bg-brand-500/30" />
               </div>
               <div className="w-10 h-10 rounded-xl bg-slate-950 flex items-center justify-center text-white shadow-xl shadow-slate-950/20">
@@ -322,7 +325,7 @@ const DashboardPage = ({
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <span className="text-[9px] font-black text-brand-600 bg-brand-50 px-2 py-0.5 rounded border border-brand-100 uppercase tracking-tighter font-mono">
-                           {log.type?.replace('_', ' ') || 'VẬN HÀNH'}
+                           {log.type?.replace('_', ' ') || 'SYSTEM'}
                         </span>
                         <span className="text-[10px] font-bold text-slate-400 font-mono tabular-nums opacity-60">
                           {log.createdAt?.toDate ? new Date(log.createdAt.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : '--:--'}
@@ -330,7 +333,7 @@ const DashboardPage = ({
                       </div>
                       <div className="flex items-center gap-2 opacity-0 group-hover/log:opacity-100 transition-opacity">
                         <div className="w-1 h-1 rounded-full bg-emerald-500" />
-                        <span className="text-[8px] font-black text-emerald-600 font-mono">ĐÃ ĐỒNG BỘ</span>
+                        <span className="text-[8px] font-black text-emerald-600 font-mono">SYNC_OK</span>
                       </div>
                     </div>
 
@@ -347,11 +350,11 @@ const DashboardPage = ({
                              alt=""
                            />
                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest font-mono">
-                             {log.userName?.split(' ').pop() || 'HỆ THỐNG'}
+                             {log.userName?.split(' ').pop() || 'SYSTEM'}
                            </span>
                         </div>
                         <div className="text-[8px] font-bold text-slate-300 font-mono tracking-tighter">
-                          MÃ {log.id?.slice(0, 8).toUpperCase()}
+                          ID {log.id?.slice(0, 8).toUpperCase()}
                         </div>
                       </div>
                     </div>
@@ -362,7 +365,7 @@ const DashboardPage = ({
                    <div className="w-12 h-12 rounded-full border-2 border-dashed border-slate-300 flex items-center justify-center mb-4">
                      <CheckCircle2 size={24} className="text-slate-300" />
                    </div>
-                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Hệ thống sạch</p>
+                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('logs.filter_all')}</p>
                 </div>
               )}
             </div>
@@ -372,25 +375,25 @@ const DashboardPage = ({
               className="mt-6 relative group/btn w-full overflow-hidden rounded-2xl"
             >
               <div className="absolute inset-0 bg-slate-950 translate-y-[101%] group-hover/btn:translate-y-0 transition-transform duration-500" />
-              <div className="relative py-4 border border-slate-200 group-hover/btn:border-slate-950 transition-colors text-[10px] font-black text-slate-400 group-hover/btn:text-white uppercase tracking-[0.4em] font-mono">
-                XEM TOÀN BỘ NHẬT KÝ
+              <div className="relative py-4 border border-slate-200 group-hover/btn:border-slate-950 transition-colors text-[10px] font-black text-slate-400 group-hover/btn:text-white uppercase tracking-[0.2em] font-mono">
+                {t('logs.view_all')}
               </div>
             </button>
 
             {/* System Resource Monitor - Filling the gap beautifully */}
             <div className="mt-auto pt-8 border-t border-slate-100 space-y-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono">GIÁM SÁT TÀI NGUYÊN</span>
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono">NODE_MONITOR</span>
                 <div className="flex items-center gap-2">
                    <div className="w-1 h-1 rounded-full bg-blue-500 animate-pulse" />
-                   <span className="text-[9px] font-bold text-blue-600 font-mono">THỜI GIAN THỰC</span>
+                   <span className="text-[9px] font-bold text-blue-600 font-mono">REALTIME</span>
                 </div>
               </div>
               
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <div className="flex justify-between text-[9px] font-bold text-slate-500 font-mono">
-                    <span>SỬ DỤNG CPU</span>
+                    <span>CPU_LOAD</span>
                     <span>24%</span>
                   </div>
                   <div className="h-1 bg-slate-100 rounded-full overflow-hidden">
@@ -403,7 +406,7 @@ const DashboardPage = ({
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between text-[9px] font-bold text-slate-500 font-mono">
-                    <span>CẤP PHÁT RAM</span>
+                    <span>RAM_ALLOC</span>
                     <span>1.2GB</span>
                   </div>
                   <div className="h-1 bg-slate-100 rounded-full overflow-hidden">
@@ -417,8 +420,8 @@ const DashboardPage = ({
 
               <div className="p-3 bg-slate-50/50 rounded-xl border border-slate-100 flex items-center justify-between">
                 <div className="flex flex-col gap-1">
-                  <span className="text-[8px] font-bold text-slate-400 uppercase font-mono">TRẠNG THÁI MẠNG</span>
-                  <span className="text-[10px] font-black text-slate-800 font-mono">ỔN ĐỊNH 0.002MS</span>
+                  <span className="text-[8px] font-bold text-slate-400 uppercase font-mono">{t('dashboard.node_status')}</span>
+                  <span className="text-[10px] font-black text-slate-800 font-mono">STABLE 0.002MS</span>
                 </div>
                 <div className="flex gap-1">
                   {[1,2,3,4].map(i => (

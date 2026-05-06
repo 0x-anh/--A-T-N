@@ -6,6 +6,7 @@ import {
   PRIORITY_CONFIG, canDeleteBug, canEditBug 
 } from '../../types';
 import { cn } from '../../lib/utils';
+import { useTranslation } from 'react-i18next';
 
 interface BugDetailModalProps {
   selectedBug: Bug | null;
@@ -41,6 +42,7 @@ const BugDetailModal = ({
   projectMemberIds,
   isOwner
 }: BugDetailModalProps) => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = React.useState<'details' | 'logs' | 'team'>('details');
   const [isPriorityOpen, setIsPriorityOpen] = React.useState(false);
   const [isMemberOpen, setIsMemberOpen] = React.useState(false);
@@ -88,6 +90,13 @@ const BugDetailModal = ({
   const assigneeIds = (selectedBug.members || (selectedBug.assigneeId ? [selectedBug.assigneeId] : [])).filter(id => projectMemberIds.includes(id));
   const isOverdue = selectedBug.dueDate && new Date(selectedBug.dueDate) < new Date() && selectedBug.status !== 'done';
 
+  const priorityLabels: Record<BugPriority, string> = {
+    'low': t('kanban.priority_low'),
+    'medium': t('kanban.priority_medium'),
+    'high': t('kanban.priority_high'),
+    'critical': t('kanban.priority_critical')
+  };
+
   return (
     <AnimatePresence>
       <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 md:p-8">
@@ -122,7 +131,7 @@ const BugDetailModal = ({
                   "px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border-2 w-fit",
                   selectedBug.status === 'done' ? "bg-emerald-500/20 text-emerald-700 border-emerald-600/40" : "bg-brand-500/20 text-brand-700 border-brand-600/40"
                 )}>
-                  {selectedBug.status.replace('-', ' ')}
+                  {t(`kanban.${selectedBug.status.replace('-', '_')}`)}
                 </div>
               </div>
               <button 
@@ -145,12 +154,12 @@ const BugDetailModal = ({
                     <div className="flex items-center justify-between text-slate-950">
                        <div className="flex items-center gap-2">
                           <AlertCircle size={12} />
-                          <span className="text-[8px] font-black uppercase tracking-widest">Độ Ưu Tiên</span>
+                          <span className="text-[8px] font-black uppercase tracking-widest">{t('kanban.priority')}</span>
                        </div>
                        <ChevronRight size={12} className={cn("transition-transform duration-300", isPriorityOpen && "rotate-90")} />
                     </div>
                     <div className={cn("text-xs font-black uppercase flex items-center gap-2", PRIORITY_CONFIG[selectedBug.priority].color)}>
-                       {PRIORITY_CONFIG[selectedBug.priority].label}
+                       {priorityLabels[selectedBug.priority]}
                     </div>
                  </div>
 
@@ -178,7 +187,7 @@ const BugDetailModal = ({
                                 selectedBug.priority === key ? "bg-slate-950 text-white" : "hover:bg-slate-100 text-slate-950 hover:text-slate-950"
                               )}
                             >
-                              <span className="text-[10px] font-black uppercase tracking-wider">{cfg.label}</span>
+                              <span className="text-[10px] font-black uppercase tracking-wider">{priorityLabels[key]}</span>
                               <cfg.icon size={14} className={cn(selectedBug.priority === key ? "text-white" : cfg.color)} />
                             </button>
                           ))}
@@ -194,7 +203,7 @@ const BugDetailModal = ({
               )}>
                  <div className="flex items-center gap-2 text-slate-950">
                     <Clock size={12} className={cn(isOverdue && "text-rose-700")} />
-                    <span className="text-[8px] font-black uppercase tracking-widest">Hạn Cuối [T+0]</span>
+                    <span className="text-[8px] font-black uppercase tracking-widest">{t('kanban.due_date')} [T+0]</span>
                  </div>
                  <input 
                     type="datetime-local"
@@ -210,7 +219,7 @@ const BugDetailModal = ({
                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-slate-950">
                      <Users size={12} />
-                     <span className="text-[8px] font-black uppercase tracking-widest">Đội ngũ thực thi_</span>
+                     <span className="text-[8px] font-black uppercase tracking-widest">{t('kanban.execution_team')}_</span>
                   </div>
                </div>
                <div className="flex flex-wrap gap-2">
@@ -250,7 +259,7 @@ const BugDetailModal = ({
                               className="absolute left-full top-0 ml-2 z-20 w-64 bg-white/95 backdrop-blur-2xl border-2 border-slate-950/40 rounded-2xl shadow-2xl overflow-hidden p-2 space-y-1"
                             >
                               <div className="px-3 py-2 border-b border-slate-200 mb-1">
-                                <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em]">Chọn nhân sự bổ sung_</p>
+                                <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em]">{t('kanban.select_additional_staff')}_</p>
                               </div>
                               <div className="max-h-64 overflow-y-auto no-scrollbar space-y-1">
                                 {projectMembers.filter(u => !assigneeIds.includes(u.userId)).map(u => (
@@ -274,7 +283,7 @@ const BugDetailModal = ({
                                   </button>
                                 ))}
                                 {projectMembers.filter(u => !assigneeIds.includes(u.userId)).length === 0 && (
-                                  <p className="p-4 text-[9px] font-bold text-slate-400 text-center uppercase tracking-widest">Toàn bộ đã tham gia_</p>
+                                  <p className="p-4 text-[9px] font-bold text-slate-400 text-center uppercase tracking-widest">{t('kanban.all_joined')}_</p>
                                 )}
                               </div>
                             </motion.div>
@@ -289,15 +298,15 @@ const BugDetailModal = ({
             <div className="space-y-4 pt-4 border-t-2 border-slate-400/50">
               <div className="flex items-center gap-2">
                 <Cpu size={14} className="text-brand-700" />
-                <span className="text-[9px] font-black text-slate-800 uppercase tracking-widest font-mono">CẤU HÌNH NHIỆM VỤ</span>
+                <span className="text-[9px] font-black text-slate-800 uppercase tracking-widest font-mono">{t('kanban.task_config')}</span>
               </div>
               <div className="p-4 rounded-2xl bg-white/30 border-2 border-slate-300 space-y-4">
                 <div className="space-y-1">
-                   <p className="text-[8px] font-bold text-slate-600 uppercase tracking-widest">Mã định danh</p>
+                   <p className="text-[8px] font-bold text-slate-600 uppercase tracking-widest">{t('kanban.id_prefix')}</p>
                    <p className="text-[10px] font-black text-slate-950 font-mono uppercase tracking-tighter">NODE_{selectedBug.id.substring(0, 12)}</p>
                 </div>
                 <div className="space-y-1">
-                   <p className="text-[8px] font-bold text-slate-600 uppercase tracking-widest">Khởi tạo</p>
+                   <p className="text-[8px] font-bold text-slate-600 uppercase tracking-widest">{t('dashboard.created_at')}</p>
                    <p className="text-[10px] font-black text-slate-950 font-mono uppercase tracking-tighter">
                     {selectedBug.createdAt?.toDate ? selectedBug.createdAt.toDate().toLocaleString() : 'PENDING_SIGNAL'}
                    </p>
@@ -312,7 +321,7 @@ const BugDetailModal = ({
                     className="w-full h-12 flex items-center justify-center gap-3 rounded-2xl bg-rose-100 text-rose-700 border-2 border-rose-300 hover:bg-rose-600 hover:text-white transition-all duration-500 shadow-lg shadow-rose-500/10 font-black text-[10px] uppercase tracking-widest"
                   >
                     <Trash2 size={16} />
-                    GIẢI PHÓNG NODE
+                    {t('kanban.release_node')}
                   </button>
                 )}
             </div>
@@ -322,9 +331,9 @@ const BugDetailModal = ({
           <div className="flex-1 flex flex-col h-full bg-slate-50">
              <div className="flex items-center px-10 pt-8 gap-8 border-b-2 border-slate-400/30">
                 {[
-                  { id: 'details', label: 'THÔNG SỐ KỸ THUẬT', icon: Cpu },
-                  { id: 'logs', label: 'DỮ LIỆU LOG', icon: Activity },
-                  { id: 'team', label: 'ĐỘI NGŨ SQUAD', icon: Users }
+                  { id: 'details', label: t('kanban.tech_specs'), icon: Cpu },
+                  { id: 'logs', label: t('kanban.log_data'), icon: Activity },
+                  { id: 'team', label: t('kanban.squad_team'), icon: Users }
                 ].map(tab => (
                   <button 
                     key={tab.id}
@@ -354,7 +363,7 @@ const BugDetailModal = ({
                         <textarea 
                           rows={2}
                           className="w-full text-3xl md:text-5xl font-heading font-black text-slate-950 outline-none border-none p-0 bg-transparent tracking-tighter leading-none resize-none placeholder:text-slate-950/50 disabled:cursor-not-allowed uppercase"
-                          placeholder="TIÊU ĐỀ NÚT..."
+                          placeholder={t('kanban.node_title_placeholder')}
                           value={localTitle}
                           disabled={!canModifyGeneral || isSaving}
                           onChange={(e) => setLocalTitle(e.target.value)}
@@ -383,12 +392,12 @@ const BugDetailModal = ({
                              ) : (
                                <Plus size={12} />
                              )}
-                             {isSaving ? "ĐANG ĐỒNG BỘ..." : "LƯU THÔNG SỐ"}
+                             {isSaving ? t('kanban.syncing') : t('kanban.save_specs')}
                            </motion.button>
                         </div>
                         <div className="relative">
                           <textarea 
-                            placeholder="Mô tả chi tiết các thông số kỹ thuật và yêu cầu triển khai..."
+                            placeholder={t('kanban.specs_placeholder')}
                             className="w-full h-80 bg-white/30 border-2 border-slate-300 rounded-3xl p-8 text-base text-slate-950 placeholder:text-slate-950/50 outline-none leading-relaxed resize-none custom-scrollbar focus:border-brand-600 focus:bg-white/60 transition-all font-black disabled:opacity-60 disabled:cursor-not-allowed"
                             value={localDescription}
                             disabled={!canModifyGeneral || isSaving}
@@ -397,7 +406,7 @@ const BugDetailModal = ({
                           {hasChanges && (
                             <div className="absolute top-4 right-4 flex items-center gap-2 px-3 py-1 bg-amber-500/20 border border-amber-500/50 rounded-full">
                                <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                               <span className="text-[7px] font-black text-slate-950 uppercase tracking-widest">CÓ THAY ĐỔI CHƯA LƯU</span>
+                               <span className="text-[7px] font-black text-slate-950 uppercase tracking-widest">{t('kanban.unsaved_changes')}</span>
                             </div>
                           )}
                         </div>
@@ -410,7 +419,7 @@ const BugDetailModal = ({
                     {comments.length === 0 ? (
                       <div className="h-full flex flex-col items-center justify-center opacity-40 py-20 text-center">
                         <MessageSquare size={40} className="text-slate-950 mb-4" />
-                        <p className="text-xs font-black text-slate-950 uppercase tracking-[0.2em]">DỮ LIỆU TRUYỀN TẢI TRỐNG_</p>
+                        <p className="text-xs font-black text-slate-950 uppercase tracking-[0.2em]">{t('kanban.empty_data_stream')}_</p>
                       </div>
                     ) : (
                       <div className="space-y-6">
@@ -480,7 +489,7 @@ const BugDetailModal = ({
                 <div className="p-8 px-10 bg-white/60 backdrop-blur-2xl border-t-2 border-slate-400/50 flex gap-4 items-end">
                   <div className="flex-1 relative">
                     <textarea 
-                      placeholder="Nhập tín hiệu phản hồi vào luồng dữ liệu..."
+                      placeholder={t('kanban.input_feedback_placeholder')}
                       className="w-full bg-white/40 border-2 border-slate-400 rounded-2xl p-5 text-xs font-black text-slate-950 outline-none h-24 placeholder:text-slate-950/80 resize-none custom-scrollbar focus:border-brand-600 transition-all uppercase"
                       value={newComment} 
                       onChange={(e) => setNewComment(e.target.value)}

@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'motion/react';
 import { PieChart as PieIcon, TrendingUp, Cpu, BarChart3, Target, Activity, Zap, CheckCircle2, AlertCircle, Clock, ArrowUpRight, Layers, Radio, ShieldCheck, Database, Terminal, ChevronRight, AlertTriangle, Info } from 'lucide-react';
 import { Bug, Project } from '../types';
@@ -13,6 +14,7 @@ interface MetricsPageProps {
 }
 
 const MetricsPage = ({ bugs, projects, selectedProject, appStats, setActiveTab }: MetricsPageProps) => {
+  const { t, i18n } = useTranslation();
   const [projectFilter, setProjectFilter] = useState<string>('all');
   const [showProjectMenu, setShowProjectMenu] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -35,11 +37,11 @@ const MetricsPage = ({ bugs, projects, selectedProject, appStats, setActiveTab }
             </div>
 
             <h2 className="text-3xl md:text-5xl font-heading font-black tracking-tight uppercase leading-tight text-slate-950">
-              PHÂN TÍCH <br/> <span className="text-slate-300">DỮ LIỆU</span>
+              {t('metrics.title').split(' ')[0]} <br/> <span className="text-slate-300">{t('metrics.title').split(' ')[1]}</span>
             </h2>
 
             <p className="max-w-md mx-auto text-slate-400 text-sm font-bold uppercase tracking-widest leading-relaxed">
-              Hệ thống phân tích đang ở trạng thái chờ. Vui lòng thiết lập dự án để bắt đầu thu thập thông số vận hành và tối ưu hóa tài nguyên.
+              {t('dashboard.no_projects')}
             </p>
 
             <div className="pt-8">
@@ -50,7 +52,7 @@ const MetricsPage = ({ bugs, projects, selectedProject, appStats, setActiveTab }
                   <div className="absolute inset-0 bg-gradient-to-r from-brand-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   <div className="relative flex items-center gap-4 tracking-[0.3em]">
                     <BarChart3 size={20} className="text-brand-400 group-hover:text-white transition-colors" />
-                    KÍCH HOẠT DỰ ÁN
+                    {t('dashboard.new_project').toUpperCase()}
                   </div>
                </button>
             </div>
@@ -86,7 +88,7 @@ const MetricsPage = ({ bugs, projects, selectedProject, appStats, setActiveTab }
       d.setHours(0, 0, 0, 0);
       d.setDate(d.getDate() - i);
       days.push({
-        label: d.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase(),
+        label: d.toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US', { weekday: 'short' }).toUpperCase(),
         dateStr: d.toLocaleDateString('vi-VN')
       });
     }
@@ -104,7 +106,7 @@ const MetricsPage = ({ bugs, projects, selectedProject, appStats, setActiveTab }
     const scaleMax = actualMax || 1; 
     
     return { stats, max: scaleMax, actualMax };
-  }, [filteredBugs]);
+  }, [filteredBugs, i18n.language]);
 
   // Pie Chart Data Calculation
   const pieData = useMemo(() => {
@@ -128,9 +130,9 @@ const MetricsPage = ({ bugs, projects, selectedProject, appStats, setActiveTab }
     if (pieData.overdue.val > 0) {
       return {
         label: "CRITICAL_RISK",
-        title: "CẢNH BÁO RỦI RO",
-        msg: `${pieData.overdue.val} Node trễ hạn`,
-        action: "XỬ_LÝ_NGAY",
+        title: t('metrics.critical_risk'),
+        msg: `${pieData.overdue.val} ${t('metrics.overdue_nodes')}`,
+        action: t('metrics.action_resolve'),
         color: "rose",
         target: "board" as const
       };
@@ -138,22 +140,22 @@ const MetricsPage = ({ bugs, projects, selectedProject, appStats, setActiveTab }
     if (pieData.done.per > 75) {
       return {
         label: "PERF_OPTIMIZED",
-        title: "HIỆU SUẤT TỐI ƯU",
-        msg: "Vận hành ổn định",
-        action: "KIỂM_TRA",
+        title: t('metrics.optimized'),
+        msg: t('sidebar.system_stable'),
+        action: t('metrics.action_check'),
         color: "emerald",
         target: "board" as const
       };
     }
     return {
       label: "ACTIVE_DEPLOY",
-      title: "VẬN HÀNH TÍCH CỰC",
-      msg: "Đang triển khai Node...",
-      action: "XEM_TIẾN_ĐỘ",
+      title: t('metrics.active_deployment'),
+      msg: t('metrics.deploying_nodes'),
+      action: t('metrics.action_view_progress'),
       color: "brand",
       target: "board" as const
     };
-  }, [pieData]);
+  }, [pieData, t]);
 
   return (
     <motion.div 
@@ -167,15 +169,15 @@ const MetricsPage = ({ bugs, projects, selectedProject, appStats, setActiveTab }
         <div className="flex items-center justify-between border-b border-slate-200/50 pb-8">
           <div className="flex items-center gap-8">
             <div className="flex flex-col shrink-0">
-              <h3 className="text-[11px] font-black text-brand-600 uppercase tracking-[0.5em] font-mono leading-none mb-2">PHÂN TÍCH HỆ THỐNG</h3>
+              <h3 className="text-[11px] font-black text-brand-600 uppercase tracking-[0.5em] font-mono leading-none mb-2">{t('metrics.administrators')}</h3>
               <h2 className="text-3xl md:text-4xl font-heading font-black tracking-tighter uppercase leading-none text-slate-950">
-                HIỆU NĂNG <span className="text-slate-400">TÀI NGUYÊN</span>
+                {t('metrics.resource_performance').split(' ')[0]} <span className="text-slate-400">{t('metrics.resource_performance').split(' ')[1]}</span>
               </h2>
             </div>
             <div className="hidden lg:block w-[1px] h-16 bg-slate-200 shrink-0" />
             <div className="hidden lg:block max-w-sm">
               <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest leading-relaxed break-all line-clamp-2">
-                Phân tích hiệu suất vận hành và thông lượng xử lý của {projectFilter === 'all' ? 'Toàn hệ thống' : `Dự án ${projects.find(p => p.id === projectFilter)?.name}`}.
+                {t('metrics.description')} {projectFilter === 'all' ? t('metrics.global_system') : `${t('sidebar.projects')} ${projects.find(p => p.id === projectFilter)?.name}`}.
               </p>
             </div>
           </div>
@@ -194,7 +196,7 @@ const MetricsPage = ({ bugs, projects, selectedProject, appStats, setActiveTab }
                 >
                    <Zap size={16} className={cn("transition-transform duration-500 shrink-0", showProjectMenu && "rotate-90 text-brand-400")} />
                    <span className="text-[9px] font-black uppercase tracking-widest truncate">
-                     {projectFilter === 'all' ? 'Tất cả Dự án' : `Node: ${projects.find(p => p.id === projectFilter)?.name}`}
+                     {projectFilter === 'all' ? t('metrics.all_projects') : `Node: ${projects.find(p => p.id === projectFilter)?.name}`}
                    </span>
                 </button>
 
@@ -214,7 +216,7 @@ const MetricsPage = ({ bugs, projects, selectedProject, appStats, setActiveTab }
                          )}
                        >
                          <Terminal size={14} className="shrink-0" />
-                         <span className="truncate">HỆ THỐNG TỔNG (GLOBAL)</span>
+                         <span className="truncate">{t('metrics.global_system').toUpperCase()}</span>
                        </button>
                        <div className="my-1.5 h-[1px] bg-slate-100" />
                        <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
@@ -246,7 +248,7 @@ const MetricsPage = ({ bugs, projects, selectedProject, appStats, setActiveTab }
                 </div>
                 <div className="flex items-center gap-2 px-3 py-1 bg-brand-500/5 border border-brand-500/10 rounded-full">
                    <div className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse" />
-                   <span className="text-[8px] font-black text-brand-600 uppercase tracking-[0.2em] font-mono">DỮ LIỆU ĐỒNG BỘ</span>
+                   <span className="text-[8px] font-black text-brand-600 uppercase tracking-[0.2em] font-mono">TIME_SYNC_OK</span>
                 </div>
              </div>
           </div>
@@ -256,10 +258,10 @@ const MetricsPage = ({ bugs, projects, selectedProject, appStats, setActiveTab }
       {/* Stats Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: 'Hiệu năng xử lý', value: `${projectFilter === 'all' ? appStats.resolutionRate : Math.round((filteredBugs.filter(b => b.status === 'done').length / (filteredBugs.length || 1)) * 100)}%`, icon: <Cpu />, trend: 'ỔN ĐỊNH' },
-          { label: 'Tổng Node khởi tạo', value: filteredBugs.length, icon: <TrendingUp />, trend: 'DỮ LIỆU' },
-          { label: 'Nhiệm vụ Quá hạn', value: pieData.overdue.val, icon: <AlertCircle className="text-rose-500" />, trend: 'RỦI RO' },
-          { label: 'Tỉ lệ xác thực', value: `${Math.round(filteredBugs.filter(b => b.status === 'done').length / (filteredBugs.length || 1) * 100)}%`, icon: <Target />, trend: 'XÁC THỰC' },
+          { label: t('metrics.completion_rate'), value: `${projectFilter === 'all' ? appStats.resolutionRate : Math.round((filteredBugs.filter(b => b.status === 'done').length / (filteredBugs.length || 1)) * 100)}%`, icon: <Cpu />, trend: 'STABLE' },
+          { label: t('metrics.total_nodes'), value: filteredBugs.length, icon: <TrendingUp />, trend: 'DATA' },
+          { label: t('metrics.overdue_nodes'), value: pieData.overdue.val, icon: <AlertCircle className="text-rose-500" />, trend: 'RISK' },
+          { label: t('metrics.validation_rate'), value: `${Math.round(filteredBugs.filter(b => b.status === 'done').length / (filteredBugs.length || 1) * 100)}%`, icon: <Target />, trend: 'AUTH' },
         ].map((s, i) => (
           <motion.div 
             key={i}
@@ -295,11 +297,11 @@ const MetricsPage = ({ bugs, projects, selectedProject, appStats, setActiveTab }
                     <BarChart3 size={20} />
                  </div>
                  <div>
-                    <h3 className="text-[12px] font-black text-slate-950 uppercase tracking-[0.2em] font-heading">THÔNG LƯỢNG KHỞI TẠO</h3>
+                    <h3 className="text-[12px] font-black text-slate-950 uppercase tracking-[0.2em] font-heading">{t('metrics.throughput')}</h3>
                     <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest font-mono mt-0.5">RESOURCE_THROUGHPUT_MAP</p>
                  </div>
               </div>
-              <div className="text-[9px] font-black text-slate-900 bg-white/50 px-3 py-1.5 rounded-lg border border-white/80 uppercase tracking-widest font-mono shadow-sm">
+              <div className="text-[9px] font-black text-slate-950 bg-white/50 px-3 py-1.5 rounded-lg border border-white/80 uppercase tracking-widest font-mono shadow-sm">
                  7_DAY_DATA
               </div>
             </div>
@@ -344,8 +346,8 @@ const MetricsPage = ({ bugs, projects, selectedProject, appStats, setActiveTab }
                <div className="md:col-span-4 flex flex-col justify-center gap-6 border-l border-slate-100/50 pl-8 pb-10 hidden md:flex h-full relative">
                   <div className="space-y-4">
                      {[
-                        { label: 'CAO ĐIỂM TRONG TUẦN', val: chartData.actualMax, icon: <ArrowUpRight size={14} />, color: 'bg-brand-50 text-brand-600' },
-                        { label: 'CƠ SỞ DỮ LIỆU TỔNG', val: bugs.length, icon: <Database size={14} />, color: 'bg-slate-50 text-slate-400' }
+                        { label: t('metrics.peak_week'), val: chartData.actualMax, icon: <ArrowUpRight size={14} />, color: 'bg-brand-50 text-brand-600' },
+                        { label: t('metrics.total_database'), val: bugs.length, icon: <Database size={14} />, color: 'bg-slate-50 text-slate-400' }
                      ].map((item, i) => (
                         <div key={i} className="flex items-center gap-4 p-4 bg-white/50 rounded-2xl border border-white/80 hover:bg-white transition-all shadow-sm">
                            <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", item.color)}>
@@ -415,7 +417,7 @@ const MetricsPage = ({ bugs, projects, selectedProject, appStats, setActiveTab }
            <div className="bg-white/30 backdrop-blur-3xl border border-white/60 rounded-[2.5rem] p-10 h-full shadow-sm tech-corners relative group flex flex-col min-h-[450px]">
               <div className="flex items-center justify-between mb-10">
                  <div className="space-y-1">
-                    <h3 className="text-sm font-black text-slate-950 uppercase tracking-[0.3em] font-heading">PHÂN BỔ MỤC TIÊU</h3>
+                    <h3 className="text-sm font-black text-slate-950 uppercase tracking-[0.3em] font-heading">{t('metrics.distribution')}</h3>
                     <div className="w-8 h-1 bg-brand-500/20" />
                  </div>
                  <div className="w-10 h-10 rounded-xl bg-slate-950 flex items-center justify-center text-white shadow-xl">
@@ -441,10 +443,10 @@ const MetricsPage = ({ bugs, projects, selectedProject, appStats, setActiveTab }
               {/* Legend */}
               <div className="space-y-3 mt-auto">
                  {[
-                   { label: 'HOÀN TẤT', val: pieData.done.val, per: pieData.done.per, color: 'bg-emerald-500', text: 'text-emerald-600', icon: <CheckCircle2 size={10} /> },
-                   { label: 'QUÁ HẠN', val: pieData.overdue.val, per: pieData.overdue.per, color: 'bg-rose-500', text: 'text-rose-600', icon: <Clock size={10} /> },
-                   { label: 'TIẾN HÀNH', val: pieData.inProgress.val, per: pieData.inProgress.per, color: 'bg-brand-500', text: 'text-brand-600', icon: <Zap size={10} /> },
-                   { label: 'HÀNG ĐỢI', val: pieData.backlog.val, per: pieData.backlog.per, color: 'bg-slate-400', text: 'text-slate-400', icon: <Activity size={10} /> },
+                   { label: t('kanban.done').toUpperCase(), val: pieData.done.val, per: pieData.done.per, color: 'bg-emerald-500', text: 'text-emerald-600', icon: <CheckCircle2 size={10} /> },
+                   { label: t('kanban.overdue').toUpperCase(), val: pieData.overdue.val, per: pieData.overdue.per, color: 'bg-rose-500', text: 'text-rose-600', icon: <Clock size={10} /> },
+                   { label: t('kanban.in_progress').toUpperCase(), val: pieData.inProgress.val, per: pieData.inProgress.per, color: 'bg-brand-500', text: 'text-brand-600', icon: <Zap size={10} /> },
+                   { label: t('kanban.backlog').toUpperCase(), val: pieData.backlog.val, per: pieData.backlog.per, color: 'bg-slate-400', text: 'text-slate-400', icon: <Activity size={10} /> },
                  ].map((item, i) => (
                    <div key={i} className="flex items-center justify-between p-2.5 bg-white/40 rounded-2xl border border-white/60 hover:bg-white transition-all group/item">
                       <div className="flex items-center gap-3">

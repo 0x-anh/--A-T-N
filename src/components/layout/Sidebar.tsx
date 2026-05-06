@@ -16,6 +16,8 @@ import { cn } from '../../lib/utils';
 import { motion } from 'motion/react';
 import { User } from 'firebase/auth';
 
+import { useTranslation } from 'react-i18next';
+
 interface SidebarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
@@ -24,12 +26,14 @@ interface SidebarProps {
 }
 
 const Sidebar = ({ activeTab, setActiveTab, user, handleLogout }: SidebarProps) => {
+  const { t } = useTranslation();
+  
   const menuItems = [
-    { id: 'dashboard', label: 'TỔNG QUAN', icon: <LayoutDashboard size={20} /> },
-    { id: 'board', label: 'BẢNG CÔNG VIỆC', icon: <Grid size={20} /> },
-    { id: 'members', label: 'ĐỘI NGŨ', icon: <Users size={20} /> },
-    { id: 'metrics', label: 'PHÂN TÍCH', icon: <Activity size={20} /> },
-    { id: 'logs', label: 'NHẬT KÝ', icon: <Terminal size={20} /> },
+    { id: 'dashboard', label: t('sidebar.dashboard'), icon: <LayoutDashboard size={20} /> },
+    { id: 'board', label: t('sidebar.board'), icon: <Grid size={20} /> },
+    { id: 'members', label: t('sidebar.members'), icon: <Users size={20} /> },
+    { id: 'metrics', label: t('sidebar.metrics'), icon: <Activity size={20} /> },
+    { id: 'logs', label: t('sidebar.logs'), icon: <Terminal size={20} /> },
   ];
 
   return (
@@ -51,7 +55,7 @@ const Sidebar = ({ activeTab, setActiveTab, user, handleLogout }: SidebarProps) 
         </div>
 
         <div className="space-y-1.5">
-          <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.4em] mb-6 pl-4">OPERATIONS</p>
+          <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.4em] mb-6 pl-4">{t('sidebar.operations')}</p>
           {[menuItems[0], menuItems[3], menuItems[4]].map((item) => (
             <button
               key={item.id}
@@ -78,7 +82,7 @@ const Sidebar = ({ activeTab, setActiveTab, user, handleLogout }: SidebarProps) 
         </div>
 
         <div className="mt-10 space-y-1.5">
-          <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.4em] mb-6 pl-4">NODE CONTROL</p>
+          <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.4em] mb-6 pl-4">{t('sidebar.node_control')}</p>
           {[menuItems[1], menuItems[2]].map((item) => (
             <button
               key={item.id}
@@ -124,7 +128,7 @@ const Sidebar = ({ activeTab, setActiveTab, user, handleLogout }: SidebarProps) 
              </div>
              <div className="flex items-center gap-2">
                 <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest font-mono whitespace-nowrap">
-                  {user?.email ? 'Đã xác thực' : 'Chế độ khách'}
+                  {user?.email ? t('sidebar.authenticated') : t('sidebar.guest')}
                 </span>
                <button 
                  onClick={handleLogout}
@@ -139,10 +143,10 @@ const Sidebar = ({ activeTab, setActiveTab, user, handleLogout }: SidebarProps) 
         
         <div className="flex flex-col gap-1.5 pt-4 opacity-50">
           <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.3em] font-mono text-center">
-            ZENITH X • HỆ THỐNG ỔN ĐỊNH
+            ZENITH X • {t('sidebar.system_stable')}
           </p>
           <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] font-mono text-center">
-            PHÁT TRIỂN BỞI NGUYỄN ĐỨC ANH
+            {t('sidebar.developed_by')}
           </p>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Orbit, ArrowRight, Zap, Shield, Cpu, Globe, Lock, Terminal, Activity, ChevronRight, Database, Github, BookOpen } from 'lucide-react';
+import { Orbit, Globe, Lock, Terminal, Activity, ChevronRight, Database, Github, BookOpen } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface LoginPageProps {
   handleLogin: () => void;
@@ -8,6 +9,13 @@ interface LoginPageProps {
 }
 
 const LoginPage = ({ handleLogin, onShowDocs }: LoginPageProps) => {
+  const { t, i18n } = useTranslation();
+
+  const toggleLanguage = () => {
+    const nextLang = i18n.language === 'vi' ? 'en' : 'vi';
+    i18n.changeLanguage(nextLang);
+  };
+
   return (
     <div className="relative min-h-screen bg-transparent flex flex-col items-center justify-center overflow-hidden font-sans selection:bg-slate-200 text-slate-600">
       {/* 🔮 CINEMATIC BACKGROUND ELEMENTS - Sync with White Theme */}
@@ -24,15 +32,25 @@ const LoginPage = ({ handleLogin, onShowDocs }: LoginPageProps) => {
           </div>
           <div className="flex flex-col">
             <span className="text-xs font-black text-slate-900 uppercase tracking-[0.4em] leading-none">Zenith_X</span>
-            <span className="text-[8px] font-mono text-slate-500 mt-1 uppercase tracking-widest opacity-60">System_Protocol::v4.2</span>
+            <span className="text-[8px] font-mono text-slate-500 mt-1 uppercase tracking-widest opacity-60">System_Protocol</span>
           </div>
         </div>
         
         <div className="flex items-center gap-10">
-          <div className="flex flex-col items-end">
+          <button 
+            onClick={toggleLanguage}
+            className="flex items-center gap-3 px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 hover:bg-white hover:shadow-lg transition-all group/lang"
+          >
+             <Globe size={14} className="text-slate-400 group-hover/lang:text-brand-500 transition-colors" />
+             <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest font-mono">
+               {i18n.language === 'vi' ? 'TIẾNG VIỆT' : 'ENGLISH'}
+             </span>
+          </button>
+
+          <div className="flex flex-col items-end hidden sm:flex">
             <span className="text-[9px] font-mono uppercase tracking-widest opacity-40">System_Status</span>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold text-slate-900 font-mono whitespace-nowrap">TRỰC TUYẾN BẢO MẬT</span>
+              <span className="text-[10px] font-bold text-slate-900 font-mono whitespace-nowrap">{t('login.status_secured')}</span>
               <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)] animate-pulse shrink-0" />
             </div>
           </div>
@@ -51,7 +69,7 @@ const LoginPage = ({ handleLogin, onShowDocs }: LoginPageProps) => {
             className="inline-flex items-center gap-3 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 mb-8"
           >
             <Activity size={12} className="text-slate-500" />
-            <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] font-mono">Pure Architecture v4.0</span>
+            <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] font-mono">Pure Architecture</span>
           </motion.div>
 
           <motion.div
@@ -67,8 +85,7 @@ const LoginPage = ({ handleLogin, onShowDocs }: LoginPageProps) => {
             <div className="w-20 h-1.5 bg-slate-900 mb-8 rounded-full shadow-lg" />
             
             <p className="text-lg md:text-xl text-slate-500 font-medium tracking-tight max-w-xl leading-relaxed">
-              Kiến trúc điều hành thế hệ mới với sự tối giản tuyệt đối. 
-              Tối ưu hóa quy trình, trực quan hóa dữ liệu trên nền tảng tinh khiết nhất.
+              {t('login.hero_description')}
             </p>
           </motion.div>
         </div>
@@ -88,8 +105,8 @@ const LoginPage = ({ handleLogin, onShowDocs }: LoginPageProps) => {
               
               <div className="flex flex-col gap-6">
                 <div className="space-y-1.5 text-center lg:text-left">
-                  <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Xác thực hệ thống</h3>
-                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest font-mono">Project Defense - Nguyễn Đức Anh</p>
+                   <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">{t('login.auth_title')}</h3>
+                   <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest font-mono">{t('sidebar.project_defense')}</p>
                 </div>
  
                 <div className="space-y-3">
@@ -102,18 +119,18 @@ const LoginPage = ({ handleLogin, onShowDocs }: LoginPageProps) => {
                         <div className="text-xs font-bold text-slate-900 uppercase font-mono">ZN_PURE_7741</div>
                       </div>
                    </div>
- 
+  
                    <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-3 group/item hover:bg-white transition-all cursor-pointer">
                       <div className="w-9 h-9 rounded-lg bg-white flex items-center justify-center text-slate-900 border border-slate-200 shadow-sm">
                         <Database size={16} />
                       </div>
                       <div className="flex-1">
                         <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest font-mono mb-0.5">Access_Level</div>
-                        <div className="text-xs font-bold text-slate-900 uppercase font-mono">QUẢN TRỊ VIÊN</div>
+                        <div className="text-xs font-bold text-slate-900 uppercase font-mono">{t('login.access_admin')}</div>
                       </div>
                    </div>
                 </div>
- 
+  
                 <div className="space-y-3">
                   <button 
                     onClick={handleLogin}
@@ -121,29 +138,29 @@ const LoginPage = ({ handleLogin, onShowDocs }: LoginPageProps) => {
                   >
                     <span className="relative z-10 flex items-center gap-2">
                       <Lock size={14} strokeWidth={3} />
-                      Truy cập Zenith
+                      {t('login.access_zenith')}
                     </span>
                     <div className="relative z-10 w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-all">
                       <ChevronRight size={16} strokeWidth={3} />
                     </div>
                   </button>
-  
+   
                   <button 
                     onClick={onShowDocs}
                     className="group relative w-full h-13 bg-white border-2 border-slate-200 text-slate-900 rounded-xl flex items-center justify-between px-6 font-black text-[11px] uppercase tracking-[0.2em] hover:bg-slate-50 hover:border-slate-300 transition-all duration-500 overflow-hidden shadow-sm"
                   >
                     <span className="relative z-10 flex items-center gap-2">
                       <BookOpen size={14} strokeWidth={3} className="text-slate-500" />
-                      Quy trình vận hành
+                      {t('login.ops_protocol')}
                     </span>
                     <div className="relative z-10 w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center group-hover:bg-slate-200 transition-all">
                       <ChevronRight size={16} strokeWidth={3} className="text-slate-400" />
                     </div>
                   </button>
                 </div>
- 
+  
                 <p className="text-center text-[8px] font-mono text-slate-400 uppercase tracking-widest">
-                  Kết nối bảo mật: RSA-4096-BIT
+                  {t('login.secure_connection')}
                 </p>
               </div>
             </div>
@@ -177,7 +194,7 @@ const LoginPage = ({ handleLogin, onShowDocs }: LoginPageProps) => {
               <Github size={14} />
             </div>
             <p className="text-[9px] font-mono text-slate-400 uppercase tracking-[0.3em] hidden sm:block group-hover/git:text-slate-900 transition-colors">
-              © 2026 ZENITH_X SYSTEM - NGUYỄN ĐỨC ANH
+              {t('login.copyright')}
             </p>
           </a>
         </div>

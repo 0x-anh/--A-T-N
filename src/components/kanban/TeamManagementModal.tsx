@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { X, Shield, ShieldCheck, UserPlus, Trash2, Check } from 'lucide-react';
 import { UserProfile, Project, UserRole, ROLE_CONFIG } from '../../types';
 import { cn } from '../../lib/utils';
+import { useTranslation } from 'react-i18next';
 
 interface TeamManagementModalProps {
   show: boolean;
@@ -25,6 +26,8 @@ const TeamManagementModal = ({
   handleRemoveMember,
   userId
 }: TeamManagementModalProps) => {
+  const { t } = useTranslation();
+
   if (!show) return null;
 
   return (
@@ -47,8 +50,8 @@ const TeamManagementModal = ({
                <Shield size={24} />
              </div>
              <div>
-               <h2 className="text-sm md:text-base font-black text-slate-900 uppercase tracking-widest md:tracking-[0.2em]">Cơ sở dữ liệu nhân sự</h2>
-               <p className="text-[8px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1 opacity-60">Control Panel / Security v4.0</p>
+               <h2 className="text-sm md:text-base font-black text-slate-900 uppercase tracking-widest md:tracking-[0.2em]">{t('members.team_management')}</h2>
+               <p className="text-[8px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1 opacity-60">Control Panel / Security</p>
              </div>
           </div>
           <button 
@@ -91,7 +94,6 @@ const TeamManagementModal = ({
                      <div className="flex-1 flex flex-wrap gap-2">
                         {(['editor', 'tester', 'viewer'] as UserRole[]).map(role => {
                           const hasRole = profile.roles?.includes(role);
-                          const config = ROLE_CONFIG[role];
                           return (
                             <button
                               key={role}
@@ -105,7 +107,7 @@ const TeamManagementModal = ({
                               )}
                             >
                                {hasRole ? <ShieldCheck size={10} /> : <div className="w-2.5 h-2.5 rounded-full border border-slate-200" />}
-                               {config.label}
+                               {t(`members.${role}`)}
                             </button>
                           );
                         })}
@@ -123,7 +125,7 @@ const TeamManagementModal = ({
                         {profile.userId === selectedProject?.ownerId && (
                            <div className="px-4 py-2 rounded-xl bg-amber-50 text-amber-600 text-[9px] font-black uppercase tracking-widest border border-amber-100 flex items-center gap-2">
                               <ShieldCheck size={12} />
-                              Chủ dự án
+                              {t('dashboard.project_owner')}
                            </div>
                         )}
                      </div>

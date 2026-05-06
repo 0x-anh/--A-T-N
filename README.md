@@ -1,12 +1,12 @@
 # 🛰️ ZENITH SYSTEM DASHBOARD
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" width="100%" alt="Zenith Banner" />
+  <img src="https://i.ibb.co/wNgLwPwb/Chat-GPT-Image-03-13-51-7-thg-5-2026.png" width="100%" alt="Zenith Banner" />
   <br/>
   <p align="center">
-    <strong>Kiến Trúc Quản Trị Hệ Thống Modul Hóa Hiện Đại</strong>
+    <strong>Kỷ Nguyên Quản Trị Hệ Thống Modul Hóa Đột Phá</strong>
     <br/>
-    <i>Đồ Án Tốt Nghiệp - Hệ Thống Điều Hành & Phân Tích Dữ Liệu Thời Gian Thực</i>
+    <i>Hệ Thống Điều Hành & Phân Tích Dữ Liệu Thời Gian Thực - NDA STRATEGIC DASHBOARD</i>
   </p>
 
   [![React](https://img.shields.io/badge/React-19.0-61DAFB?logo=react&logoColor=black)](https://reactjs.org/)

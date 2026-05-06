@@ -2,6 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Terminal, X, Activity, Cpu, Shield, Globe, Zap, Layers, Database, Lock, User, ChevronRight } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { useTranslation } from 'react-i18next';
 
 interface DocsModalProps {
   show: boolean;
@@ -9,6 +10,7 @@ interface DocsModalProps {
 }
 
 const DocsModal = ({ show, onClose }: DocsModalProps) => {
+  const { t } = useTranslation();
   if (!show) return null;
 
   const containerVariants = {
@@ -54,8 +56,8 @@ const DocsModal = ({ show, onClose }: DocsModalProps) => {
                <Cpu size={28} className="animate-pulse" />
             </div>
             <div>
-              <h3 className="text-2xl font-black text-slate-950 tracking-[-0.05em] uppercase leading-none">GIAO THỨC VẬN HÀNH</h3>
-              <p className="text-[9px] font-black text-brand-600 uppercase tracking-[0.4em] font-mono mt-2">NGUYỄN ĐỨC ANH • ZENITH_OS_MANUAL</p>
+              <h3 className="text-2xl font-black text-slate-950 tracking-[-0.05em] uppercase leading-none">{t('docs.title')}</h3>
+              <p className="text-[9px] font-black text-brand-600 uppercase tracking-[0.4em] font-mono mt-2">{t('docs.author_manual')}</p>
             </div>
           </div>
           <button 
@@ -71,12 +73,12 @@ const DocsModal = ({ show, onClose }: DocsModalProps) => {
           
           {/* INTRO SECTION */}
           <motion.section variants={itemVariants} className="max-w-3xl">
-             <h4 className="text-[11px] font-black text-brand-600 uppercase tracking-[0.4em] font-mono mb-4">KHỞI CHẠY HỆ THỐNG</h4>
+             <h4 className="text-[11px] font-black text-brand-600 uppercase tracking-[0.4em] font-mono mb-4">{t('docs.system_launch')}</h4>
              <h2 className="text-4xl font-black text-slate-900 leading-[0.9] uppercase tracking-tighter mb-6">
-                CẨM NANG <span className="text-slate-400">VẬN HÀNH CHIẾN LƯỢC</span>
+                {t('docs.manual_title')} <span className="text-slate-400">{t('docs.manual_subtitle')}</span>
              </h2>
              <p className="text-lg text-slate-500 font-medium leading-relaxed tracking-tight">
-                Chào mừng bạn đến với Zenith. Đây là hướng dẫn chi tiết để bạn làm chủ toàn bộ hệ thống quản trị do <span className="text-slate-900 font-bold">Nguyễn Đức Anh</span> thiết lập.
+                {t('docs.intro_text')}
              </p>
           </motion.section>
 
@@ -86,13 +88,13 @@ const DocsModal = ({ show, onClose }: DocsModalProps) => {
              <motion.div variants={itemVariants} className="group flex gap-8 p-8 rounded-[2.5rem] bg-slate-50 border border-slate-100 hover:bg-white hover:shadow-xl transition-all duration-500">
                 <div className="flex-shrink-0 w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center text-slate-900 font-black text-xl font-mono group-hover:bg-slate-950 group-hover:text-white transition-colors">01</div>
                 <div className="space-y-4">
-                   <h5 className="text-xl font-black text-slate-900 uppercase tracking-tight">KHỞI TẠO KHÔNG GIAN (WORKSPACE)</h5>
+                   <h5 className="text-xl font-black text-slate-900 uppercase tracking-tight">{t('docs.step_1_title')}</h5>
                    <p className="text-sm text-slate-500 leading-relaxed font-medium">
-                      Bắt đầu bằng cách nhấn vào nút <span className="text-slate-900 font-bold">"Dự án mới"</span> tại Dashboard. Đặt tên gợi nhớ cho mục tiêu của bạn. Sau khi khởi tạo, bạn có thể mời cộng sự thông qua Email để cùng phối hợp trong thời gian thực.
+                      {t('docs.step_1_desc')}
                    </p>
                    <ul className="grid grid-cols-2 gap-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono">
-                      <li className="flex items-center gap-2"><ChevronRight size={12} className="text-brand-500" /> Tùy chỉnh tên Node</li>
-                      <li className="flex items-center gap-2"><ChevronRight size={12} className="text-brand-500" /> Phân quyền Admin/User</li>
+                      <li className="flex items-center gap-2"><ChevronRight size={12} className="text-brand-500" /> {t('docs.step_1_feature_1')}</li>
+                      <li className="flex items-center gap-2"><ChevronRight size={12} className="text-brand-500" /> {t('docs.step_1_feature_2')}</li>
                    </ul>
                 </div>
              </motion.div>
@@ -101,22 +103,22 @@ const DocsModal = ({ show, onClose }: DocsModalProps) => {
              <motion.div variants={itemVariants} className="group flex gap-8 p-8 rounded-[2.5rem] bg-slate-50 border border-slate-100 hover:bg-white hover:shadow-xl transition-all duration-500">
                 <div className="flex-shrink-0 w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center text-slate-900 font-black text-xl font-mono group-hover:bg-slate-950 group-hover:text-white transition-colors">02</div>
                 <div className="space-y-4">
-                   <h5 className="text-xl font-black text-slate-900 uppercase tracking-tight">ĐIỀU PHỐI MA TRẬN KANBAN</h5>
+                   <h5 className="text-xl font-black text-slate-900 uppercase tracking-tight">{t('docs.step_2_title')}</h5>
                    <p className="text-sm text-slate-500 leading-relaxed font-medium">
-                      Tại Bảng công việc, hãy thêm các "Nhiệm vụ" (Nodes). Bạn có thể kéo-thả chúng qua các cột trạng thái. Đặc biệt:
+                      {t('docs.step_2_desc')}
                    </p>
                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="p-4 bg-white rounded-xl border border-slate-100 shadow-sm">
-                         <div className="text-[9px] font-black text-rose-500 uppercase mb-1">Critical</div>
-                         <div className="text-[10px] font-bold text-slate-700">Ưu tiên tối cao, cần xử lý ngay lập tức.</div>
+                         <div className="text-[9px] font-black text-rose-500 uppercase mb-1">{t('docs.step_2_card_1_title')}</div>
+                         <div className="text-[10px] font-bold text-slate-700">{t('docs.step_2_card_1_desc')}</div>
                       </div>
                       <div className="p-4 bg-white rounded-xl border border-slate-100 shadow-sm">
-                         <div className="text-[9px] font-black text-indigo-500 uppercase mb-1">Quick Add</div>
-                         <div className="text-[10px] font-bold text-slate-700">Thêm nhiệm vụ nhanh bằng phím tắt hệ thống.</div>
+                         <div className="text-[9px] font-black text-indigo-500 uppercase mb-1">{t('docs.step_2_card_2_title')}</div>
+                         <div className="text-[10px] font-bold text-slate-700">{t('docs.step_2_card_2_desc')}</div>
                       </div>
                       <div className="p-4 bg-white rounded-xl border border-slate-100 shadow-sm">
-                         <div className="text-[9px] font-black text-emerald-500 uppercase mb-1">Sync</div>
-                         <div className="text-[10px] font-bold text-slate-700">Tự động đồng bộ với mọi thành viên.</div>
+                         <div className="text-[9px] font-black text-emerald-500 uppercase mb-1">{t('docs.step_2_card_3_title')}</div>
+                         <div className="text-[10px] font-bold text-slate-700">{t('docs.step_2_card_3_desc')}</div>
                       </div>
                    </div>
                 </div>
@@ -126,9 +128,9 @@ const DocsModal = ({ show, onClose }: DocsModalProps) => {
              <motion.div variants={itemVariants} className="group flex gap-8 p-8 rounded-[2.5rem] bg-slate-50 border border-slate-100 hover:bg-white hover:shadow-xl transition-all duration-500">
                 <div className="flex-shrink-0 w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center text-slate-900 font-black text-xl font-mono group-hover:bg-slate-950 group-hover:text-white transition-colors">03</div>
                 <div className="space-y-4">
-                   <h5 className="text-xl font-black text-slate-900 uppercase tracking-tight">GIÁM SÁT & TRUY XUẤT NHẬT KÝ</h5>
+                   <h5 className="text-xl font-black text-slate-900 uppercase tracking-tight">{t('docs.step_3_title')}</h5>
                    <p className="text-sm text-slate-500 leading-relaxed font-medium">
-                      Hệ thống Zenith cung cấp cái nhìn toàn cảnh tại tab <span className="text-slate-900 font-bold">Phân tích</span>. Tại đây, bạn có thể lọc dữ liệu theo từng dự án hoặc xem <span className="text-brand-600 font-bold">Hệ thống tổng quát</span> để đánh giá hiệu suất tổng. Mọi thao tác nhỏ nhất đều được lưu lại tại tab Nhật ký để đảm bảo tính minh bạch.
+                      {t('docs.step_3_desc')}
                    </p>
                 </div>
              </motion.div>
@@ -139,15 +141,15 @@ const DocsModal = ({ show, onClose }: DocsModalProps) => {
              <motion.div variants={itemVariants} className="p-8 rounded-[2rem] bg-slate-950 text-white flex items-center gap-6 shadow-2xl">
                 <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center"><Shield className="text-brand-400" /></div>
                 <div>
-                   <h6 className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono">Security_Layer</h6>
-                   <p className="text-sm font-bold uppercase tracking-tight">Mã hóa RSA-4096-BIT bảo vệ dữ liệu.</p>
+                   <h6 className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono">{t('docs.security_layer_title')}</h6>
+                   <p className="text-sm font-bold uppercase tracking-tight">{t('docs.security_layer_desc')}</p>
                 </div>
              </motion.div>
              <motion.div variants={itemVariants} className="p-8 rounded-[2rem] bg-indigo-600 text-white flex items-center gap-6 shadow-2xl">
                 <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center"><Zap className="text-yellow-300" /></div>
                 <div>
-                   <h6 className="text-[10px] font-black text-indigo-200 uppercase tracking-widest font-mono">Performance</h6>
-                   <p className="text-sm font-bold uppercase tracking-tight">Xử lý thời gian thực với độ trễ gần bằng 0.</p>
+                   <h6 className="text-[10px] font-black text-indigo-200 uppercase tracking-widest font-mono">{t('docs.performance_title')}</h6>
+                   <p className="text-sm font-bold uppercase tracking-tight">{t('docs.performance_desc')}</p>
                 </div>
              </motion.div>
           </div>
@@ -157,10 +159,10 @@ const DocsModal = ({ show, onClose }: DocsModalProps) => {
              <div className="flex flex-col md:flex-row items-center justify-between gap-10">
                 <div className="space-y-4 text-center md:text-left">
                    <div className="flex items-center justify-center md:justify-start gap-3 text-brand-600 font-mono text-[10px] font-black uppercase tracking-[0.5em]">
-                      <Activity size={14} className="animate-pulse" /> SYSTEM_READY
+                      <Activity size={14} className="animate-pulse" /> {t('kanban.system_ready')}
                    </div>
-                   <h4 className="text-3xl font-black uppercase tracking-tighter">TRẠNG THÁI ZENITH_OS</h4>
-                   <p className="text-slate-500 text-xs font-mono uppercase tracking-widest max-w-xs">Hệ thống đang vận hành ổn định trên nền tảng đám mây.</p>
+                   <h4 className="text-3xl font-black uppercase tracking-tighter">{t('docs.system_status_title')}</h4>
+                   <p className="text-slate-500 text-xs font-mono uppercase tracking-widest max-w-xs">{t('docs.system_status_desc')}</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-8 md:gap-16">
@@ -182,13 +184,13 @@ const DocsModal = ({ show, onClose }: DocsModalProps) => {
                 <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
                    <User size={14} className="text-slate-400" />
                 </div>
-                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">PHÁT TRIỂN ĐỘC LẬP BỞI NGUYỄN ĐỨC ANH</span>
+                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{t('docs.author_tag')}</span>
              </div>
              <button 
                onClick={onClose}
                className="px-8 py-3 bg-slate-900 text-white rounded-full text-[10px] font-black uppercase tracking-[0.2em] hover:bg-brand-600 transition-all shadow-lg"
              >
-               Xác nhận Giao thức
+               {t('docs.confirm_protocol')}
              </button>
           </motion.div>
 

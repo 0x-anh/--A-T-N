@@ -1,7 +1,7 @@
-import React from 'react';
-import { motion } from 'motion/react';
-import { Settings, Lock, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Project } from '../../types';
+import { motion } from 'motion/react';
+import { Settings, X, Lock } from 'lucide-react';
 
 interface SettingsModalProps {
   show: boolean;
@@ -22,6 +22,7 @@ const SettingsModal = ({
   handleUpdateProject,
   handleDeleteProject
 }: SettingsModalProps) => {
+  const { t } = useTranslation();
   if (!show) return null;
 
   return (
@@ -39,7 +40,7 @@ const SettingsModal = ({
               <Settings size={24} />
             </div>
             <div>
-              <h3 className="text-xl font-black text-slate-950 tracking-[-0.05em] uppercase leading-none">Cài_Đặt_Workspace</h3>
+              <h3 className="text-xl font-black text-slate-950 tracking-[-0.05em] uppercase leading-none">{t('modals.settings_title')}</h3>
               <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono mt-2">Operational_Parameters_Config</p>
             </div>
           </div>
@@ -49,7 +50,7 @@ const SettingsModal = ({
         </div>
         <div className="p-12 space-y-12">
             <div className="space-y-4">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono ml-1">Workspace_Identity</label>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono ml-1">{t('modals.workspace_identity')}</label>
               <input 
                 className="w-full h-16 bg-slate-50 border border-slate-100 rounded-2xl px-8 text-lg font-black text-slate-950 outline-none focus:bg-white focus:border-brand-500 transition-all placeholder:text-slate-200 font-mono"
                 value={selectedProject?.name || ''} 
@@ -77,7 +78,7 @@ const SettingsModal = ({
                   onClick={handleDeleteProject}
                   className="text-[10px] font-black text-rose-500 hover:text-rose-400 transition-colors uppercase tracking-[0.4em] font-mono"
                 >
-                  Terminate_Workspace
+                  {t('modals.terminate_workspace')}
                 </button>
               )}
               <div className="flex-1" />
@@ -85,7 +86,7 @@ const SettingsModal = ({
                 onClick={handleUpdateProject}
                 className="w-full h-16 bg-slate-950 text-white rounded-[1.5rem] mt-12 text-[11px] font-black uppercase tracking-[0.4em] hover:bg-indigo-600 transition-all shadow-2xl shadow-slate-950/20 flex items-center justify-center gap-3 active:scale-95"
               >
-                  Commit_Changes
+                  {t('modals.commit_changes')}
               </button>
             </div>
         </div>

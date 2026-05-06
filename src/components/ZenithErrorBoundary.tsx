@@ -1,5 +1,6 @@
-import * as React from 'react';
-import { Activity, AlertTriangle, RefreshCcw } from 'lucide-react';
+import React from 'react';
+import i18next from 'i18next';
+import { AlertTriangle, Activity, RefreshCcw } from 'lucide-react';
 
 interface Props {
   children: React.ReactNode;
@@ -47,7 +48,7 @@ class ZenithErrorBoundary extends React.Component<Props, State> {
                   <AlertTriangle size={32} />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-black text-slate-950 uppercase tracking-tighter leading-none">LỖI HỆ THỐNG NGHIÊM TRỌNG</h2>
+                  <h2 className="text-2xl font-black text-slate-950 uppercase tracking-tighter leading-none">{i18next.t('errors.critical_title')}</h2>
                   <p className="text-[10px] font-black text-rose-500 uppercase tracking-[0.4em] font-mono mt-2">SYSTEM_CRITICAL_HALT_DETECTED</p>
                 </div>
               </div>
@@ -58,7 +59,7 @@ class ZenithErrorBoundary extends React.Component<Props, State> {
                   <span className="text-[9px] font-black uppercase tracking-widest font-mono">ERROR_STACK_TRACE</span>
                 </div>
                 <p className="text-xs font-mono font-bold text-slate-600 break-words line-clamp-3">
-                  {this.state.error?.message || 'Không xác định được nguyên nhân sự cố.'}
+                  {this.state.error?.message || i18next.t('errors.unknown_error')}
                 </p>
               </div>
 
@@ -68,7 +69,7 @@ class ZenithErrorBoundary extends React.Component<Props, State> {
                   className="w-full h-16 bg-slate-950 text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-4 hover:bg-rose-600 transition-all shadow-xl active:scale-95 group"
                 >
                   <RefreshCcw size={18} className="group-hover:rotate-180 transition-transform duration-700" />
-                  KÍCH HOẠT LẠI HỆ THỐNG
+                  {i18next.t('errors.reboot_system')}
                 </button>
               </div>
             </div>

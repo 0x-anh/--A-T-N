@@ -2,6 +2,7 @@ import React from 'react';
 import { LayoutGrid, List, Clock, Search, Plus, Users } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { Bug } from '../../types';
+import { useTranslation } from 'react-i18next';
 
 interface KanbanHeaderProps {
   viewMode: 'board' | 'list';
@@ -26,6 +27,8 @@ const KanbanHeader = ({
   setShowQuickAdd,
   setShowTeamModal
 }: KanbanHeaderProps) => {
+  const { t } = useTranslation();
+
   // Safe calculation for overdue count
   const overdueCount = bugs?.filter(b => {
     if (!b.dueDate || b.status === 'done') return false;
@@ -41,9 +44,9 @@ const KanbanHeader = ({
       <div className="flex items-center gap-8">
          <div className="flex flex-col">
             <h2 className="text-xl font-bold text-slate-900 uppercase tracking-tight leading-none">
-              QUẢN LÝ CÔNG VIỆC
+              {t('sidebar.board')}
             </h2>
-            <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">HỆ THỐNG ZENITH</p>
+            <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">{t('sidebar.system_stable')}</p>
          </div>
       </div>
 
@@ -54,7 +57,7 @@ const KanbanHeader = ({
             className="h-10 px-4 bg-slate-50 border border-slate-200 rounded-xl text-slate-600 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-2"
           >
             <Users size={14} />
-            <span className="hidden lg:inline">ĐỘI NGŨ</span>
+            <span className="hidden lg:inline">{t('kanban.team')}</span>
           </button>
         )}
 
@@ -68,18 +71,20 @@ const KanbanHeader = ({
           )}
         >
           <Clock size={14} />
-          <span className="hidden sm:inline">QUÁ HẠN</span>
+          <span className="hidden sm:inline">{t('kanban.overdue')}</span>
           {overdueCount > 0 && (
-             <span className={cn("text-[9px] px-1.5 py-0.5 rounded bg-rose-100 text-rose-600 ml-1", showOverdueOnly && "bg-rose-500 text-white")}>
-                {overdueCount.toString().padStart(2, '0')}
-             </span>
+            <span className={cn("text-[9px] px-1.5 py-0.5 rounded bg-rose-100 text-rose-600 ml-1", showOverdueOnly && "bg-rose-500 text-white")}>
+              {overdueCount.toString().padStart(2, '0')}
+            </span>
           )}
         </button>
 
         <div className="relative flex items-center">
            <Search className="absolute left-3 w-4 h-4 text-slate-400" />
            <input 
-             type="text" placeholder="Tìm kiếm..." value={searchTerm}
+             type="text" 
+             placeholder={t('topbar.search_placeholder')} 
+             value={searchTerm}
              onChange={(e) => setSearchTerm(e.target.value)}
              className="h-10 bg-slate-100 border border-slate-200 rounded-xl pl-9 pr-4 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500/20 transition-all w-48 md:w-64 outline-none"
            />
@@ -90,7 +95,7 @@ const KanbanHeader = ({
           className="h-10 px-4 bg-indigo-600 text-white rounded-xl text-[10px] font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 transition-all flex items-center gap-2 uppercase tracking-wider"
         >
            <Plus size={16} strokeWidth={3} /> 
-           <span className="hidden lg:inline">TRIỂN KHAI NHIỆM VỤ</span>
+           <span className="hidden lg:inline">{t('kanban.deploy_task')}</span>
         </button>
       </div>
     </div>
