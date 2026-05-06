@@ -350,16 +350,16 @@ const KanbanBoard = ({
       {/* Overview Style Header */}
       <header className="flex flex-col gap-4 mb-2 relative px-4 pt-2 shrink-0">
         <div className="flex items-center justify-between border-b border-slate-200 pb-4">
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-10">
             <div className="flex flex-col">
-              <h3 className="text-[11px] font-black text-brand-600 uppercase tracking-[0.5em] font-mono leading-none mb-2">TRUNG TÂM ĐIỀU PHỐI</h3>
-              <h2 className="text-4xl md:text-5xl font-heading font-black tracking-tighter uppercase leading-none text-slate-950">
-                BẢNG <span className="text-slate-400">CHIẾN LƯỢC</span>
+              <h3 className="text-[10px] font-black text-brand-500 uppercase tracking-[0.4em] font-mono leading-none mb-3">TRUNG TÂM ĐIỀU PHỐI</h3>
+              <h2 className="text-3xl font-heading font-black tracking-tight uppercase leading-normal text-slate-950 flex items-center gap-3 py-2">
+                BẢNG <span className="bg-gradient-to-r from-brand-600 to-indigo-600 bg-clip-text text-transparent pb-1">CHIẾN LƯỢC</span>
               </h2>
             </div>
-            <div className="hidden lg:block w-[1px] h-16 bg-slate-200" />
+            <div className="hidden lg:block w-[1px] h-12 bg-slate-200" />
             <div className="hidden lg:block max-w-xs">
-              <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest leading-relaxed">
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-relaxed">
                 Quản lý tiến trình vận hành, phân bổ nhiệm vụ và giám sát chất lượng thực thi.
               </p>
             </div>
