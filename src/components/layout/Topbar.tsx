@@ -94,9 +94,6 @@ const Topbar = ({
            <UserPlus size={14} /> 
            <span className="hidden sm:inline">Mời</span>
         </button>
-        <button onClick={() => setShowSettingsModal(true)} className="p-2 text-slate-400 hover:text-slate-900 transition-colors">
-           <Settings size={18} />
-        </button>
       </div>
     </header>
   );
