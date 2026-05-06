@@ -39,7 +39,7 @@ const SettingsModal = ({
               <Settings size={24} />
             </div>
             <div>
-              <h3 className="text-xl font-black text-slate-950 tracking-[-0.05em] uppercase italic leading-none">Cài_Đặt_Workspace</h3>
+              <h3 className="text-xl font-black text-slate-950 tracking-[-0.05em] uppercase leading-none">Cài_Đặt_Workspace</h3>
               <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono mt-2">Operational_Parameters_Config</p>
             </div>
           </div>
@@ -51,7 +51,7 @@ const SettingsModal = ({
             <div className="space-y-4">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono ml-1">Workspace_Identity</label>
               <input 
-                className="w-full h-16 bg-slate-50 border border-slate-100 rounded-2xl px-8 text-lg font-black text-slate-950 outline-none focus:bg-white focus:border-brand-500 transition-all placeholder:text-slate-200 font-mono italic"
+                className="w-full h-16 bg-slate-50 border border-slate-100 rounded-2xl px-8 text-lg font-black text-slate-950 outline-none focus:bg-white focus:border-brand-500 transition-all placeholder:text-slate-200 font-mono"
                 value={selectedProject?.name || ''} 
                 onChange={(e) => setSelectedProject(selectedProject ? {...selectedProject, name: e.target.value} : null)} 
                 disabled={user?.uid !== selectedProject?.ownerId}
@@ -61,11 +61,11 @@ const SettingsModal = ({
             <div className="grid grid-cols-2 gap-8">
               <div className="p-8 space-y-3 bg-slate-50 border border-slate-100 rounded-3xl">
                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] font-mono opacity-50">Encryption_Standard</span>
-                  <div className="text-sm font-black text-slate-950 italic font-mono uppercase">AES-256-GCM</div>
+                  <div className="text-sm font-black text-slate-950 font-mono uppercase">AES-256-GCM</div>
               </div>
               <div className="p-8 space-y-3 bg-slate-50 border border-slate-100 rounded-3xl">
                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] font-mono opacity-50">Security_Level</span>
-                  <div className="text-sm font-black text-emerald-600 italic font-mono flex items-center gap-2">
+                  <div className="text-sm font-black text-emerald-600 font-mono flex items-center gap-2">
                     <Lock size={18} /> AUTH_LEVEL_4
                   </div>
               </div>
@@ -75,7 +75,7 @@ const SettingsModal = ({
               {user?.uid === selectedProject?.ownerId && (
                 <button 
                   onClick={handleDeleteProject}
-                  className="text-[10px] font-black text-rose-500 hover:text-rose-400 transition-colors uppercase tracking-[0.4em] font-mono italic"
+                  className="text-[10px] font-black text-rose-500 hover:text-rose-400 transition-colors uppercase tracking-[0.4em] font-mono"
                 >
                   Terminate_Workspace
                 </button>
@@ -83,7 +83,7 @@ const SettingsModal = ({
               <div className="flex-1" />
               <button 
                 onClick={handleUpdateProject}
-                className="h-14 px-14 bg-slate-950 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] font-mono hover:bg-brand-600 hover:shadow-2xl hover:shadow-brand-500/20 transition-all active:scale-95"
+                className="w-full h-16 bg-slate-950 text-white rounded-[1.5rem] mt-12 text-[11px] font-black uppercase tracking-[0.4em] hover:bg-indigo-600 transition-all shadow-2xl shadow-slate-950/20 flex items-center justify-center gap-3 active:scale-95"
               >
                   Commit_Changes
               </button>

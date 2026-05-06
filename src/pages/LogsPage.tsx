@@ -45,7 +45,7 @@ const LogsPage = ({ projectId }: LogsPageProps) => {
             <Activity size={24} />
           </div>
           <div>
-            <h2 className="text-2xl font-black text-slate-950 tracking-tight uppercase italic leading-none">Nhật_Ký_Hệ_Thống</h2>
+            <h2 className="text-2xl font-black text-slate-950 tracking-tight uppercase leading-none">Danh_SÁch_Nhân_Sự</h2>
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono mt-2">Live_Telemetry_Relay</p>
           </div>
         </div>
@@ -55,12 +55,12 @@ const LogsPage = ({ projectId }: LogsPageProps) => {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
              <div className="w-1.5 h-1.5 rounded-full bg-slate-950 animate-ping" />
-             <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest font-mono">Đang tải dữ liệu...</span>
+             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono">Đang tải dữ liệu...</span>
           </div>
         ) : logs.length === 0 ? (
           <div className="text-center py-20">
             <Terminal className="w-12 h-12 text-slate-100 mx-auto mb-4" />
-            <p className="text-sm font-bold text-slate-300 uppercase tracking-widest">Không có dữ liệu nhật ký</p>
+            <h3 className="text-xs font-black text-slate-950 uppercase tracking-widest">Năng suất khởi tạo</h3>
           </div>
         ) : (
           <div className="space-y-8">
@@ -74,15 +74,15 @@ const LogsPage = ({ projectId }: LogsPageProps) => {
                 </div>
                 <div className="flex-1 pt-1 pb-6 border-b border-slate-50 last:border-0">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono italic">
+                    <h3 className="text-lg font-black text-slate-950 uppercase tracking-tight truncate">
                       {log.createdAt?.toDate ? new Date(log.createdAt.toDate()).toLocaleString() : 'Just now'}
-                    </span>
-                    <div className="flex items-center gap-2 px-3 py-1 bg-slate-50 rounded-lg text-[9px] font-black text-slate-500 uppercase tracking-tighter">
+                    </h3>
+                    <span className="px-3 py-1 bg-slate-50 border border-slate-100 rounded-lg text-[9px] font-black text-slate-400 uppercase tracking-widest font-mono flex items-center gap-2">
                       <User size={10} />
                       {log.userName || 'System'}
-                    </div>
+                    </span>
                   </div>
-                  <p className="text-sm font-bold text-slate-950 leading-relaxed tracking-tight italic">
+                  <p className="text-sm font-bold text-slate-950 leading-relaxed tracking-tight">
                     {log.content || log.message || 'Hệ thống đã thực hiện một tác vụ tự động.'}
                   </p>
                 </div>

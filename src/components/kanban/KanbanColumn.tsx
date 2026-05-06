@@ -64,7 +64,7 @@ const KanbanColumn = React.memo(({
             {...provided.droppableProps}
             ref={provided.innerRef}
             className={cn(
-              "flex-1 overflow-y-auto no-scrollbar transition-all duration-300 bg-white/40 rounded-[2rem] p-4 border border-slate-100/50 shadow-[inset_0_-20px_40px_-20px_rgba(0,0,0,0.02)] relative",
+              "flex-1 overflow-y-auto no-scrollbar transition-all duration-300 bg-white/10 backdrop-blur-3xl rounded-[2rem] p-4 border border-slate-100/50 shadow-[inset_0_-20px_40px_-20px_rgba(0,0,0,0.02)] relative tech-corners",
               snapshot.isDraggingOver && "bg-slate-100/50 border-brand-200/50"
             )}
           >
@@ -91,7 +91,7 @@ const KanbanColumn = React.memo(({
                     <textarea
                       autoFocus
                       rows={3}
-                      className="w-full bg-transparent border-none p-0 text-sm font-bold text-slate-950 outline-none placeholder:text-slate-200 mb-8 resize-none font-sans tracking-tight italic"
+                      className="w-full bg-transparent border-none p-0 text-sm font-bold text-slate-950 outline-none placeholder:text-slate-200 mb-8 resize-none font-sans tracking-tight"
                       placeholder="Nhập nội dung công việc..."
                       value={newBugTitle}
                       onChange={(e) => setNewBugTitle(e.target.value)}
@@ -106,13 +106,13 @@ const KanbanColumn = React.memo(({
                     <div className="flex gap-4">
                       <button 
                         onClick={() => handleAddBug(status)} 
-                        className="flex-1 h-14 bg-slate-950 text-white rounded-[1.5rem] text-[11px] font-black hover:bg-brand-600 transition-all uppercase tracking-[0.3em] shadow-2xl shadow-slate-950/20 active:scale-95 italic"
+                        className="flex-1 h-14 bg-slate-950 text-white rounded-[1.5rem] text-[11px] font-black hover:bg-brand-600 transition-all uppercase tracking-[0.3em] shadow-2xl shadow-slate-950/20 active:scale-95"
                       >
                         Khởi tạo
                       </button>
                       <button 
                         onClick={() => setIsAdding(null)} 
-                        className="h-14 px-8 text-[11px] font-black text-slate-400 hover:text-slate-950 transition-all uppercase tracking-widest font-mono italic"
+                        className="h-14 px-8 text-[11px] font-black text-slate-400 hover:text-slate-950 transition-all uppercase tracking-widest font-mono"
                       >
                         Hủy
                       </button>

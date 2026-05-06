@@ -25,12 +25,12 @@ const Sidebar = ({ activeTab, setActiveTab, user, handleLogout }: SidebarProps) 
     <aside className="hidden md:flex w-64 h-full flex-col bg-white/40 backdrop-blur-md border-r border-slate-200/50 relative z-50 overflow-hidden">
       <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-brand-500/5 to-transparent pointer-events-none" />
       <div className="p-6 pb-8 flex items-center gap-5 relative">
-        <div className="w-12 h-12 bg-slate-950 text-white flex items-center justify-center rounded-[1.25rem] shadow-3xl shadow-slate-950/20 rotate-[-8deg] group hover:rotate-0 transition-all duration-700">
+        <div className="w-12 h-12 bg-slate-950 text-white flex items-center justify-center rounded-[1.25rem] shadow-3xl shadow-slate-950/20 group transition-all duration-700">
           <Orbit size={24} strokeWidth={2.5} className="group-hover:animate-spin-slow" />
         </div>
         <div className="flex flex-col">
-          <span className="text-sm font-bold text-slate-950 tracking-[-0.05em] uppercase leading-none group-hover:text-brand-600 transition-colors">ZENITH</span>
-          <span className="text-[9px] font-black text-brand-600 uppercase tracking-[0.4em] font-mono mt-1.5 opacity-60">SYSTEM_X</span>
+          <span className="text-sm font-bold text-slate-950 tracking-tight uppercase leading-none group-hover:text-brand-600 transition-colors">ZENITH</span>
+          <span className="text-[9px] font-bold text-brand-600 uppercase tracking-[0.4em] font-mono mt-1.5 opacity-60">SYSTEM_X</span>
         </div>
       </div>
 
@@ -73,7 +73,7 @@ const Sidebar = ({ activeTab, setActiveTab, user, handleLogout }: SidebarProps) 
             <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full" />
           </div>
           <div className="min-w-0 flex-1">
-             <div className="text-[12px] font-black text-slate-950 truncate uppercase tracking-tight italic">{user?.displayName}</div>
+             <div className="text-[12px] font-black text-slate-950 truncate uppercase tracking-tight">{user?.displayName}</div>
              <button onClick={handleLogout} className="text-[9px] font-black text-slate-400 hover:text-rose-600 transition-colors uppercase tracking-[0.3em] font-mono leading-none">ĐĂNG_XUẤT</button>
           </div>
         </div>

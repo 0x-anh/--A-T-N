@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import { cn } from '../../lib/utils';
 
 export const StatsCard = ({ label, value, icon, trend }: { label: string, value: string | number, icon: React.ReactNode, trend: string }) => (
-  <div className="bg-white/20 backdrop-blur-md p-6 rounded-[2rem] border border-white/30 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-500 group relative overflow-hidden">
+  <div className="bg-white/10 backdrop-blur-3xl p-6 rounded-[2rem] border border-white/40 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-500 group relative overflow-hidden">
     <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.07] transition-opacity group-hover:scale-110 duration-700">
        {React.cloneElement(icon as React.ReactElement, { size: 80 })}
     </div>
@@ -23,7 +23,7 @@ export const StatsCard = ({ label, value, icon, trend }: { label: string, value:
 export const QuickAction = ({ title, desc, icon, onClick }: { title: string, desc: string, icon: React.ReactNode, onClick: () => void }) => (
   <button 
     onClick={onClick}
-    className="group p-8 bg-white/20 backdrop-blur-md border border-white/30 rounded-[2rem] text-left hover:border-brand-500/30 hover:shadow-2xl hover:shadow-brand-500/10 transition-all duration-500 relative overflow-hidden"
+    className="group p-8 bg-white/10 backdrop-blur-3xl border border-white/40 rounded-[2rem] text-left hover:border-brand-500/30 hover:shadow-2xl hover:shadow-brand-500/10 transition-all duration-500 relative overflow-hidden"
   >
     <div className="absolute top-0 right-0 w-32 h-32 bg-brand-500/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700" />
     <div className="w-12 h-12 bg-slate-950 text-white rounded-2xl flex items-center justify-center mb-6 shadow-xl shadow-slate-950/20 group-hover:scale-110 group-hover:bg-brand-600 transition-all duration-500 relative z-10">

@@ -38,7 +38,7 @@ const DashboardPage = ({
             </div>
           </div>
         </div>
-        <h2 className="text-base md:text-lg lg:text-xl font-heading font-black tracking-[-0.05em] uppercase leading-tight text-slate-950">
+        <h2 className="text-base md:text-lg lg:text-xl font-heading font-bold tracking-tight uppercase leading-tight text-slate-950">
           Trung tâm<br/>Điều hành
         </h2>
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
@@ -46,9 +46,9 @@ const DashboardPage = ({
             Giám sát rơ-le dữ liệu thời gian thực và phân bổ tài nguyên tối ưu cho đội ngũ tinh hoa. 
             <span className="block mt-1 text-[10px] font-black uppercase tracking-[0.4em] font-mono text-slate-300">Nhân_Hệ_Thống v4.2.1</span>
           </p>
-          <div className="flex flex-col items-start lg:items-end gap-1 px-6 py-4 bg-white/20 backdrop-blur-md border border-white/40 rounded-2xl min-w-[260px] relative overflow-hidden shadow-sm">
+          <div className="flex flex-col items-start lg:items-end gap-1 px-6 py-4 bg-white/10 backdrop-blur-3xl border border-white/40 rounded-2xl min-w-[260px] relative overflow-hidden shadow-sm tech-corners">
              <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono leading-none">Đồng_Hồ_Hệ_Thống</span>
-             <span className="text-2xl font-heading font-black text-slate-950 tracking-tighter leading-none">{currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+             <span className="text-2xl font-heading font-bold text-slate-950 tracking-tight leading-none">{currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
              <div className="flex items-center gap-3 mt-1">
                 <div className="w-1 h-1 rounded-full bg-brand-500 animate-ping" />
                 <span className="text-[9px] font-black text-brand-500 uppercase tracking-[0.4em] font-mono">ĐỒNG_BỘ_ACTIVE</span>
@@ -66,7 +66,7 @@ const DashboardPage = ({
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
         <div className="lg:col-span-2 flex flex-col gap-6">
-          <section className="bg-white/20 backdrop-blur-md rounded-[1.5rem] border border-white/40 p-6 shadow-sm">
+          <section className="bg-white/10 backdrop-blur-3xl rounded-[1.5rem] border border-white/40 p-6 shadow-sm tech-corners">
             <div className="flex items-center justify-between mb-6">
               <div className="space-y-1">
                 <h3 className="text-xs font-bold text-slate-900 uppercase tracking-widest flex items-center gap-2">
@@ -90,7 +90,7 @@ const DashboardPage = ({
                 
                 return (
                   <div key={i} className={cn(
-                    "min-h-[48px] py-1 px-1.5 bg-white/20 flex flex-col gap-0.5 transition-all hover:bg-white/40 relative group/cell",
+                    "min-h-[48px] py-1 px-1.5 bg-white/10 flex flex-col gap-0.5 transition-all hover:bg-white/30 relative group/cell",
                     !isCurrentMonth && "bg-slate-50/5 opacity-30 pointer-events-none"
                   )}>
                     <span className={cn(

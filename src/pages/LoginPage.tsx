@@ -58,7 +58,7 @@ const LoginPage = ({ handleLogin }: LoginPageProps) => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.2 }}
           >
-            <h1 className="text-7xl md:text-8xl lg:text-9xl font-black text-slate-900 tracking-[-0.04em] leading-[0.85] uppercase italic mb-8">
+            <h1 className="text-7xl md:text-8xl lg:text-9xl font-black text-slate-900 tracking-[-0.04em] leading-[0.85] uppercase mb-8">
               ZENITH<br/>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-slate-500 to-slate-400 opacity-90">SYSTEM</span>
             </h1>
@@ -87,7 +87,7 @@ const LoginPage = ({ handleLogin }: LoginPageProps) => {
               
               <div className="flex flex-col gap-8">
                 <div className="space-y-2 text-center lg:text-left">
-                  <h3 className="text-2xl font-black text-slate-900 uppercase italic tracking-tight">Xác thực hệ thống</h3>
+                  <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Xác thực hệ thống</h3>
                   <p className="text-xs text-slate-500 font-medium uppercase tracking-widest font-mono">Project Defense - Nguyễn Đức Anh</p>
                 </div>
 
@@ -115,7 +115,7 @@ const LoginPage = ({ handleLogin }: LoginPageProps) => {
 
                 <button 
                   onClick={handleLogin}
-                  className="group relative w-full h-16 bg-slate-900 text-white rounded-2xl flex items-center justify-between px-8 font-black uppercase tracking-[0.2em] italic shadow-2xl hover:bg-slate-800 transition-all duration-500 overflow-hidden"
+                  className="group relative w-full h-16 bg-slate-900 text-white rounded-2xl flex items-center justify-between px-8 font-black uppercase tracking-[0.2em] shadow-2xl hover:bg-slate-800 transition-all duration-500 overflow-hidden"
                 >
                   <span className="relative z-10 flex items-center gap-3">
                     <Lock size={16} strokeWidth={3} />
@@ -145,7 +145,7 @@ const LoginPage = ({ handleLogin }: LoginPageProps) => {
            ].map((item, i) => (
              <div key={i} className="flex flex-col gap-1">
                 <span className="text-[8px] font-mono text-slate-400 uppercase tracking-widest">{item.label}</span>
-                <span className="text-xs font-black text-slate-900 font-mono italic">{item.val}</span>
+                <span className="text-xs font-black text-slate-900 font-mono">{item.val}</span>
              </div>
            ))}
         </div>
