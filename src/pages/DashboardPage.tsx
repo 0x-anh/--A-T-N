@@ -212,6 +212,57 @@ const DashboardPage = ({
                 XEM TOÀN BỘ NHẬT KÝ
               </div>
             </button>
+
+            {/* System Resource Monitor - Filling the gap beautifully */}
+            <div className="mt-auto pt-8 border-t border-slate-100 space-y-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono">GIÁM SÁT TÀI NGUYÊN</span>
+                <div className="flex items-center gap-2">
+                   <div className="w-1 h-1 rounded-full bg-blue-500 animate-pulse" />
+                   <span className="text-[9px] font-bold text-blue-600 font-mono italic">THỜI GIAN THỰC</span>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between text-[9px] font-bold text-slate-500 font-mono">
+                    <span>SỬ_DỤNG_CPU</span>
+                    <span>24%</span>
+                  </div>
+                  <div className="h-1 bg-slate-100 rounded-full overflow-hidden">
+                    <motion.div 
+                      initial={{ width: 0 }} animate={{ width: '24%' }} 
+                      transition={{ duration: 1, repeat: Infinity, repeatType: 'reverse' }}
+                      className="h-full bg-slate-950" 
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-[9px] font-bold text-slate-500 font-mono">
+                    <span>CẤP_PHÁT_RAM</span>
+                    <span>1.2GB</span>
+                  </div>
+                  <div className="h-1 bg-slate-100 rounded-full overflow-hidden">
+                    <motion.div 
+                      initial={{ width: 0 }} animate={{ width: '45%' }}
+                      className="h-full bg-brand-500" 
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-3 bg-slate-50/50 rounded-xl border border-slate-100 flex items-center justify-between">
+                <div className="flex flex-col gap-1">
+                  <span className="text-[8px] font-bold text-slate-400 uppercase font-mono">TRẠNG THÁI MẠNG</span>
+                  <span className="text-[10px] font-black text-slate-800 font-mono">ỔN ĐỊNH_0.002MS</span>
+                </div>
+                <div className="flex gap-1">
+                  {[1,2,3,4].map(i => (
+                    <div key={i} className={`w-1 h-3 rounded-full ${i <= 3 ? 'bg-emerald-400' : 'bg-slate-200'}`} />
+                  ))}
+                </div>
+              </div>
+            </div>
           </section>
         </div>
       </div>
