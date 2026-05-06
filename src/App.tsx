@@ -95,16 +95,15 @@ export default function App() {
     } catch (error) { handleFirestoreError(error, 'update', 'projects'); }
   };
 
-  const handleDeleteProject = async () => {
-    if (!user || !selectedProject) return;
-    const projectId = selectedProject.id;
-    const projectName = selectedProject.name;
+  const handleDeleteProject = async (projectToDelete: any) => {
+    if (!user || !projectToDelete) return;
+    const projectId = projectToDelete.id;
+    const projectName = projectToDelete.name;
 
     const deleteTimeout = setTimeout(async () => {
       try {
         await deleteDoc(doc(db, 'projects', projectId)); 
         
-        // Log activity before UI closes
         await addDoc(collection(db, 'activity_logs'), {
           action: 'PROJECT_DELETED',
           details: `Dự án ${projectName} đã bị giải phóng vĩnh viễn khỏi hệ thống.`,
@@ -113,10 +112,11 @@ export default function App() {
           userName: user.displayName || 'Admin'
         });
 
-        toast.success("Dự án đã được giải phóng vĩnh viễn.");
-        setShowSettingsModal(false);
-        setSelectedProject(null);
-        setActiveTab('dashboard');
+        toast.success(`Dự án ${projectName} đã được giải phóng.`);
+        if (selectedProject?.id === projectId) {
+          setSelectedProject(null);
+          setActiveTab('dashboard');
+        }
       } catch (error) { 
         handleFirestoreError(error, 'delete', 'projects'); 
         toast.error("Lỗi giải phóng dự án.");
@@ -208,102 +208,98 @@ export default function App() {
     );
   }
 
-  if (!user) {
-    return (
-      <div className="min-h-screen font-sans selection:bg-indigo-500/30">
-        <MatrixBackground />
-        <LoginPage handleLogin={handleLogin} />
-        <Toaster position="top-right" />
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen font-sans selection:bg-indigo-500/30">
       <MatrixBackground />
-      <MainLayout
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        user={user}
-        handleLogout={handleLogout}
-        selectedProject={selectedProject}
-        projects={projects}
-        setSelectedProject={setSelectedProject}
-        setShowProjectModal={setShowProjectModal}
-        setShowInviteModal={setShowInviteModal}
-        setShowSettingsModal={setShowSettingsModal}
-      >
-        <AnimatePresence mode="wait">
-          {activeTab === 'dashboard' && (
-            <div key="dashboard" className="w-full">
-              <DashboardPage 
-                appStats={appStats}
-                currentTime={currentTime}
-                bugs={bugs}
-                events={events}
-                overdueTasks={overdueTasks}
-                userProfiles={userProfiles}
-                pendingInvitations={pendingInvitations}
-                handleAcceptInvitation={handleAcceptInvitation}
-                handleDeclineInvitation={handleDeclineInvitation}
-                setActiveTab={setActiveTab}
-                setShowProjectModal={setShowProjectModal}
-                setShowInviteModal={setShowInviteModal}
-                setShowQuickAdd={setShowQuickAdd}
-              />
-            </div>
-          )}
-
-          {activeTab === 'board' && (
-            <div key="board" className="h-full">
-               <KanbanBoard 
-                  selectedProject={selectedProject}
-                  userId={user.uid}
-                  userProfiles={userProfiles}
-                  bugs={bugs}
-                  isAdmin={isAdmin}
-                  setShowQuickAdd={setShowQuickAdd}
+      
+      {!user ? (
+        <LoginPage handleLogin={handleLogin} onShowDocs={() => setShowDocsModal(true)} />
+      ) : (
+        <MainLayout
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          user={user}
+          handleLogout={handleLogout}
+          selectedProject={selectedProject}
+          projects={projects}
+          setSelectedProject={setSelectedProject}
+          setShowProjectModal={setShowProjectModal}
+          setShowInviteModal={setShowInviteModal}
+          setShowSettingsModal={setShowSettingsModal}
+          handleDeleteProject={handleDeleteProject}
+        >
+          <AnimatePresence mode="wait">
+            {activeTab === 'dashboard' && (
+              <div key="dashboard" className="w-full">
+                <DashboardPage 
+                  appStats={appStats}
                   currentTime={currentTime}
-                  handleUpdateUserRoles={handleUpdateUserRoles}
-                  handleRemoveMember={handleRemoveMember}
-               />
-            </div>
-          )}
+                  bugs={bugs}
+                  events={events}
+                  overdueTasks={overdueTasks}
+                  userProfiles={userProfiles}
+                  pendingInvitations={pendingInvitations}
+                  handleAcceptInvitation={handleAcceptInvitation}
+                  handleDeclineInvitation={handleDeclineInvitation}
+                  setActiveTab={setActiveTab}
+                  setShowProjectModal={setShowProjectModal}
+                  setShowInviteModal={setShowInviteModal}
+                  setShowQuickAdd={setShowQuickAdd}
+                />
+              </div>
+            )}
 
-          {activeTab === 'metrics' && (
-            <MetricsPage 
-              bugs={bugs} 
-              projects={projects}
-              selectedProject={selectedProject}
-              appStats={appStats} 
-              setActiveTab={setActiveTab} 
-            />
-          )}
+            {activeTab === 'board' && (
+              <div key="board" className="h-full">
+                 <KanbanBoard 
+                    selectedProject={selectedProject}
+                    userId={user.uid}
+                    userProfiles={userProfiles}
+                    bugs={bugs}
+                    isAdmin={isAdmin}
+                    setShowQuickAdd={setShowQuickAdd}
+                    currentTime={currentTime}
+                    handleUpdateUserRoles={handleUpdateUserRoles}
+                    handleRemoveMember={handleRemoveMember}
+                 />
+              </div>
+            )}
 
-          {activeTab === 'logs' && (
-            <LogsPage 
-              selectedProject={selectedProject}
-              projects={projects}
-              userId={user?.uid || ''}
-              userProfiles={userProfiles}
-            />
-          )}
+            {activeTab === 'metrics' && (
+              <MetricsPage 
+                bugs={bugs} 
+                projects={projects}
+                selectedProject={selectedProject}
+                appStats={appStats} 
+                setActiveTab={setActiveTab} 
+              />
+            )}
 
-          {activeTab === 'members' && (
-            <MembersPage 
-              userProfiles={userProfiles}
-              selectedProject={selectedProject}
-              isAdmin={isAdmin}
-              userId={user.uid}
-              setShowInviteModal={setShowInviteModal}
-              handleRemoveMember={handleRemoveMember}
-              handleUpdateUserRoles={handleUpdateUserRoles}
-            />
-          )}
-        </AnimatePresence>
-      </MainLayout>
+            {activeTab === 'logs' && (
+              <LogsPage 
+                selectedProject={selectedProject}
+                projects={projects}
+                userId={user?.uid || ''}
+                userProfiles={userProfiles}
+              />
+            )}
 
-      {/* Modals */}
+            {activeTab === 'members' && (
+              <MembersPage 
+                userProfiles={userProfiles}
+                selectedProject={selectedProject}
+                isAdmin={isAdmin}
+                userId={user.uid}
+                setShowInviteModal={setShowInviteModal}
+                handleRemoveMember={handleRemoveMember}
+                handleUpdateUserRoles={handleUpdateUserRoles}
+              />
+            )}
+          </AnimatePresence>
+        </MainLayout>
+      )}
+
+      {/* Global Modals */}
       <ProjectModal 
         show={showProjectModal} 
         onClose={() => setShowProjectModal(false)}
@@ -320,22 +316,22 @@ export default function App() {
         handleInviteMember={handleInviteMember}
       />
 
-      <SettingsModal 
-        show={showSettingsModal}
-        onClose={() => setShowSettingsModal(false)}
-        selectedProject={selectedProject}
-        setSelectedProject={setSelectedProject}
-        user={user}
-        handleUpdateProject={handleUpdateProject}
-        handleDeleteProject={handleDeleteProject}
-      />
+      {user && (
+        <SettingsModal 
+          show={showSettingsModal}
+          onClose={() => setShowSettingsModal(false)}
+          selectedProject={selectedProject}
+          setSelectedProject={setSelectedProject}
+          user={user}
+          handleUpdateProject={handleUpdateProject}
+          handleDeleteProject={() => handleDeleteProject(selectedProject)}
+        />
+      )}
 
       <DocsModal 
         show={showDocsModal}
         onClose={() => setShowDocsModal(false)}
       />
-
-      <Toaster position="top-right" />
 
       <QuickAddModal 
         show={showQuickAdd} 
@@ -348,6 +344,8 @@ export default function App() {
         setDueDate={setQuickAddDueDate}
         onSubmit={handleQuickAdd}
       />
+
+      <Toaster position="top-right" />
     </div>
   );
 }

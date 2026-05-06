@@ -16,6 +16,7 @@ interface MainLayoutProps {
   setShowProjectModal: (show: boolean) => void;
   setShowInviteModal: (show: boolean) => void;
   setShowSettingsModal: (show: boolean) => void;
+  handleDeleteProject: (project: Project) => void;
 }
 
 const MainLayout = ({
@@ -29,7 +30,8 @@ const MainLayout = ({
   setSelectedProject,
   setShowProjectModal,
   setShowInviteModal,
-  setShowSettingsModal
+  setShowSettingsModal,
+  handleDeleteProject
 }: MainLayoutProps) => {
   return (
     <div className="flex h-screen bg-transparent overflow-hidden font-sans selection:bg-slate-200">
@@ -48,6 +50,7 @@ const MainLayout = ({
           setShowProjectModal={setShowProjectModal}
           setShowInviteModal={setShowInviteModal}
           setShowSettingsModal={setShowSettingsModal}
+          handleDeleteProject={handleDeleteProject}
           activeTab={activeTab}
         />
         

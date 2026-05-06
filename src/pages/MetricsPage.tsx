@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { PieChart as PieIcon, TrendingUp, Cpu, BarChart3, Target, Activity, Zap, CheckCircle2, AlertCircle, Clock, ArrowUpRight, Layers, Radio, ShieldCheck, Database, Terminal, ChevronRight, AlertTriangle, Info } from 'lucide-react';
 import { Bug, Project } from '../types';
 import { cn } from '../lib/utils';
@@ -16,13 +16,6 @@ const MetricsPage = ({ bugs, projects, selectedProject, appStats, setActiveTab }
   const [projectFilter, setProjectFilter] = useState<string>('all');
   const [showProjectMenu, setShowProjectMenu] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
-
-  // Initialize filter with current selected project if exists
-  useEffect(() => {
-    if (selectedProject && projectFilter === 'all') {
-      setProjectFilter(selectedProject.id);
-    }
-  }, [selectedProject]);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);

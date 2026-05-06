@@ -20,13 +20,6 @@ const LogsPage = ({ selectedProject, projects, userId, userProfiles }: LogsPageP
   const [showProjectMenu, setShowProjectMenu] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
 
-  // Initialize filter with current selected project if exists
-  useEffect(() => {
-    if (selectedProject && projectFilter === 'all') {
-      setProjectFilter(selectedProject.id);
-    }
-  }, [selectedProject]);
-
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);

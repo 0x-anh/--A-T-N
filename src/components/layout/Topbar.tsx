@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronDown, Check, Plus, UserPlus, Settings } from 'lucide-react';
+import { ChevronDown, Check, Plus, UserPlus, Trash2 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { Project } from '../../types';
 
@@ -11,6 +11,7 @@ interface TopbarProps {
   setShowProjectModal: (show: boolean) => void;
   setShowInviteModal: (show: boolean) => void;
   setShowSettingsModal: (show: boolean) => void;
+  handleDeleteProject: (project: Project) => void;
   activeTab: string;
 }
 
@@ -21,6 +22,7 @@ const Topbar = ({
   setShowProjectModal,
   setShowInviteModal,
   setShowSettingsModal,
+  handleDeleteProject,
   activeTab
 }: TopbarProps) => {
   const [showProjectDropdown, setShowProjectDropdown] = useState(false);
@@ -42,7 +44,7 @@ const Topbar = ({
               className="flex items-center gap-2 px-3 py-1.5 hover:bg-white/80 rounded-lg border border-white/40 transition-all font-sans bg-white/50 shadow-sm"
             >
                <div className="w-1.5 h-1.5 rounded-full bg-brand-500" />
-               <span className="text-[11px] font-bold text-slate-900 uppercase tracking-tight">{selectedProject?.name || 'Loading...'}</span>
+               <span className="text-[11px] font-bold text-slate-900 uppercase tracking-tight truncate max-w-[150px]">{selectedProject?.name || 'Loading...'}</span>
                <ChevronDown size={12} className={cn("text-slate-400 transition-transform", showProjectDropdown && "rotate-180")} />
             </button>
             
@@ -52,22 +54,31 @@ const Topbar = ({
                    initial={{ opacity: 0, y: 8 }} 
                    animate={{ opacity: 1, y: 0 }} 
                    exit={{ opacity: 0, y: 8 }} 
-                   className="absolute top-full left-0 mt-2 w-56 z-[110] bg-white border border-slate-200 shadow-xl rounded-2xl overflow-hidden p-1.5"
+                   className="absolute top-full left-0 mt-2 w-64 z-[110] bg-white border border-slate-200 shadow-xl rounded-2xl overflow-hidden p-1.5"
                  >
                    <div className="px-3 py-1.5 text-[9px] font-bold text-slate-400 uppercase tracking-widest">Dự án</div>
-                   <div className="space-y-0.5">
+                   <div className="space-y-0.5 max-h-[300px] overflow-y-auto custom-scrollbar">
                      {projects.map(p => (
-                       <button 
-                          key={p.id} 
-                          onClick={() => { setSelectedProject(p); setShowProjectDropdown(false); }} 
-                          className={cn(
-                            "w-full flex items-center justify-between px-3 py-2 text-xs font-medium rounded-xl transition-all", 
-                            selectedProject?.id === p.id ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-50"
-                          )}
-                        >
-                         {p.name}
-                         {selectedProject?.id === p.id && <Check size={12} />}
-                       </button>
+                        <div key={p.id} className="group flex items-center gap-1">
+                          <button 
+                            onClick={() => { setSelectedProject(p); setShowProjectDropdown(false); }} 
+                            className={cn(
+                              "flex-1 flex items-center justify-between px-3 py-2 text-xs font-medium rounded-xl transition-all min-w-0", 
+                              selectedProject?.id === p.id ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-50"
+                            )}
+                          >
+                           <span className="truncate mr-2">{p.name}</span>
+                           {selectedProject?.id === p.id && <Check size={12} className="shrink-0" />}
+                          </button>
+                          
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); handleDeleteProject(p); }}
+                            className="w-9 h-9 flex items-center justify-center text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all opacity-0 group-hover:opacity-100"
+                            title="Xóa dự án"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
                      ))}
                      <div className="h-px bg-slate-100 my-1.5 mx-1.5" />
                      <button 

@@ -1,12 +1,13 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Orbit, ArrowRight, Zap, Shield, Cpu, Globe, Lock, Terminal, Activity, ChevronRight, Database, Github } from 'lucide-react';
+import { Orbit, ArrowRight, Zap, Shield, Cpu, Globe, Lock, Terminal, Activity, ChevronRight, Database, Github, BookOpen } from 'lucide-react';
 
 interface LoginPageProps {
   handleLogin: () => void;
+  onShowDocs: () => void;
 }
 
-const LoginPage = ({ handleLogin }: LoginPageProps) => {
+const LoginPage = ({ handleLogin, onShowDocs }: LoginPageProps) => {
   return (
     <div className="relative min-h-screen bg-transparent flex flex-col items-center justify-center overflow-hidden font-sans selection:bg-slate-200 text-slate-600">
       {/* 🔮 CINEMATIC BACKGROUND ELEMENTS - Sync with White Theme */}
@@ -27,12 +28,12 @@ const LoginPage = ({ handleLogin }: LoginPageProps) => {
           </div>
         </div>
         
-        <div className="hidden md:flex items-center gap-10">
+        <div className="flex items-center gap-10">
           <div className="flex flex-col items-end">
             <span className="text-[9px] font-mono uppercase tracking-widest opacity-40">System_Status</span>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold text-slate-900 font-mono">TRỰC TUYẾN BẢO MẬT</span>
-              <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)] animate-pulse" />
+              <span className="text-[10px] font-bold text-slate-900 font-mono whitespace-nowrap">TRỰC TUYẾN BẢO MẬT</span>
+              <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)] animate-pulse shrink-0" />
             </div>
           </div>
         </div>
@@ -82,51 +83,66 @@ const LoginPage = ({ handleLogin }: LoginPageProps) => {
           <div className="relative group">
             <div className="absolute -inset-0.5 bg-gradient-to-r from-slate-200 to-slate-300 rounded-[2.5rem] blur opacity-30" />
             
-            <div className="relative bg-white/70 backdrop-blur-3xl border border-white/50 rounded-[2.5rem] p-10 shadow-2xl overflow-hidden">
+            <div className="relative bg-white/70 backdrop-blur-3xl border border-white/50 rounded-[2.5rem] p-8 shadow-2xl overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-slate-200 to-transparent opacity-50" />
               
-              <div className="flex flex-col gap-8">
-                <div className="space-y-2 text-center lg:text-left">
-                  <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Xác thực hệ thống</h3>
-                  <p className="text-xs text-slate-500 font-medium uppercase tracking-widest font-mono">Project Defense - Nguyễn Đức Anh</p>
+              <div className="flex flex-col gap-6">
+                <div className="space-y-1.5 text-center lg:text-left">
+                  <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Xác thực hệ thống</h3>
+                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest font-mono">Project Defense - Nguyễn Đức Anh</p>
                 </div>
-
-                <div className="space-y-4">
-                   <div className="p-6 rounded-2xl bg-slate-50 border border-slate-100 flex items-center gap-4 group/item hover:bg-white transition-all cursor-pointer">
-                      <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-slate-900 border border-slate-200 shadow-sm">
-                        <Terminal size={18} />
+ 
+                <div className="space-y-3">
+                   <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-3 group/item hover:bg-white transition-all cursor-pointer">
+                      <div className="w-9 h-9 rounded-lg bg-white flex items-center justify-center text-slate-900 border border-slate-200 shadow-sm">
+                        <Terminal size={16} />
                       </div>
                       <div className="flex-1">
-                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono mb-1">Terminal_ID</div>
-                        <div className="text-sm font-bold text-slate-900 uppercase font-mono">ZN_PURE_7741</div>
+                        <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest font-mono mb-0.5">Terminal_ID</div>
+                        <div className="text-xs font-bold text-slate-900 uppercase font-mono">ZN_PURE_7741</div>
                       </div>
                    </div>
-
-                   <div className="p-6 rounded-2xl bg-slate-50 border border-slate-100 flex items-center gap-4 group/item hover:bg-white transition-all cursor-pointer">
-                      <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-slate-900 border border-slate-200 shadow-sm">
-                        <Database size={18} />
+ 
+                   <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-3 group/item hover:bg-white transition-all cursor-pointer">
+                      <div className="w-9 h-9 rounded-lg bg-white flex items-center justify-center text-slate-900 border border-slate-200 shadow-sm">
+                        <Database size={16} />
                       </div>
                       <div className="flex-1">
-                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono mb-1">Access_Level</div>
-                        <div className="text-sm font-bold text-slate-900 uppercase font-mono">QUẢN TRỊ VIÊN</div>
+                        <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest font-mono mb-0.5">Access_Level</div>
+                        <div className="text-xs font-bold text-slate-900 uppercase font-mono">QUẢN TRỊ VIÊN</div>
                       </div>
                    </div>
                 </div>
-
-                <button 
-                  onClick={handleLogin}
-                  className="group relative w-full h-16 bg-slate-900 text-white rounded-2xl flex items-center justify-between px-8 font-black uppercase tracking-[0.2em] shadow-2xl hover:bg-slate-800 transition-all duration-500 overflow-hidden"
-                >
-                  <span className="relative z-10 flex items-center gap-3">
-                    <Lock size={16} strokeWidth={3} />
-                    Truy cập Zenith
-                  </span>
-                  <div className="relative z-10 w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-all">
-                    <ChevronRight size={20} strokeWidth={3} />
-                  </div>
-                </button>
-
-                <p className="text-center text-[9px] font-mono text-slate-400 uppercase tracking-widest">
+ 
+                <div className="space-y-3">
+                  <button 
+                    onClick={handleLogin}
+                    className="group relative w-full h-13 bg-slate-900 text-white rounded-xl flex items-center justify-between px-6 font-black text-[11px] uppercase tracking-[0.2em] shadow-xl hover:bg-slate-800 transition-all duration-500 overflow-hidden"
+                  >
+                    <span className="relative z-10 flex items-center gap-2">
+                      <Lock size={14} strokeWidth={3} />
+                      Truy cập Zenith
+                    </span>
+                    <div className="relative z-10 w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-all">
+                      <ChevronRight size={16} strokeWidth={3} />
+                    </div>
+                  </button>
+  
+                  <button 
+                    onClick={onShowDocs}
+                    className="group relative w-full h-13 bg-white border-2 border-slate-200 text-slate-900 rounded-xl flex items-center justify-between px-6 font-black text-[11px] uppercase tracking-[0.2em] hover:bg-slate-50 hover:border-slate-300 transition-all duration-500 overflow-hidden shadow-sm"
+                  >
+                    <span className="relative z-10 flex items-center gap-2">
+                      <BookOpen size={14} strokeWidth={3} className="text-slate-500" />
+                      Quy trình vận hành
+                    </span>
+                    <div className="relative z-10 w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center group-hover:bg-slate-200 transition-all">
+                      <ChevronRight size={16} strokeWidth={3} className="text-slate-400" />
+                    </div>
+                  </button>
+                </div>
+ 
+                <p className="text-center text-[8px] font-mono text-slate-400 uppercase tracking-widest">
                   Kết nối bảo mật: RSA-4096-BIT
                 </p>
               </div>
