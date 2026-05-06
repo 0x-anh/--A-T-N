@@ -73,19 +73,22 @@ const QuickAddModal = ({
                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div>
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 block font-mono">Độ ưu tiên</label>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="flex gap-2">
                       {(['low', 'high', 'critical'] as BugPriority[]).map((p) => (
                           <button
                             key={p}
+                            type="button"
                             onClick={() => setPriority(p)}
                             className={cn(
-                              "py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border-2",
+                              "flex-1 py-3 px-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border-2 whitespace-nowrap",
                               priority === p 
-                                ? "bg-slate-950 border-transparent text-white shadow-lg" 
+                                ? "bg-brand-500 border-transparent text-white shadow-lg shadow-brand-500/20" 
                                 : "bg-white border-slate-100 text-slate-400 hover:border-slate-200"
                             )}
                           >
-                            {PRIORITY_CONFIG[p].label.split(' ')[2] || PRIORITY_CONFIG[p].label}
+                            {PRIORITY_CONFIG[p].label.includes('[') 
+                              ? PRIORITY_CONFIG[p].label.substring(PRIORITY_CONFIG[p].label.indexOf('[')) 
+                              : PRIORITY_CONFIG[p].label}
                           </button>
                       ))}
                     </div>

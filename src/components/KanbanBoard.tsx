@@ -10,7 +10,7 @@ import {
   UserProfile, Project, UserRole, canUserMoveTo 
 } from '../types';
 import { toast } from 'sonner';
-import { Plus, Bug as BugIcon, Search, LayoutDashboard, ListFilter, Activity, Grid, List, Terminal } from 'lucide-react';
+import { Plus, Bug as BugIcon, Search, LayoutDashboard, ListFilter, Activity, Grid, List, Terminal, LayoutList } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -210,11 +210,11 @@ const KanbanBoard = ({
       initial={{ opacity: 0, y: 10 }} 
       animate={{ opacity: 1, y: 0 }} 
       exit={{ opacity: 0, y: -20 }} 
-      className="h-[calc(100vh-120px)] flex flex-col overflow-hidden space-y-6"
+      className="h-[calc(100vh-100px)] flex flex-col overflow-hidden space-y-2"
     >
       {/* Overview Style Header */}
-      <header className="flex flex-col gap-8 mb-4 relative px-4 pt-4 shrink-0">
-        <div className="flex items-center justify-between border-b border-slate-200 pb-8">
+      <header className="flex flex-col gap-4 mb-2 relative px-4 pt-2 shrink-0">
+        <div className="flex items-center justify-between border-b border-slate-200 pb-4">
           <div className="flex items-center gap-8">
             <div className="flex flex-col">
               <h3 className="text-[11px] font-black text-brand-600 uppercase tracking-[0.5em] font-mono leading-none mb-2">TRUNG TÂM ĐIỀU PHỐI</h3>
@@ -230,11 +230,11 @@ const KanbanBoard = ({
             </div>
           </div>
 
-          <div className="flex flex-col items-end gap-4">
-             <div className="flex items-center gap-3">
+          <div className="flex flex-col items-end gap-6">
+             <div className="flex items-center gap-4 bg-slate-100/50 p-1.5 rounded-2xl border border-slate-200 shadow-inner backdrop-blur-sm">
                 {/* Search Bar */}
                 <div className="relative group">
-                  <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-400 group-focus-within:text-slate-950 transition-colors">
+                  <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-400 group-focus-within:text-brand-500 transition-colors">
                     <Search size={14} strokeWidth={3} />
                   </div>
                   <input 
@@ -242,19 +242,33 @@ const KanbanBoard = ({
                     placeholder="TÌM KIẾM NHIỆM VỤ..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 pr-4 py-2.5 bg-white/60 backdrop-blur-md border border-slate-200 rounded-xl text-[10px] font-black text-slate-950 outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500/50 transition-all w-[200px] md:w-[280px] uppercase tracking-widest"
+                    className="pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-black text-slate-950 outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500/50 transition-all w-[240px] uppercase tracking-widest"
                   />
                 </div>
 
-                <div className="h-10 w-[1px] bg-slate-800 hidden md:block" />
+                <div className="h-8 w-[1px] bg-slate-200" />
+
+                {/* Main Add Button - High Fidelity Version */}
+                <button 
+                  onClick={() => setShowQuickAdd(true)}
+                  className="group relative h-10 px-6 bg-slate-950 text-white rounded-xl text-[10px] font-black overflow-hidden transition-all active:scale-95 shadow-xl shadow-slate-950/20"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-brand-600 to-violet-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="relative flex items-center gap-2 whitespace-nowrap tracking-[0.2em]">
+                    <Plus size={14} strokeWidth={3} className="group-hover:rotate-90 transition-transform duration-500" />
+                    TRIỂN KHAI NHIỆM VỤ
+                  </div>
+                </button>
+
+                <div className="h-8 w-[1px] bg-slate-200" />
 
                 {/* View Toggle */}
-                <div className="flex items-center bg-slate-900/80 backdrop-blur-md p-1 rounded-xl border border-slate-800">
+                <div className="flex items-center bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
                   <button 
                     onClick={() => setViewMode('board')}
                     className={cn(
                       "px-4 py-2 rounded-lg text-[9px] font-black transition-all uppercase tracking-widest flex items-center gap-2",
-                      viewMode === 'board' ? "bg-slate-950 text-white shadow-xl shadow-slate-950/20" : "text-slate-400 hover:text-slate-200"
+                      viewMode === 'board' ? "bg-slate-900 text-white shadow-lg" : "text-slate-400 hover:text-slate-900 hover:bg-slate-50"
                     )}
                   >
                     <Grid size={12} />
@@ -264,7 +278,7 @@ const KanbanBoard = ({
                     onClick={() => setViewMode('list')}
                     className={cn(
                       "px-4 py-2 rounded-lg text-[9px] font-black transition-all uppercase tracking-widest flex items-center gap-2",
-                      viewMode === 'list' ? "bg-slate-950 text-white shadow-xl shadow-slate-950/20" : "text-slate-400 hover:text-slate-200"
+                      viewMode === 'list' ? "bg-slate-900 text-white shadow-lg" : "text-slate-400 hover:text-slate-900 hover:bg-slate-50"
                     )}
                   >
                     <List size={12} />
@@ -273,16 +287,17 @@ const KanbanBoard = ({
                 </div>
              </div>
 
-             <div className="flex flex-col items-end gap-1 group cursor-default">
-                <div className="flex items-baseline gap-2 text-white">
-                   <span className="text-3xl font-heading font-black tracking-tighter tabular-nums leading-none">
+             <div className="flex items-center gap-6">
+                <div className="flex items-center gap-2 px-4 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
+                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                   <span className="text-[8px] font-black text-emerald-600 uppercase tracking-[0.2em] font-mono">DỮ LIỆU_ĐANG_XỬ_LÝ: RT_SYNC_OK</span>
+                </div>
+                
+                <div className="flex items-baseline gap-2">
+                   <span className="text-4xl font-heading font-black tracking-tighter tabular-nums leading-none text-slate-950">
                      {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
                    </span>
-                   <span className="text-[10px] font-black text-slate-500 uppercase font-mono">{currentTime.getHours() >= 12 ? 'PM' : 'AM'}</span>
-                </div>
-                <div className="flex items-center gap-2 px-3 py-1 bg-brand-500/10 border border-brand-500/20 rounded-full">
-                   <div className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse" />
-                   <span className="text-[8px] font-black text-brand-400 uppercase tracking-[0.2em] font-mono">DỮ LIỆU ĐANG XỬ LÝ</span>
+                   <span className="text-[10px] font-black text-slate-400 uppercase font-mono">{currentTime.getHours() >= 12 ? 'PM' : 'AM'}</span>
                 </div>
              </div>
           </div>
@@ -325,88 +340,139 @@ const KanbanBoard = ({
           ) : (
             <motion.div 
               key="list"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              className="bg-slate-950/80 backdrop-blur-3xl rounded-2xl border border-slate-800 h-full overflow-hidden flex flex-col shadow-2xl"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="h-full flex flex-col gap-6"
             >
-              <div className="p-8 border-b border-slate-800 flex items-center justify-between relative z-10">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white shadow-2xl shadow-slate-950/20">
-                    <LayoutDashboard size={18} />
+              {/* Header Manifest - High Visibility HUD */}
+              <div className="flex items-center justify-between bg-slate-950/60 backdrop-blur-xl p-6 rounded-2xl border border-brand-500/30 shadow-2xl relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-brand-500/10 to-transparent" />
+                
+                <div className="flex items-center gap-6 relative z-10">
+                  <div className="w-14 h-14 bg-slate-900 border-2 border-brand-500 rounded-xl flex items-center justify-center shadow-[0_0_30px_rgba(99,102,241,0.3)]">
+                    <Terminal size={28} className="text-brand-400 drop-shadow-[0_0_10px_rgba(99,102,241,0.5)]" />
                   </div>
                   <div>
-                    <h2 className="text-sm font-black text-slate-950 uppercase tracking-widest italic">DANH SÁCH NHIỆM VỤ</h2>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono mt-1">OPERATIONAL_DATA_STREAM</p>
+                    <h2 className="text-lg font-black text-white uppercase tracking-[0.5em] leading-none mb-2 drop-shadow-md">
+                      STRATEGIC_DATA_STREAM
+                    </h2>
+                    <div className="flex items-center gap-3">
+                       <span className="text-[10px] font-black text-brand-400 uppercase tracking-widest font-mono">SYS_STATUS: ACTIVE</span>
+                       <div className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse shadow-[0_0_10px_rgba(99,102,241,0.8)]" />
+                       <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono">UPLINK_SECURE</span>
+                    </div>
                   </div>
                 </div>
-                <div className="text-[10px] font-black text-slate-950 bg-white/60 px-5 py-2 rounded-xl border border-slate-200 uppercase tracking-widest font-mono">
-                  TỔNG_CỘNG: {filteredBugs.length} NODE
+                
+                <div className="flex items-center gap-10 font-mono relative z-10">
+                   <div className="text-right">
+                      <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">TOTAL_NODES</div>
+                      <div className="text-xl font-black text-white drop-shadow-md">{filteredBugs.length}</div>
+                   </div>
+                   <div className="h-12 w-[2px] bg-brand-500/30" />
+                   <div className="w-32">
+                      <div className="flex justify-between text-[8px] font-black text-slate-500 mb-1.5">
+                         <span>CPU_LOAD</span>
+                         <span className="text-brand-400">74%</span>
+                      </div>
+                      <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden border border-white/5">
+                         <div className="h-full bg-brand-500 shadow-[0_0_15px_rgba(99,102,241,0.6)]" style={{ width: '74%' }} />
+                      </div>
+                   </div>
                 </div>
               </div>
-              <div className="flex-1 overflow-y-auto p-8 custom-scrollbar relative z-10">
-                <table className="w-full text-left border-separate border-spacing-y-3">
-                  <thead>
-                    <tr className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] font-mono">
-                      <th className="px-6 pb-4">MÃ_SỐ</th>
-                      <th className="px-6 pb-4">CHIẾN_LƯỢC_VẬN_HÀNH</th>
-                      <th className="px-6 pb-4 text-center">TRẠNG_THÁI</th>
-                      <th className="px-6 pb-4 text-center">ƯU_TIÊN</th>
-                      <th className="px-6 pb-4">NHÂN_SỰ_THỰC_THI</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredBugs.map(bug => (
-                      <tr 
-                        key={bug.id} 
-                        onClick={() => setSelectedBug(bug)}
-                        className="group cursor-pointer hover:translate-x-2 transition-all duration-500"
-                      >
-                        <td className="px-6 py-5 bg-white/60 backdrop-blur-md first:rounded-l-xl border-y border-l border-slate-200 text-[10px] font-black font-mono text-slate-400 group-hover:bg-white transition-colors">
-                          {bug.id.substring(0, 8).toUpperCase()}
-                        </td>
-                        <td className="px-6 py-5 bg-white/60 backdrop-blur-md border-y border-slate-200 text-xs font-black text-slate-950 group-hover:bg-white transition-colors">
-                          {bug.title}
-                        </td>
-                        <td className="px-6 py-5 bg-white/60 backdrop-blur-md border-y border-slate-200 text-center group-hover:bg-white transition-colors">
-                          <span className={cn(
-                            "px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border",
-                            bug.status === 'backlog' ? "bg-slate-100 text-slate-500 border-slate-200" :
-                            bug.status === 'in-progress' ? "bg-amber-50 text-amber-600 border-amber-100" :
-                            bug.status === 'in-review' ? "bg-brand-50 text-brand-600 border-brand-100" : "bg-emerald-50 text-emerald-600 border-emerald-100"
-                          )}>
-                            {statusLabels[bug.status]}
-                          </span>
-                        </td>
-                        <td className="px-6 py-5 bg-slate-900/40 last:rounded-r-xl border-y border-r border-slate-800 group-hover:bg-slate-900 transition-colors">
-                          <span className={cn(
-                            "text-[10px] font-black uppercase tracking-widest font-mono",
-                            bug.priority === 'high' ? "text-rose-600" :
-                            bug.priority === 'medium' ? "text-amber-600" : "text-slate-400"
-                          )}>
-                            {bug.priority === 'high' ? 'CRITICAL' : bug.priority === 'medium' ? 'STABLE' : 'LOW'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-5 bg-white/60 backdrop-blur-md last:rounded-r-xl border-y border-r border-slate-200 group-hover:bg-white transition-colors">
-                          <div className="flex items-center gap-3">
-                            <div className="w-7 h-7 rounded-lg bg-slate-950 flex items-center justify-center overflow-hidden ring-1 ring-slate-200 shadow-sm">
-                              {userProfiles.find(p => p.userId === bug.assigneeId)?.photoURL ? (
-                                <img src={userProfiles.find(p => p.userId === bug.assigneeId)?.photoURL} alt="Avatar" className="w-full h-full object-cover" />
-                              ) : (
-                                <span className="text-[8px] font-black text-white">
-                                  {userProfiles.find(p => p.userId === bug.assigneeId)?.displayName?.substring(0, 1) || '?'}
-                                </span>
-                              )}
-                            </div>
-                            <span className="text-[10px] font-black text-slate-600 uppercase tracking-tight group-hover:text-slate-950 transition-colors">
-                              {userProfiles.find(p => p.userId === bug.assigneeId)?.displayName || 'CHƯA_PHÂN_CÔNG'}
-                            </span>
+
+              {/* Manifest Content - High Contrast Cards */}
+              <div className="flex-1 overflow-y-auto pr-3 custom-scrollbar space-y-4">
+                {filteredBugs.map((bug, index) => (
+                  <motion.div
+                    key={bug.id}
+                    initial={{ opacity: 0, x: -30 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.02 }}
+                    className="group relative flex items-center gap-8 bg-slate-950/70 backdrop-blur-lg p-5 rounded-xl border border-white/10 hover:border-brand-500/50 transition-all duration-300"
+                  >
+                    {/* ID & Status Glow */}
+                    <div className="w-40 shrink-0 relative flex items-center gap-4 border-r border-white/5 pr-6">
+                       <div className={cn(
+                         "w-1.5 h-10 rounded-full shadow-2xl",
+                         bug.status === 'done' ? "bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.6)]" :
+                         bug.status === 'in-progress' ? "bg-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.6)]" :
+                         "bg-brand-500 shadow-[0_0_20px_rgba(99,102,241,0.6)]"
+                       )} />
+                       <div>
+                          <div className="text-[12px] font-black font-mono text-brand-400 tracking-[0.2em] group-hover:text-brand-300 transition-colors drop-shadow-sm">
+                            #{bug.id.substring(0, 8).toUpperCase()}
                           </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                          <div className="text-[8px] font-black text-slate-500 uppercase tracking-[0.3em] mt-1.5">NODE_IDENTIFIER</div>
+                       </div>
+                    </div>
+
+                    {/* Mission Title - Bold White with Overflow Fix */}
+                    <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setSelectedBug(bug)}>
+                      <h3 className="text-[15px] font-black text-white group-hover:text-brand-400 transition-colors uppercase tracking-widest leading-none mb-2.5 drop-shadow-md truncate line-clamp-1 break-all">
+                        {bug.title}
+                      </h3>
+                      <div className="flex items-center gap-5">
+                         <div className="flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-slate-700" />
+                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">SEQ_{index + 100}</span>
+                         </div>
+                         <div className="w-[1px] h-3 bg-slate-800" />
+                         <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">SEC_DELTA_09</span>
+                      </div>
+                    </div>
+
+                    {/* Cyber Status Controller */}
+                    <div className="flex items-center bg-slate-900/80 p-1.5 rounded-xl border border-white/5 gap-1.5 shadow-2xl">
+                      {['backlog', 'in-progress', 'in-review', 'done'].map((st) => (
+                        <button
+                          key={st}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleUpdateBugDetails(bug.id, { status: st as BugStatus });
+                            logActivity(bug.id, 'STATUS_UPDATE', `CMD_EXEC: ${st.toUpperCase()}`);
+                            toast.success(`NODE_SYNCED: ${st.toUpperCase()}`);
+                          }}
+                          className={cn(
+                            "px-4 py-2.5 rounded-lg text-[9px] font-black uppercase tracking-[0.2em] transition-all duration-300",
+                            bug.status === st 
+                              ? (st === 'backlog' ? "bg-slate-700 text-white shadow-xl" :
+                                 st === 'in-progress' ? "bg-amber-500 text-white shadow-[0_0_20px_rgba(245,158,11,0.4)]" :
+                                 st === 'in-review' ? "bg-brand-500 text-white shadow-[0_0_20px_rgba(99,102,241,0.4)]" :
+                                 "bg-emerald-500 text-white shadow-[0_0_20px_rgba(16,185,129,0.4)]")
+                              : "text-slate-500 hover:text-white hover:bg-white/10"
+                          )}
+                        >
+                          {st === 'in-progress' ? 'WORK' : st === 'in-review' ? 'VIEW' : st === 'backlog' ? 'WAIT' : 'DONE'}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Primary Operator */}
+                    <div className="w-56 flex items-center justify-end gap-5 border-l border-white/5 pl-8">
+                       <div className="text-right">
+                          <div className="text-[12px] font-black text-white uppercase tracking-widest group-hover:text-brand-400 transition-colors mb-1.5 drop-shadow-sm">
+                             {userProfiles.find(p => p.userId === bug.assigneeId)?.displayName || 'UNASSIGNED'}
+                          </div>
+                          <div className="inline-flex items-center gap-2 px-2 py-0.5 bg-emerald-500/10 rounded border border-emerald-500/20">
+                             <div className="w-1 h-1 rounded-full bg-emerald-500 shadow-[0_0_5px_rgba(16,185,129,0.8)]" />
+                             <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest font-mono">STATUS_ONLINE</span>
+                          </div>
+                       </div>
+                       <div className="w-12 h-12 rounded-xl bg-slate-900 border-2 border-slate-800 p-0.5 shadow-2xl group-hover:border-brand-500 transition-all overflow-hidden">
+                         {userProfiles.find(p => p.userId === bug.assigneeId)?.photoURL ? (
+                           <img src={userProfiles.find(p => p.userId === bug.assigneeId)?.photoURL} className="w-full h-full object-cover rounded-lg" />
+                         ) : (
+                           <div className="w-full h-full bg-slate-800 rounded-lg flex items-center justify-center">
+                              <Activity size={18} className="text-slate-600" />
+                           </div>
+                         )}
+                       </div>
+                    </div>
+                  </motion.div>
+                ))}
               </div>
             </motion.div>
           )}

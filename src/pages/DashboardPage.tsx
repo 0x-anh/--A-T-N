@@ -158,16 +158,16 @@ const DashboardPage = ({
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-3 flex-1 max-w-2xl">
+            <div className="flex flex-wrap gap-3 flex-1 max-w-2xl min-w-0">
               {overdueTasks.slice(0, 3).map(task => (
-                <div key={task.id} className="flex-1 min-w-[200px] p-3 bg-white/60 border border-rose-100 rounded-xl flex items-center justify-between group/task hover:bg-white transition-all">
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-[11px] font-black text-slate-800 line-clamp-1">{task.title}</span>
+                <div key={task.id} className="flex-1 min-w-[180px] max-w-[240px] p-3 bg-white/60 border border-rose-100 rounded-xl flex items-center justify-between group/task hover:bg-white transition-all overflow-hidden shadow-sm">
+                  <div className="flex flex-col gap-0.5 flex-1 min-w-0 mr-2">
+                    <span className="text-[11px] font-black text-slate-800 line-clamp-1 truncate break-all">{task.title}</span>
                     <span className="text-[9px] font-bold text-rose-500 font-mono">HẠN: {task.dueDate ? new Date(task.dueDate).toLocaleDateString('vi-VN') : '---'}</span>
                   </div>
                   <button 
                     onClick={() => setActiveTab('board')}
-                    className="w-7 h-7 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center hover:bg-rose-600 hover:text-white transition-all"
+                    className="w-7 h-7 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center hover:bg-rose-600 hover:text-white transition-all shrink-0"
                   >
                     <ChevronRight size={14} />
                   </button>
@@ -287,8 +287,8 @@ const DashboardPage = ({
                       </div>
                     </div>
 
-                    <div className="p-4 bg-white/40 backdrop-blur-md border border-white/60 rounded-2xl group-hover/log:bg-white/80 group-hover/log:border-brand-500/30 transition-all duration-500 shadow-sm">
-                      <p className="text-xs font-bold text-slate-800 leading-relaxed mb-3">
+                    <div className="p-4 bg-white/40 backdrop-blur-md border border-white/60 rounded-2xl group-hover/log:bg-white/80 group-hover/log:border-brand-500/30 transition-all duration-500 shadow-sm overflow-hidden">
+                      <p className="text-xs font-bold text-slate-800 leading-relaxed mb-3 break-all whitespace-pre-wrap">
                         {log.message || log.details || log.content}
                       </p>
                       

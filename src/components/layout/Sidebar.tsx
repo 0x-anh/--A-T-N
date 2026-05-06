@@ -15,10 +15,10 @@ interface SidebarProps {
 const Sidebar = ({ activeTab, setActiveTab, user, handleLogout }: SidebarProps) => {
   const menuItems = [
     { id: 'dashboard', icon: LayoutGrid, label: 'TỔNG QUAN' },
-    { id: 'board', icon: FolderKanban, label: 'BẢNG CÔNG VIỆC' },
     { id: 'metrics', icon: PieChart, label: 'PHÂN TÍCH' },
-    { id: 'logs', icon: Activity, label: 'NHẬT KÝ' },
+    { id: 'board', icon: FolderKanban, label: 'BẢNG CÔNG VIỆC' },
     { id: 'members', icon: Users, label: 'ĐỘI NGŨ' },
+    { id: 'logs', icon: Activity, label: 'NHẬT KÝ' },
   ];
 
   return (

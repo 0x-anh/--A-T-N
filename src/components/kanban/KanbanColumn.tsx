@@ -51,7 +51,7 @@ const KanbanColumn = React.memo(({
   return (
     <div className="flex-1 min-w-0 h-full flex flex-col px-1 relative">
       {/* Column Header */}
-      <div className="py-3 flex items-center justify-between px-3">
+      <div className="py-1.5 flex items-center justify-between px-3">
         <div className="flex items-center gap-3">
            <div className={cn(
                "w-1 h-4 rounded-full shadow-sm",
@@ -67,15 +67,6 @@ const KanbanColumn = React.memo(({
            <div className="px-2 py-0.5 bg-slate-950/5 border border-slate-200 text-slate-500 rounded text-[10px] font-mono font-bold">
               {tasks.length}
            </div>
-           <button 
-             onClick={() => setIsAdding(isAdding ? null : status)}
-             className={cn(
-               "w-7 h-7 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:text-slate-900 hover:border-slate-900 transition-all shadow-sm", 
-               isAdding && "bg-slate-900 text-white border-transparent shadow-md"
-             )}
-           >
-             <Plus size={14} strokeWidth={2.5} className={cn("transition-transform", isAdding ? "rotate-45" : "")} />
-           </button>
         </div>
       </div>
 
@@ -88,7 +79,7 @@ const KanbanColumn = React.memo(({
               (scrollRef as any).current = el;
             }}
             className={cn(
-              "flex-1 overflow-y-auto no-scrollbar transition-all duration-300 bg-transparent rounded-2xl p-3 relative",
+              "flex-1 overflow-y-auto no-scrollbar transition-all duration-300 bg-transparent rounded-2xl p-1 relative",
               snapshot.isDraggingOver && "bg-brand-500/[0.04] rounded-2xl"
             )}
           >
@@ -139,7 +130,7 @@ const KanbanColumn = React.memo(({
               )}
             </AnimatePresence>
 
-            <div className="min-h-[200px] space-y-0.5 pb-10 relative z-10">
+            <div className="min-h-[200px] space-y-0.5 pb-4 relative z-10">
               {tasks.map((bug, index) => (
                 <BugCard 
                   key={bug.id} 

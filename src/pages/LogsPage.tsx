@@ -235,7 +235,7 @@ const LogsPage = ({ selectedProject, userId, userProfiles }: LogsPageProps) => {
                           </div>
                        </div>
 
-                       <p className="text-sm font-bold text-slate-800 leading-relaxed mb-6">
+                       <p className="text-sm font-bold text-slate-800 leading-relaxed mb-6 break-all whitespace-pre-wrap">
                          {log.details || log.action}
                        </p>
 
