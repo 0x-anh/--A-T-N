@@ -271,7 +271,7 @@ export default function App() {
           )}
 
           {activeTab === 'metrics' && (
-            <MetricsPage bugs={bugs} appStats={appStats} />
+            <MetricsPage bugs={bugs} appStats={appStats} setActiveTab={setActiveTab} />
           )}
 
           {activeTab === 'logs' && (
