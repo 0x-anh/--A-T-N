@@ -3,7 +3,7 @@ import { db, handleFirestoreError } from '../lib/firebase';
 import { collection, query, where, orderBy, onSnapshot, limit } from 'firebase/firestore';
 import { Bug, UserProfile, Project } from '../types';
 
-export const useProjectData = (user: any, selectedProject: Project | null, userProfiles: UserProfile[]) => {
+export const useProjectData = (user: any, selectedProject: Project | null, userProfiles: UserProfile[], currentTime: Date) => {
   const [bugs, setBugs] = useState<Bug[]>([]);
   const [events, setEvents] = useState<any[]>([]);
 
@@ -44,8 +44,16 @@ export const useProjectData = (user: any, selectedProject: Project | null, userP
   }, [user, selectedProject]);
 
   const overdueTasks = useMemo(() => {
-    return bugs.filter(b => b.status !== 'done' && b.dueDate && new Date(b.dueDate) < new Date());
-  }, [bugs]);
+    return bugs.filter(b => {
+      if (b.status === 'done' || !b.dueDate) return false;
+      try {
+        const dueDate = new Date(b.dueDate);
+        return dueDate < currentTime;
+      } catch (e) {
+        return false;
+      }
+    });
+  }, [bugs, currentTime]);
 
   const urgentTasks = useMemo(() => {
     if (!user || !selectedProject) return [];
@@ -53,7 +61,7 @@ export const useProjectData = (user: any, selectedProject: Project | null, userP
     const isAdminUser = profile?.roles?.includes('admin') || profile?.email === 'jokerducanh@gmail.com' || selectedProject?.ownerId === user.uid;
     
     if (isAdminUser) return overdueTasks;
-    return overdueTasks.filter(b => b.assigneeId === user.uid);
+    return overdueTasks.filter(b => b.assigneeId === user.uid || b.ownerId === user.uid);
   }, [overdueTasks, user, userProfiles, selectedProject]);
 
   const appStats = useMemo(() => {

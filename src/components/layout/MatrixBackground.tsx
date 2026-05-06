@@ -82,17 +82,17 @@ const MatrixBackground = () => {
            }} 
       />
 
-      {/* 📡 MINIMALIST TECH LINES (Lấp khoảng trống một cách tinh tế) */}
+      {/* 📡 MINIMALIST TECH LINES */}
       <div className="absolute top-10 left-10 right-10 flex justify-between opacity-20 pointer-events-none">
         <div className="flex gap-4 items-center">
-          <div className="w-2 h-2 rounded-full border border-brand-500" />
-          <div className="w-32 h-[1px] bg-gradient-to-r from-brand-500 to-transparent" />
-          <span className="text-[7px] font-mono tracking-[0.5em] text-brand-600">LN_DR_01</span>
+          <div className="w-2 h-2 rounded-full border border-slate-400" />
+          <div className="w-32 h-[1px] bg-gradient-to-r from-slate-400 to-transparent" />
+          <span className="text-[7px] font-mono tracking-[0.5em] text-slate-400">LN_DR_01</span>
         </div>
         <div className="flex gap-4 items-center">
-          <span className="text-[7px] font-mono tracking-[0.5em] text-brand-600">RT_SYS_SYNC</span>
-          <div className="w-32 h-[1px] bg-gradient-to-l from-brand-500 to-transparent" />
-          <div className="w-2 h-2 rounded-full border border-brand-500" />
+          <span className="text-[7px] font-mono tracking-[0.5em] text-slate-400">RT_SYS_SYNC</span>
+          <div className="w-32 h-[1px] bg-gradient-to-l from-slate-400 to-transparent" />
+          <div className="w-2 h-2 rounded-full border border-slate-400" />
         </div>
       </div>
 
@@ -100,7 +100,7 @@ const MatrixBackground = () => {
       <motion.div 
         animate={{ y: ["-100%", "200%"] }}
         transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-        className="absolute inset-x-0 h-[30vh] bg-gradient-to-b from-transparent via-brand-500/[0.05] to-transparent pointer-events-none"
+        className="absolute inset-x-0 h-[30vh] bg-gradient-to-b from-transparent via-blue-500/[0.05] to-transparent pointer-events-none"
       />
 
       <div className="absolute inset-0 noise-overlay opacity-[0.03] pointer-events-none" />

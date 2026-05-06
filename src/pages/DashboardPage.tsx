@@ -12,9 +12,13 @@ interface DashboardPageProps {
   events: any[];
   overdueTasks: any[];
   userProfiles: any[];
+  pendingInvitations: any[];
+  handleAcceptInvitation: (id: string) => void;
+  handleDeclineInvitation: (id: string) => void;
   setActiveTab: (tab: 'board' | 'metrics' | 'logs' | 'members' | 'dashboard') => void;
   setShowProjectModal: (val: boolean) => void;
   setShowInviteModal: (val: boolean) => void;
+  setShowQuickAdd: (val: boolean) => void;
 }
 
 const DashboardPage = ({
@@ -24,9 +28,13 @@ const DashboardPage = ({
   events,
   overdueTasks,
   userProfiles,
+  pendingInvitations,
+  handleAcceptInvitation,
+  handleDeclineInvitation,
   setActiveTab,
   setShowProjectModal,
-  setShowInviteModal
+  setShowInviteModal,
+  setShowQuickAdd
 }: DashboardPageProps) => {
   return (
     <motion.div 
@@ -67,6 +75,69 @@ const DashboardPage = ({
           </div>
         </div>
       </header>
+
+      {/* Zenith Invitation Console - Proper Invite Flow */}
+      {pendingInvitations && pendingInvitations.length > 0 && (
+        <motion.section 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-slate-950 text-white rounded-[2.5rem] p-10 shadow-2xl relative overflow-hidden mb-8 border border-slate-800"
+        >
+          {/* Decorative Elements */}
+          <div className="absolute top-0 right-0 w-96 h-96 bg-brand-500/10 rounded-full blur-[100px] -mr-32 -mt-32" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/10 rounded-full blur-[80px] -ml-20 -mb-20" />
+          
+          <div className="relative z-10">
+            <div className="flex items-center gap-4 mb-10">
+               <div className="w-10 h-1 bg-brand-500 shadow-[0_0_15px_#10b981]" />
+               <h3 className="text-sm font-black uppercase tracking-[0.4em] font-mono text-brand-500">LỜI_MỜI_HỆ_THỐNG_ĐANG_CHỜ</h3>
+               <span className="px-3 py-1 bg-white/10 rounded-full text-[10px] font-black font-mono">
+                 {pendingInvitations.length} YÊU CẦU
+               </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+               {pendingInvitations.map((invite) => (
+                 <div key={invite.id} className="bg-white/5 border border-white/10 rounded-3xl p-6 hover:bg-white/10 transition-all group">
+                    <div className="flex items-start justify-between mb-6">
+                       <div className="space-y-1">
+                          <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest font-mono italic">PROJECT_DEPLOYMENT</span>
+                          <h4 className="text-2xl font-black tracking-tighter uppercase leading-none group-hover:text-brand-400 transition-colors">
+                            {invite.projectName}
+                          </h4>
+                       </div>
+                       <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center border border-white/10">
+                          <Users size={20} className="text-slate-400" />
+                       </div>
+                    </div>
+
+                    <div className="flex items-center gap-3 mb-8">
+                       <div className="w-2 h-2 rounded-full bg-brand-500" />
+                       <p className="text-[11px] font-bold text-slate-300">
+                         Yêu cầu kết nối từ: <span className="text-white font-black uppercase tracking-wider">{invite.inviterName}</span>
+                       </p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                       <button 
+                         onClick={() => handleAcceptInvitation(invite.id)}
+                         className="py-4 bg-brand-500 text-slate-950 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white transition-all shadow-lg shadow-brand-500/20 active:scale-95"
+                       >
+                         CHẤP THUẬN
+                       </button>
+                       <button 
+                         onClick={() => handleDeclineInvitation(invite.id)}
+                         className="py-4 bg-transparent text-white border border-white/20 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-500 hover:border-rose-500 transition-all active:scale-95"
+                       >
+                         TỪ CHỐI
+                       </button>
+                    </div>
+                 </div>
+               ))}
+            </div>
+          </div>
+        </motion.section>
+      )}
 
       {/* Global Alerts Row - Full Width for Balance */}
       {overdueTasks.length > 0 && (
@@ -174,7 +245,7 @@ const DashboardPage = ({
           </section>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <QuickAction title="KHỞI TẠO MỚI" desc="Bắt đầu nhiệm vụ hoặc quy trình vận hành Zenith." icon={<Plus />} onClick={() => setShowProjectModal(true)} />
+            <QuickAction title="KHỞI TẠO NHIỆM VỤ" desc="Thiết lập mục tiêu chiến lược và triển khai nhân sự." icon={<Plus />} onClick={() => setShowQuickAdd(true)} />
             <QuickAction title="QUẢN LÝ ĐỘI NGŨ" desc="Phân quyền và giám sát nhân sự vận hành." icon={<Users />} onClick={() => setShowInviteModal(true)} />
           </div>
         </div>
@@ -233,7 +304,7 @@ const DashboardPage = ({
                            </span>
                         </div>
                         <div className="text-[8px] font-bold text-slate-300 font-mono tracking-tighter">
-                          HEX_{log.id?.slice(0, 8).toUpperCase()}
+                          MÃ {log.id?.slice(0, 8).toUpperCase()}
                         </div>
                       </div>
                     </div>

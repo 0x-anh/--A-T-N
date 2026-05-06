@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { X, Zap, Cpu, Terminal, ShieldAlert, Plus } from 'lucide-react';
+import { X, Zap, Plus, Clock } from 'lucide-react';
 import { BugPriority, PRIORITY_CONFIG } from '../../types';
 import { cn } from '../../lib/utils';
 
@@ -11,6 +11,8 @@ interface QuickAddModalProps {
   setTitle: (val: string) => void;
   priority: BugPriority;
   setPriority: (val: BugPriority) => void;
+  dueDate: string;
+  setDueDate: (val: string) => void;
   onSubmit: () => void;
 }
 
@@ -21,6 +23,8 @@ const QuickAddModal = ({
   setTitle,
   priority,
   setPriority,
+  dueDate,
+  setDueDate,
   onSubmit
 }: QuickAddModalProps) => {
   if (!show) return null;
@@ -54,45 +58,60 @@ const QuickAddModal = ({
                </button>
             </div>
 
-            <div className="space-y-10">
+            <div className="space-y-8">
                <div>
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 block font-mono">Nội dung công việc</label>
                   <textarea 
                     autoFocus
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Mô tả ngắn gọn mục tiêu..."
-                    className="w-full bg-slate-50 border-none rounded-3xl p-6 text-sm font-bold text-slate-900 placeholder:text-slate-200 focus:ring-4 focus:ring-slate-950/5 transition-all outline-none min-h-[120px] resize-none"
+                    placeholder="Mô tả mục tiêu chiến lược tại đây..."
+                    className="w-full bg-slate-50 border-none rounded-3xl p-6 text-sm font-bold text-slate-900 placeholder:text-slate-200 focus:ring-4 focus:ring-slate-950/5 transition-all outline-none min-h-[100px] resize-none"
                   />
                </div>
 
-               <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 block font-mono">Độ ưu tiên</label>
-                  <div className="grid grid-cols-3 gap-3">
-                     {(['low', 'high', 'critical'] as BugPriority[]).map((p) => (
-                        <button
-                          key={p}
-                          onClick={() => setPriority(p)}
-                          className={cn(
-                            "py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border-2",
-                            priority === p 
-                              ? "bg-slate-950 border-transparent text-white shadow-xl shadow-slate-950/20" 
-                              : "bg-white border-slate-100 text-slate-400 hover:border-slate-200"
-                          )}
-                        >
-                           {PRIORITY_CONFIG[p].label}
-                        </button>
-                     ))}
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 block font-mono">Độ ưu tiên</label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {(['low', 'high', 'critical'] as BugPriority[]).map((p) => (
+                          <button
+                            key={p}
+                            onClick={() => setPriority(p)}
+                            className={cn(
+                              "py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border-2",
+                              priority === p 
+                                ? "bg-slate-950 border-transparent text-white shadow-lg" 
+                                : "bg-white border-slate-100 text-slate-400 hover:border-slate-200"
+                            )}
+                          >
+                            {PRIORITY_CONFIG[p].label.split(' ')[2] || PRIORITY_CONFIG[p].label}
+                          </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 block font-mono flex items-center gap-2">
+                      <Clock size={10} />
+                      Giao thời gian
+                    </label>
+                    <input 
+                      type="datetime-local"
+                      value={dueDate}
+                      onChange={(e) => setDueDate(e.target.value)}
+                      className="w-full h-12 bg-slate-50 border-none rounded-xl px-4 text-[10px] font-black text-slate-900 outline-none focus:ring-4 focus:ring-slate-950/5 transition-all uppercase font-mono"
+                    />
                   </div>
                </div>
             </div>
 
             <button 
               onClick={onSubmit}
-              className="w-full h-16 bg-slate-950 text-white rounded-[1.5rem] mt-12 text-[11px] font-black uppercase tracking-[0.4em] hover:bg-indigo-600 transition-all shadow-2xl shadow-slate-950/20 flex items-center justify-center gap-3 active:scale-95 italic"
+              className="w-full h-16 bg-slate-950 text-white rounded-[1.5rem] mt-12 text-[11px] font-black uppercase tracking-[0.4em] hover:bg-brand-500 transition-all shadow-2xl shadow-slate-950/20 flex items-center justify-center gap-3 active:scale-95 italic"
             >
                <Plus size={16} strokeWidth={3} />
-               Triển khai giao thức
+               Triển khai nhiệm vụ
             </button>
          </div>
       </motion.div>

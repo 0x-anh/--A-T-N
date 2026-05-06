@@ -14,9 +14,10 @@ interface BugCardProps {
   onSelect: (bug: Bug) => void;
   userId: string;
   isAdmin: boolean;
+  currentTime: Date;
 }
 
-const BugCard = React.memo(({ bug, index, userProfiles, onSelect, userId, isAdmin }: BugCardProps) => {
+const BugCard = React.memo(({ bug, index, userProfiles, onSelect, userId, isAdmin, currentTime }: BugCardProps) => {
   const assignee = userProfiles.find(u => u.userId === bug.assigneeId);
   const currentUser = userProfiles.find(u => u.userId === userId);
   
@@ -26,7 +27,10 @@ const BugCard = React.memo(({ bug, index, userProfiles, onSelect, userId, isAdmi
     return STATUS_COLUMNS.some(col => col.id !== bug.status && canUserMoveTo(currentUser.roles, col.id));
   }, [currentUser?.roles, bug.status, isAdmin]);
 
-  const isOverdue = useMemo(() => bug.status !== 'done' && bug.dueDate && new Date(bug.dueDate) < new Date(), [bug.status, bug.dueDate]);
+  const isOverdue = useMemo(() => {
+    if (bug.status === 'done' || !bug.dueDate) return false;
+    return new Date(bug.dueDate) < currentTime;
+  }, [bug.status, bug.dueDate, currentTime]);
 
   return (
     <DraggableAny key={bug.id} draggableId={bug.id} index={index} isDragDisabled={!canMove}>
@@ -87,7 +91,7 @@ const BugCard = React.memo(({ bug, index, userProfiles, onSelect, userId, isAdmi
                   <div className="px-3 py-1 rounded-full bg-slate-100/50 text-[9px] font-black text-slate-500 uppercase tracking-widest font-mono border border-slate-200/50">
                      {PRIORITY_CONFIG[bug.priority].label}
                   </div>
-
+ 
                   {bug.dueDate && (
                     <div className={cn(
                       "flex items-center gap-1.5 text-[10px] font-bold font-mono",

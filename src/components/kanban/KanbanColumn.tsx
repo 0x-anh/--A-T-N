@@ -19,41 +19,54 @@ interface KanbanColumnProps {
   handleAddBug: (status: BugStatus) => void;
   userId: string;
   isAdmin: boolean;
+  currentTime: Date;
 }
 
 const KanbanColumn = React.memo(({ 
   title, tasks, status, userProfiles, onSelect, 
   isAdding, setIsAdding, newBugTitle, setNewBugTitle, 
-  handleAddBug, userId, isAdmin 
+  handleAddBug, userId, isAdmin, currentTime
 }: KanbanColumnProps) => {
   return (
-    <div className="flex-1 min-w-[280px] max-w-[450px] h-full flex flex-col px-1.5">
+    <div className="flex-1 min-w-0 h-full flex flex-col px-1">
       <div className="py-2 md:py-3 flex items-center justify-between px-2 md:px-3">
-        <div className="flex items-center gap-1.5">
-           <div className="relative flex items-center justify-center">
-              <div className={cn(
-                "w-1 h-6 rounded-full relative z-10 transition-all duration-700",
-                status === 'backlog' ? "bg-slate-950" :
-                status === 'in-progress' ? "bg-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.5)]" :
-                status === 'in-review' ? "bg-brand-500 shadow-[0_0_15px_rgba(99,102,241,0.5)]" : "bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]"
-              )} />
-           </div>
-           <div>
-              <h3 className="text-sm md:text-base font-heading font-black text-slate-950 uppercase tracking-tighter leading-none whitespace-nowrap">{title}</h3>
-           </div>
+        <div className="flex items-center gap-2.5">
+           <div className="relative flex items-center">
+             <div className={cn(
+                 "w-1.5 h-6 rounded-full",
+                 status === 'backlog' ? "bg-slate-900 shadow-[0_0_10px_rgba(15,23,42,0.3)]" :
+                 status === 'in-progress' ? "bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.4)]" :
+                 status === 'in-review' ? "bg-indigo-600" : "bg-emerald-600"
+               )} />
+            </div>
+            <div className="flex flex-col">
+              <h3 style={{ 
+                color: '#1e293b', 
+                fontSize: '14px', 
+                fontWeight: '800', 
+                textTransform: 'uppercase', 
+                letterSpacing: '0.05em',
+                fontFamily: 'system-ui, -apple-system, sans-serif',
+                display: 'block',
+                visibility: 'visible',
+                opacity: 1
+              }}>
+                {title}
+              </h3>
+            </div>
         </div>
         <div className="flex items-center gap-1.5">
-           <div className="px-3 py-1.5 bg-slate-950 text-white rounded-xl text-[10px] font-black font-mono shadow-xl shadow-slate-950/20">
-              {tasks.length.toString().padStart(2, '0')}
+           <div className="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-lg text-[10px] font-bold">
+              {tasks.length}
            </div>
            <button 
              onClick={() => setIsAdding(isAdding ? null : status)}
              className={cn(
-               "w-8 h-8 flex items-center justify-center rounded-lg border border-slate-100 bg-white text-slate-300 hover:text-slate-950 hover:bg-slate-50 transition-all duration-500 group relative overflow-hidden", 
-               isAdding && "bg-slate-950 text-white border-transparent"
+               "w-8 h-8 flex items-center justify-center rounded-lg border border-slate-100 bg-white text-slate-300 hover:text-slate-950 hover:bg-slate-50 transition-all", 
+               isAdding && "bg-slate-900 text-white border-transparent"
              )}
            >
-             <Plus size={14} strokeWidth={3} className={cn("transition-transform duration-700 relative z-10", isAdding ? "rotate-45" : "group-hover:rotate-90")} />
+             <Plus size={14} strokeWidth={2.5} className={cn("transition-transform", isAdding ? "rotate-45" : "")} />
            </button>
         </div>
       </div>
@@ -132,6 +145,7 @@ const KanbanColumn = React.memo(({
                   onSelect={onSelect} 
                   userId={userId} 
                   isAdmin={isAdmin} 
+                  currentTime={currentTime}
                 />
               ))}
               {provided.placeholder}

@@ -107,18 +107,27 @@
     scrollbar-width: none; /* Firefox */
   }
 
-  @keyframes scan {
-    from { transform: translateY(-100%); opacity: 0; }
-    50% { opacity: 1; }
-    to { transform: translateY(100vh); opacity: 0; }
+  @keyframes scan-line {
+    from { transform: translateY(-100%); }
+    to { transform: translateY(200%); }
   }
 
   .animate-scan {
-    animation: scan 10s linear infinite;
+    animation: scan-line 3s linear infinite;
   }
 
-  .animate-spin-slow {
-    animation: spin 12s linear infinite;
+  @keyframes gradient-x {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .animate-gradient-x {
+    animation: gradient-x 15s ease infinite;
+  }
+
+  .perspective-1000 {
+    perspective: 1000px;
   }
 
   .shadow-5xl {

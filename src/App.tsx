@@ -24,6 +24,7 @@ import ProjectModal from './components/modals/ProjectModal';
 import InviteModal from './components/modals/InviteModal';
 import SettingsModal from './components/modals/SettingsModal';
 import DocsModal from './components/modals/DocsModal';
+import QuickAddModal from './components/kanban/QuickAddModal';
 
 import { db } from './lib/firebase';
 import { addDoc, collection, serverTimestamp, doc, setDoc, deleteDoc } from 'firebase/firestore';
@@ -33,22 +34,28 @@ export default function App() {
   const { user, loading, userProfiles, isAdmin, handleLogin, handleLogout } = useAuth();
   const { 
     projects, selectedProject, setSelectedProject, 
+    pendingInvitations,
     handleInviteMember: inviteMemberLogic, 
-    handleRemoveMember 
+    handleAcceptInvitation,
+    handleDeclineInvitation,
+    handleRemoveMember,
+    handleUpdateUserRoles
   } = useProjects(user?.uid, userProfiles);
   
-  const { bugs, events, overdueTasks, urgentTasks, appStats } = useProjectData(user, selectedProject, userProfiles);
-
-  const [activeTab, setActiveTab] = useState<'board' | 'metrics' | 'logs' | 'members' | 'dashboard'>('dashboard');
   const [currentTime, setCurrentTime] = useState(new Date());
-  
-  // Modal States
+  const [activeTab, setActiveTab] = useState<'board' | 'metrics' | 'logs' | 'members' | 'dashboard'>('dashboard');
   const [showProjectModal, setShowProjectModal] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteUserEmail, setInviteUserEmail] = useState('');
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showDocsModal, setShowDocsModal] = useState(false);
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
+  const [quickAddTitle, setQuickAddTitle] = useState('');
+  const [quickAddPriority, setQuickAddPriority] = useState<'low' | 'high' | 'critical'>('low');
+  const [quickAddDueDate, setQuickAddDueDate] = useState('');
+
+  const { bugs, events, overdueTasks, urgentTasks, appStats } = useProjectData(user, selectedProject, userProfiles, currentTime);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -90,14 +97,99 @@ export default function App() {
 
   const handleDeleteProject = async () => {
     if (!user || !selectedProject) return;
-    if (confirm('Xác nhận xóa dự án? Hành động này không thể hoàn tác.')) {
+    const projectId = selectedProject.id;
+    const projectName = selectedProject.name;
+
+    const deleteTimeout = setTimeout(async () => {
       try {
-        await deleteDoc(doc(db, 'projects', selectedProject.id)); 
-        toast.success("Dự án đã được giải phóng.");
+        await deleteDoc(doc(db, 'projects', projectId)); 
+        
+        // Log activity before UI closes
+        await addDoc(collection(db, 'activity_logs'), {
+          action: 'PROJECT_DELETED',
+          details: `Dự án ${projectName} đã bị giải phóng vĩnh viễn khỏi hệ thống.`,
+          createdAt: serverTimestamp(),
+          userId: user.uid,
+          userName: user.displayName || 'Admin'
+        });
+
+        toast.success("Dự án đã được giải phóng vĩnh viễn.");
         setShowSettingsModal(false);
         setSelectedProject(null);
         setActiveTab('dashboard');
-      } catch (error) { handleFirestoreError(error, 'delete', 'projects'); }
+      } catch (error) { 
+        handleFirestoreError(error, 'delete', 'projects'); 
+        toast.error("Lỗi giải phóng dự án.");
+      }
+      delete (window as any)[`timeout_project_${projectId}`];
+    }, 5000);
+
+    (window as any)[`timeout_project_${projectId}`] = deleteTimeout;
+
+    toast(`Đang giải phóng Dự án: ${projectName}...`, {
+      duration: 5000,
+      action: {
+        label: "HOÀN TÁC",
+        onClick: () => {
+          const tId = (window as any)[`timeout_project_${projectId}`];
+          if (tId) {
+            clearTimeout(tId);
+            delete (window as any)[`timeout_project_${projectId}`];
+            toast.info(`Đã khôi phục Dự án: ${projectName}.`);
+          }
+        }
+      }
+    });
+  };
+
+  const handleQuickAdd = async () => {
+    if (!quickAddTitle.trim() || !user) return;
+    if (!selectedProject) {
+      toast.error("Vui lòng chọn không gian làm việc để triển khai.");
+      return;
+    }
+    
+    let docId = '';
+    try {
+      const docRef = await addDoc(collection(db, 'bugs'), {
+        projectId: selectedProject.id,
+        title: quickAddTitle.trim(),
+        description: 'Khởi tạo nhiệm vụ chiến lược qua giao thức nhanh.',
+        status: 'backlog',
+        priority: quickAddPriority,
+        creatorId: user.uid,
+        ownerId: user.uid,
+        members: [user.uid],
+        dueDate: quickAddDueDate || null,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+      docId = docRef.id;
+      
+      setQuickAddTitle('');
+      setQuickAddDueDate('');
+      setShowQuickAdd(false);
+      toast.success("Nhiệm vụ chiến lược đã được triển khai");
+    } catch (e: any) { 
+      handleFirestoreError(e, 'create', 'bugs');
+      toast.error(`Lỗi nhiệm vụ: ${e.code}`);
+      return;
+    }
+
+    try {
+      const logMessage = `Triển khai nhiệm vụ chiến lược: ${quickAddTitle.trim()}`;
+      await addDoc(collection(db, 'activity_logs'), {
+        projectId: selectedProject.id,
+        bugId: docId,
+        action: 'BUG_CREATED',
+        details: logMessage,
+        userId: user.uid,
+        userName: user.displayName || 'Hệ thống',
+        userPhoto: user.photoURL || '',
+        createdAt: serverTimestamp()
+      });
+    } catch (e: any) { 
+      console.warn("Lỗi nhật ký:", e.message);
     }
   };
 
@@ -151,9 +243,13 @@ export default function App() {
                 events={events}
                 overdueTasks={overdueTasks}
                 userProfiles={userProfiles}
+                pendingInvitations={pendingInvitations}
+                handleAcceptInvitation={handleAcceptInvitation}
+                handleDeclineInvitation={handleDeclineInvitation}
                 setActiveTab={setActiveTab}
                 setShowProjectModal={setShowProjectModal}
                 setShowInviteModal={setShowInviteModal}
+                setShowQuickAdd={setShowQuickAdd}
               />
             </div>
           )}
@@ -161,11 +257,15 @@ export default function App() {
           {activeTab === 'board' && (
             <div key="board" className="h-full">
                <KanbanBoard 
-                  projectId={selectedProject?.id || ''}
+                  selectedProject={selectedProject}
                   userId={user.uid}
                   userProfiles={userProfiles}
                   bugs={bugs}
-                  isProjectOwner={user.uid === selectedProject?.ownerId}
+                  isAdmin={isAdmin}
+                  setShowQuickAdd={setShowQuickAdd}
+                  currentTime={currentTime}
+                  handleUpdateUserRoles={handleUpdateUserRoles}
+                  handleRemoveMember={handleRemoveMember}
                />
             </div>
           )}
@@ -189,6 +289,7 @@ export default function App() {
               userId={user.uid}
               setShowInviteModal={setShowInviteModal}
               handleRemoveMember={handleRemoveMember}
+              handleUpdateUserRoles={handleUpdateUserRoles}
             />
           )}
         </AnimatePresence>
@@ -226,7 +327,19 @@ export default function App() {
         onClose={() => setShowDocsModal(false)}
       />
 
-      <Toaster position="top-right" richColors />
+      <Toaster position="top-right" />
+
+      <QuickAddModal 
+        show={showQuickAdd} 
+        onClose={() => setShowQuickAdd(false)}
+        title={quickAddTitle}
+        setTitle={setQuickAddTitle}
+        priority={quickAddPriority}
+        setPriority={setQuickAddPriority}
+        dueDate={quickAddDueDate}
+        setDueDate={setQuickAddDueDate}
+        onSubmit={handleQuickAdd}
+      />
     </div>
   );
 }
