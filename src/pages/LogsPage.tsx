@@ -45,8 +45,8 @@ const LogsPage = ({ projectId, userProfiles }: { projectId: string, userProfiles
             <Activity size={24} />
           </div>
           <div>
-            <h2 className="text-2xl font-black text-slate-950 tracking-tight uppercase leading-none">Nhật_Ký_Hệ_Thống</h2>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono mt-2">TRUYỀN_TẢI_DỮ_LIỆU_TRỰC_TIẾP</p>
+            <h2 className="text-2xl font-black text-slate-950 tracking-tight uppercase leading-none">Nhật Ký Hệ Thống</h2>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono mt-2">TRUYỀN TẢI DỮ LIỆU TRỰC TIẾP</p>
           </div>
         </div>
       </header>
@@ -57,7 +57,7 @@ const LogsPage = ({ projectId, userProfiles }: { projectId: string, userProfiles
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
              <div className="w-2 h-2 rounded-full bg-brand-500 animate-ping" />
-             <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono">Xác_Thực_Dữ_Liệu...</span>
+             <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono">Xác Thực Dữ Liệu...</span>
           </div>
         ) : logs.length === 0 ? (
           <div className="text-center py-20">

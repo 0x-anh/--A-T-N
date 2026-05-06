@@ -30,7 +30,7 @@ const Sidebar = ({ activeTab, setActiveTab, user, handleLogout }: SidebarProps) 
         </div>
         <div className="flex flex-col">
           <span className="text-sm font-bold text-slate-950 tracking-tight uppercase leading-none group-hover:text-brand-600 transition-colors">ZENITH</span>
-          <span className="text-[9px] font-bold text-brand-600 uppercase tracking-[0.4em] font-mono mt-1.5 opacity-60">HỆ_THỐNG_X</span>
+          <span className="text-[9px] font-bold text-brand-600 uppercase tracking-[0.4em] font-mono mt-1.5 opacity-60">HỆ THỐNG X</span>
         </div>
       </div>
 
@@ -96,7 +96,7 @@ const Sidebar = ({ activeTab, setActiveTab, user, handleLogout }: SidebarProps) 
         
         <div className="flex flex-col gap-1 pt-2 opacity-30">
           <p className="text-[8px] font-bold text-slate-400 uppercase tracking-[0.3em] font-mono text-center">
-            ZENITH_X • HỆ_THỐNG_ỔN_ĐỊNH
+            ZENITH X • HỆ THỐNG ỔN ĐỊNH
           </p>
           <p className="text-[7px] font-medium text-slate-300 uppercase tracking-[0.2em] text-center">
             PHÁT TRIỂN BỞI NGUYỄN ĐỨC ANH

@@ -37,7 +37,7 @@ const DashboardPage = ({
         <div className="flex items-center justify-between border-b border-slate-200/50 pb-8">
           <div className="flex items-center gap-8">
             <div className="flex flex-col">
-              <h3 className="text-[11px] font-black text-brand-600 uppercase tracking-[0.5em] font-mono leading-none mb-2">CHỈ_HUY_VẬN_HÀNH</h3>
+              <h3 className="text-[11px] font-black text-brand-600 uppercase tracking-[0.5em] font-mono leading-none mb-2">CHỈ HUY VẬN HÀNH</h3>
               <h2 className="text-4xl md:text-5xl font-heading font-black tracking-tighter uppercase leading-none text-slate-950">
                 TRUNG TÂM <span className="text-slate-400">ĐIỀU HÀNH</span>
               </h2>
@@ -51,7 +51,7 @@ const DashboardPage = ({
           </div>
 
           <div className="flex flex-col items-end gap-2 group cursor-default">
-             <div className="text-[10px] font-black text-slate-300 uppercase tracking-[0.6em] font-mono transition-colors group-hover:text-brand-500">ĐỒNG_BỘ_THỜI_GIAN</div>
+             <div className="text-[10px] font-black text-slate-300 uppercase tracking-[0.6em] font-mono transition-colors group-hover:text-brand-500">ĐỒNG BỘ THỜI GIAN</div>
              <div className="flex items-baseline gap-2">
                 <span className="text-4xl font-heading font-black text-slate-950 tracking-tighter tabular-nums leading-none">
                   {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
@@ -60,7 +60,7 @@ const DashboardPage = ({
              </div>
              <div className="flex items-center gap-2 px-3 py-1 bg-emerald-500/5 border border-emerald-500/10 rounded-full">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[9px] font-black text-emerald-600 uppercase tracking-[0.2em] font-mono">KẾT_NỐI_ỔN_ĐỊNH</span>
+                <span className="text-[9px] font-black text-emerald-600 uppercase tracking-[0.2em] font-mono">KẾT NỐI ỔN ĐỊNH</span>
              </div>
           </div>
         </div>
