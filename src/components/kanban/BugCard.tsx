@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
 import { Draggable } from '@hello-pangea/dnd';
 import { motion } from 'motion/react';
-import { Clock } from 'lucide-react';
-import { Bug, UserProfile, PRIORITY_CONFIG, STATUS_COLUMNS, canUserMoveTo } from '../../types';
+import { Clock, Hash, AlertCircle, Zap, Shield } from 'lucide-react';
+import { Bug, UserProfile, STATUS_COLUMNS, canUserMoveTo, PRIORITY_CONFIG } from '../../types';
 import { cn } from '../../lib/utils';
 
 const DraggableAny = Draggable as any;
@@ -18,9 +18,13 @@ interface BugCardProps {
 }
 
 const BugCard = React.memo(({ bug, index, userProfiles, onSelect, userId, isAdmin, currentTime }: BugCardProps) => {
-  const assignee = userProfiles.find(u => u.userId === bug.assigneeId);
   const currentUser = userProfiles.find(u => u.userId === userId);
   
+  const members = useMemo(() => {
+    const ids = bug.members || (bug.assigneeId ? [bug.assigneeId] : []);
+    return userProfiles.filter(u => ids.includes(u.userId));
+  }, [bug.members, bug.assigneeId, userProfiles]);
+
   const canMove = useMemo(() => {
     if (isAdmin) return true;
     if (!currentUser?.roles) return false;
@@ -32,6 +36,17 @@ const BugCard = React.memo(({ bug, index, userProfiles, onSelect, userId, isAdmi
     return new Date(bug.dueDate) < currentTime;
   }, [bug.status, bug.dueDate, currentTime]);
 
+  const priorityMeta = useMemo(() => {
+    const cfg = PRIORITY_CONFIG[bug.priority];
+    switch(bug.priority) {
+      case 'critical': return { color: 'text-violet-400', bg: 'bg-violet-500/10', border: 'border-violet-500/30', icon: <cfg.icon size={10} />, label: cfg.label };
+      case 'high': return { color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/30', icon: <cfg.icon size={10} />, label: cfg.label };
+      default: return { color: 'text-brand-400', bg: 'bg-brand-500/10', border: 'border-brand-500/30', icon: <cfg.icon size={10} />, label: cfg.label };
+    }
+  }, [bug.priority]);
+
+  const hasFooter = !!(bug.dueDate || (bug.members && bug.members.length > 0));
+
   return (
     <DraggableAny key={bug.id} draggableId={bug.id} index={index} isDragDisabled={!canMove}>
       {(provided: any, snapshot: any) => (
@@ -40,7 +55,7 @@ const BugCard = React.memo(({ bug, index, userProfiles, onSelect, userId, isAdmi
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           className={cn(
-            "mb-4 outline-none",
+            "mb-3 outline-none transition-all",
             snapshot.isDragging ? "z-[300]" : ""
           )}
           style={{ ...provided.draggableProps.style }}
@@ -48,61 +63,103 @@ const BugCard = React.memo(({ bug, index, userProfiles, onSelect, userId, isAdmi
           <motion.div 
             onClick={() => !snapshot.isDragging && onSelect(bug)}
             className={cn(
-               "relative overflow-hidden group p-5 rounded-[2rem] border transition-all duration-500",
+               "relative overflow-hidden group p-3.5 rounded-xl border transition-all duration-300",
                snapshot.isDragging 
-                ? "border-brand-500 bg-white shadow-2xl ring-4 ring-brand-500/10" 
-                : "bg-white/70 backdrop-blur-xl border-white/60 hover:border-brand-500/50 hover:shadow-2xl hover:shadow-brand-500/10 hover:-translate-y-1",
-               isOverdue && !snapshot.isDragging && "border-rose-200 bg-rose-50/50"
+                ? "border-brand-500/50 bg-slate-900 shadow-2xl scale-[1.05] ring-1 ring-brand-500/40" 
+                : "bg-slate-950/90 backdrop-blur-xl border-white/5 hover:border-brand-500/40 hover:shadow-2xl hover:shadow-brand-500/10 hover:-translate-y-0.5",
+               isOverdue && !snapshot.isDragging && "border-rose-500/40 bg-slate-950"
             )}
           >
-            {/* Hover Glow Effect */}
-            <div className="absolute -inset-full bg-gradient-to-tr from-brand-500/0 via-brand-500/5 to-brand-500/0 rotate-45 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-            
-            <div className="relative space-y-4">
+            {/* Dark Pixel Grid Overlay */}
+            <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '8px 8px' }} />
+
+            {/* Status Accent Line (Glowing) */}
+            <div className={cn(
+              "absolute left-0 top-0 bottom-0 w-1 transition-all group-hover:w-1.5",
+              isOverdue ? "bg-rose-500 shadow-[2px_0_15px_rgba(244,63,94,0.4)]" :
+              bug.priority === 'critical' ? "bg-violet-500 shadow-[2px_0_15px_rgba(139,92,246,0.4)]" : 
+              bug.priority === 'high' ? "bg-amber-400 shadow-[2px_0_15px_rgba(251,191,36,0.4)]" : "bg-brand-500 shadow-[2px_0_15px_rgba(99,102,241,0.4)]"
+            )} />
+
+            <div className="relative pl-1.5 space-y-2.5">
+              {/* Top Row: Basic Meta */}
               <div className="flex items-center justify-between">
-                 <div className="flex items-center gap-2">
-                    <div className={cn(
-                      "w-2 h-2 rounded-full",
-                      isOverdue ? "bg-rose-500 animate-pulse" :
-                      bug.priority === 'critical' ? "bg-rose-500" : 
-                      bug.priority === 'high' ? "bg-amber-400" : "bg-emerald-400"
-                    )} />
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono">
-                      {bug.id.split('-').pop()}
-                    </span>
-                 </div>
-                 
-                 {bug.assigneeId && (
-                    <div className="flex -space-x-2">
-                       <img 
-                         src={assignee?.photoURL || `https://api.dicebear.com/7.x/notionists/svg?seed=${bug.assigneeId}`} 
-                         className="w-8 h-8 rounded-full border-2 border-white shadow-sm ring-2 ring-slate-100 group-hover:ring-brand-500/30 transition-all" 
-                         alt=""
-                       />
-                    </div>
-                 )}
+                <div className="flex items-center gap-1.5 px-1.5 py-0.5 bg-white/5 rounded text-[8px] font-bold text-slate-500 font-mono border border-white/5 uppercase tracking-widest">
+                  <Hash size={8} />
+                  <span>{bug.id.split('-').pop()?.substring(0, 6)}</span>
+                </div>
+                
+                {/* Priority Indicator */}
+                <div className={cn(
+                  "flex items-center gap-1 px-1.5 py-0.5 rounded border text-[8px] font-black tracking-widest font-mono uppercase",
+                  priorityMeta.bg, priorityMeta.color, priorityMeta.border
+                )}>
+                  {priorityMeta.icon}
+                  {priorityMeta.label}
+                </div>
               </div>
-  
-              <h4 className="text-sm font-bold text-slate-800 leading-snug tracking-tight group-hover:text-slate-900 transition-colors line-clamp-2 min-h-[2.5rem]">
-                {bug.title}
-              </h4>
-  
-              <div className="flex items-center justify-between pt-3 border-t border-slate-100/50">
-                  <div className="px-3 py-1 rounded-full bg-slate-100/50 text-[9px] font-black text-slate-500 uppercase tracking-widest font-mono border border-slate-200/50">
-                     {PRIORITY_CONFIG[bug.priority].label}
-                  </div>
- 
-                  {bug.dueDate && (
-                    <div className={cn(
-                      "flex items-center gap-1.5 text-[10px] font-bold font-mono",
-                      isOverdue ? "text-rose-500" : "text-slate-400"
-                    )}>
-                      <Clock size={12} strokeWidth={2.5} />
-                      <span>{new Date(bug.dueDate).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' })}</span>
+
+              {/* Alert Row: Dedicated space for critical status markers */}
+              {(isOverdue || bug.status === 'in-review') && (
+                <div className="flex flex-wrap gap-2 pt-0.5">
+                  {isOverdue && (
+                    <div className="flex items-center gap-1.5 px-2 py-0.5 bg-rose-500/10 border border-rose-500/30 rounded-md">
+                      <div className="w-1 h-1 rounded-full bg-rose-500 animate-ping" />
+                      <span className="text-[7px] font-black text-rose-500 tracking-[0.1em] uppercase">OVERDUE_SIGNAL</span>
                     </div>
                   )}
-              </div>
+                  {bug.status === 'in-review' && (
+                    <div className="flex items-center gap-1.5 px-2 py-0.5 bg-amber-500/10 border border-amber-500/30 rounded-md">
+                      <div className="w-1 h-1 rounded-full bg-amber-500 animate-pulse shadow-[0_0_5px_rgba(245,158,11,0.5)]" />
+                      <span className="text-[7px] font-black text-amber-600 tracking-[0.1em] uppercase">NEEDS_REVIEW</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Task Title (High Contrast) */}
+              <h4 className="text-sm font-bold text-slate-200 leading-[1.3] group-hover:text-white transition-colors line-clamp-3 tracking-tight pt-1">
+                {bug.title}
+              </h4>
+
+              {/* Bottom Row: Date & Assignee Stack */}
+              {hasFooter && (
+                <div className="flex items-center justify-between pt-2.5 border-t border-white/5">
+                  <div className="flex items-center gap-3">
+                     {bug.dueDate && (
+                      <div className={cn(
+                        "flex items-center gap-1.5 text-[9px] font-bold font-mono tracking-tighter px-1.5 py-0.5 rounded border",
+                        isOverdue ? "bg-rose-500/10 text-rose-400 border-rose-500/20" : "bg-white/5 text-slate-500 border-white/5"
+                      )}>
+                        <Clock size={10} />
+                        <span>{new Date(bug.dueDate).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' })}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Avatar Stack */}
+                  <div className="flex -space-x-2 overflow-hidden">
+                    {members.slice(0, 3).map((m, i) => (
+                      <div key={m.userId} className="relative group/avatar" style={{ zIndex: 10 - i }}>
+                         <img 
+                            src={m.photoURL || `https://api.dicebear.com/7.x/notionists/svg?seed=${m.userId}`} 
+                            className="w-6 h-6 rounded-lg border-2 border-slate-950 shadow-sm transition-transform group-hover/avatar:scale-125 group-hover/avatar:z-50" 
+                            alt={m.displayName}
+                         />
+                      </div>
+                    ))}
+                    {members.length > 3 && (
+                      <div className="w-6 h-6 rounded-lg border-2 border-slate-950 bg-slate-800 flex items-center justify-center text-[8px] font-black text-white relative z-0">
+                        +{members.length - 3}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
+
+            {/* Subtle Inner Glow on Hover */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-brand-500/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
           </motion.div>
         </div>
       )}

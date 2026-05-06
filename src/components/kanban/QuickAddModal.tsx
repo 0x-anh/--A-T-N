@@ -108,7 +108,7 @@ const QuickAddModal = ({
 
             <button 
               onClick={onSubmit}
-              className="w-full h-16 bg-slate-950 text-white rounded-[1.5rem] mt-12 text-[11px] font-black uppercase tracking-[0.4em] hover:bg-brand-500 transition-all shadow-2xl shadow-slate-950/20 flex items-center justify-center gap-3 active:scale-95 italic"
+              className="w-full h-16 bg-slate-950 text-white rounded-[1.5rem] mt-12 text-[11px] font-black uppercase tracking-[0.4em] hover:bg-brand-500 transition-all shadow-2xl shadow-slate-950/20 flex items-center justify-center gap-3 active:scale-95"
             >
                <Plus size={16} strokeWidth={3} />
                Triển khai nhiệm vụ

@@ -10,7 +10,7 @@ import {
   UserProfile, Project, UserRole, canUserMoveTo 
 } from '../types';
 import { toast } from 'sonner';
-import { Plus, Bug as BugIcon, Search, LayoutDashboard, ListFilter, Activity, SearchIcon, Grid, List } from 'lucide-react';
+import { Plus, Bug as BugIcon, Search, LayoutDashboard, ListFilter, Activity, Grid, List, Terminal } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -50,10 +50,10 @@ const KanbanBoard = ({
 
   // Mapping labels
   const statusLabels: Record<BugStatus, string> = {
-    'backlog': 'HÀNG ĐỢI CHIẾN LƯỢC',
-    'in-progress': 'TIẾN TRÌNH VẬN HÀNH',
-    'in-review': 'KIỂM SOÁT CHẤT LƯỢNG',
-    'done': 'HOÀN TẤT MỤC TIÊU'
+    'backlog': 'HÀNG ĐỢI MỚI',
+    'in-progress': 'ĐANG THỰC HIỆN',
+    'in-review': 'ĐANG KIỂM TRA',
+    'done': 'ĐÃ HOÀN TẤT'
   };
 
   const filteredBugs = useMemo(() => {
@@ -214,7 +214,7 @@ const KanbanBoard = ({
     >
       {/* Overview Style Header */}
       <header className="flex flex-col gap-8 mb-4 relative px-4 pt-4 shrink-0">
-        <div className="flex items-center justify-between border-b border-slate-200/50 pb-8">
+        <div className="flex items-center justify-between border-b border-slate-200 pb-8">
           <div className="flex items-center gap-8">
             <div className="flex flex-col">
               <h3 className="text-[11px] font-black text-brand-600 uppercase tracking-[0.5em] font-mono leading-none mb-2">TRUNG TÂM ĐIỀU PHỐI</h3>
@@ -242,14 +242,14 @@ const KanbanBoard = ({
                     placeholder="TÌM KIẾM NHIỆM VỤ..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 pr-4 py-2.5 bg-white/40 backdrop-blur-md border border-slate-300/40 rounded-xl text-[10px] font-black text-slate-950 outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500/50 transition-all w-[200px] md:w-[280px] uppercase tracking-widest"
+                    className="pl-10 pr-4 py-2.5 bg-white/60 backdrop-blur-md border border-slate-200 rounded-xl text-[10px] font-black text-slate-950 outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500/50 transition-all w-[200px] md:w-[280px] uppercase tracking-widest"
                   />
                 </div>
 
                 <div className="h-10 w-[1px] bg-slate-200 hidden md:block" />
 
                 {/* View Toggle */}
-                <div className="flex items-center bg-white/40 backdrop-blur-md p-1 rounded-xl border border-slate-300/40">
+                <div className="flex items-center bg-white/60 backdrop-blur-md p-1 rounded-xl border border-slate-200">
                   <button 
                     onClick={() => setViewMode('board')}
                     className={cn(
@@ -274,8 +274,8 @@ const KanbanBoard = ({
              </div>
 
              <div className="flex flex-col items-end gap-1 group cursor-default">
-                <div className="flex items-baseline gap-2">
-                   <span className="text-3xl font-heading font-black text-slate-950 tracking-tighter tabular-nums leading-none">
+                <div className="flex items-baseline gap-2 text-slate-950">
+                   <span className="text-3xl font-heading font-black tracking-tighter tabular-nums leading-none">
                      {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
                    </span>
                    <span className="text-[10px] font-black text-slate-400 uppercase font-mono">{currentTime.getHours() >= 12 ? 'PM' : 'AM'}</span>
@@ -289,7 +289,7 @@ const KanbanBoard = ({
         </div>
       </header>
 
-      <div className="flex-1 px-4 md:px-8 pb-10 overflow-hidden relative">
+      <div className="flex-1 px-4 md:px-8 pb-4 overflow-hidden relative">
         <AnimatePresence mode="wait">
           {viewMode === 'board' ? (
             <motion.div 
@@ -300,7 +300,7 @@ const KanbanBoard = ({
               className="h-full"
             >
               <DragDropContext onDragEnd={onDragEnd}>
-                <div className="flex h-full gap-6 overflow-x-auto no-scrollbar pb-6">
+                <div className="flex h-full gap-6 overflow-x-auto no-scrollbar pb-2">
                   {(['backlog', 'in-progress', 'in-review', 'done'] as BugStatus[]).map(status => (
                     <KanbanColumn 
                       key={status}
@@ -328,9 +328,9 @@ const KanbanBoard = ({
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
-              className="bg-white/30 backdrop-blur-3xl rounded-[2.5rem] border border-white/60 h-full overflow-hidden flex flex-col shadow-sm tech-corners"
+              className="bg-white/40 backdrop-blur-3xl rounded-2xl border border-white/60 h-full overflow-hidden flex flex-col shadow-sm"
             >
-              <div className="p-8 border-b border-white/50 flex items-center justify-between relative z-10">
+              <div className="p-8 border-b border-slate-100 flex items-center justify-between relative z-10">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl bg-slate-950 flex items-center justify-center text-white shadow-2xl shadow-slate-950/20">
                     <LayoutDashboard size={18} />
@@ -340,7 +340,7 @@ const KanbanBoard = ({
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono mt-1">OPERATIONAL_DATA_STREAM</p>
                   </div>
                 </div>
-                <div className="text-[10px] font-black text-slate-900 bg-white/50 px-5 py-2 rounded-xl border border-white/80 uppercase tracking-widest font-mono shadow-sm">
+                <div className="text-[10px] font-black text-slate-950 bg-white/60 px-5 py-2 rounded-xl border border-slate-200 uppercase tracking-widest font-mono">
                   TỔNG_CỘNG: {filteredBugs.length} NODE
                 </div>
               </div>
@@ -362,34 +362,34 @@ const KanbanBoard = ({
                         onClick={() => setSelectedBug(bug)}
                         className="group cursor-pointer hover:translate-x-2 transition-all duration-500"
                       >
-                        <td className="px-6 py-5 bg-white/40 backdrop-blur-md first:rounded-l-[1.5rem] border-y border-l border-white/60 text-[10px] font-black font-mono text-slate-400 group-hover:bg-white transition-colors">
+                        <td className="px-6 py-5 bg-white/60 backdrop-blur-md first:rounded-l-xl border-y border-l border-slate-200 text-[10px] font-black font-mono text-slate-400 group-hover:bg-white transition-colors">
                           {bug.id.substring(0, 8).toUpperCase()}
                         </td>
-                        <td className="px-6 py-5 bg-white/40 backdrop-blur-md border-y border-white/60 text-xs font-black text-slate-900 group-hover:bg-white transition-colors">
+                        <td className="px-6 py-5 bg-white/60 backdrop-blur-md border-y border-slate-200 text-xs font-black text-slate-950 group-hover:bg-white transition-colors">
                           {bug.title}
                         </td>
-                        <td className="px-6 py-5 bg-white/40 backdrop-blur-md border-y border-white/60 text-center group-hover:bg-white transition-colors">
+                        <td className="px-6 py-5 bg-white/60 backdrop-blur-md border-y border-slate-200 text-center group-hover:bg-white transition-colors">
                           <span className={cn(
                             "px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border",
-                            bug.status === 'backlog' ? "bg-slate-50 text-slate-500 border-slate-200" :
+                            bug.status === 'backlog' ? "bg-slate-100 text-slate-500 border-slate-200" :
                             bug.status === 'in-progress' ? "bg-amber-50 text-amber-600 border-amber-100" :
                             bug.status === 'in-review' ? "bg-brand-50 text-brand-600 border-brand-100" : "bg-emerald-50 text-emerald-600 border-emerald-100"
                           )}>
                             {statusLabels[bug.status]}
                           </span>
                         </td>
-                        <td className="px-6 py-5 bg-white/40 backdrop-blur-md border-y border-white/60 text-center group-hover:bg-white transition-colors">
+                        <td className="px-6 py-5 bg-white/60 backdrop-blur-md border-y border-slate-200 text-center group-hover:bg-white transition-colors">
                           <span className={cn(
                             "text-[10px] font-black uppercase tracking-widest font-mono",
-                            bug.priority === 'high' ? "text-rose-500" :
-                            bug.priority === 'medium' ? "text-amber-500" : "text-slate-400"
+                            bug.priority === 'high' ? "text-rose-600" :
+                            bug.priority === 'medium' ? "text-amber-600" : "text-slate-400"
                           )}>
                             {bug.priority === 'high' ? 'CRITICAL' : bug.priority === 'medium' ? 'STABLE' : 'LOW'}
                           </span>
                         </td>
-                        <td className="px-6 py-5 bg-white/40 backdrop-blur-md last:rounded-r-[1.5rem] border-y border-r border-white/60 group-hover:bg-white transition-colors">
+                        <td className="px-6 py-5 bg-white/60 backdrop-blur-md last:rounded-r-xl border-y border-r border-slate-200 group-hover:bg-white transition-colors">
                           <div className="flex items-center gap-3">
-                            <div className="w-7 h-7 rounded-lg bg-slate-950 flex items-center justify-center overflow-hidden ring-2 ring-white shadow-sm">
+                            <div className="w-7 h-7 rounded-lg bg-slate-950 flex items-center justify-center overflow-hidden ring-1 ring-slate-200 shadow-sm">
                               {userProfiles.find(p => p.userId === bug.assigneeId)?.photoURL ? (
                                 <img src={userProfiles.find(p => p.userId === bug.assigneeId)?.photoURL} alt="Avatar" className="w-full h-full object-cover" />
                               ) : (
@@ -398,7 +398,7 @@ const KanbanBoard = ({
                                 </span>
                               )}
                             </div>
-                            <span className="text-[10px] font-black text-slate-600 uppercase tracking-tight">
+                            <span className="text-[10px] font-black text-slate-600 uppercase tracking-tight group-hover:text-slate-950 transition-colors">
                               {userProfiles.find(p => p.userId === bug.assigneeId)?.displayName || 'CHƯA_PHÂN_CÔNG'}
                             </span>
                           </div>
@@ -438,6 +438,7 @@ const KanbanBoard = ({
         setNewComment={setNewComment}
         handleAddComment={handleAddComment}
         bottomRef={bottomRef}
+        projectMemberIds={selectedProject?.members || []}
       />
     </motion.div>
   );

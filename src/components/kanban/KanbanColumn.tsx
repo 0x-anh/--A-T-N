@@ -1,7 +1,7 @@
 import React from 'react';
 import { Droppable } from '@hello-pangea/dnd';
 import { motion, AnimatePresence } from 'motion/react';
-import { Plus } from 'lucide-react';
+import { Plus, Terminal } from 'lucide-react';
 import { Bug, BugStatus, UserProfile } from '../../types';
 import { cn } from '../../lib/utils';
 import BugCard from './BugCard';
@@ -27,43 +27,51 @@ const KanbanColumn = React.memo(({
   isAdding, setIsAdding, newBugTitle, setNewBugTitle, 
   handleAddBug, userId, isAdmin, currentTime
 }: KanbanColumnProps) => {
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+  const [showScrollHint, setShowScrollHint] = React.useState(false);
+
+  React.useEffect(() => {
+    const checkScroll = () => {
+      if (scrollRef.current) {
+        const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
+        // Hiển thị hint nếu chưa cuộn xuống hết và có thể cuộn
+        setShowScrollHint(scrollHeight > clientHeight + 10 && scrollTop + clientHeight < scrollHeight - 20);
+      }
+    };
+
+    const currentRef = scrollRef.current;
+    if (currentRef) {
+      currentRef.addEventListener('scroll', checkScroll);
+      // Kiểm tra lần đầu và sau khi render tasks
+      setTimeout(checkScroll, 100);
+    }
+    return () => currentRef?.removeEventListener('scroll', checkScroll);
+  }, [tasks, isAdding]);
+
   return (
-    <div className="flex-1 min-w-0 h-full flex flex-col px-1">
-      <div className="py-2 md:py-3 flex items-center justify-between px-2 md:px-3">
-        <div className="flex items-center gap-2.5">
-           <div className="relative flex items-center">
-             <div className={cn(
-                 "w-1.5 h-6 rounded-full",
-                 status === 'backlog' ? "bg-slate-900 shadow-[0_0_10px_rgba(15,23,42,0.3)]" :
-                 status === 'in-progress' ? "bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.4)]" :
-                 status === 'in-review' ? "bg-indigo-600" : "bg-emerald-600"
-               )} />
-            </div>
-            <div className="flex flex-col">
-              <h3 style={{ 
-                color: '#1e293b', 
-                fontSize: '14px', 
-                fontWeight: '800', 
-                textTransform: 'uppercase', 
-                letterSpacing: '0.05em',
-                fontFamily: 'system-ui, -apple-system, sans-serif',
-                display: 'block',
-                visibility: 'visible',
-                opacity: 1
-              }}>
-                {title}
-              </h3>
-            </div>
+    <div className="flex-1 min-w-0 h-full flex flex-col px-1 relative">
+      {/* Column Header */}
+      <div className="py-3 flex items-center justify-between px-3">
+        <div className="flex items-center gap-3">
+           <div className={cn(
+               "w-1 h-4 rounded-full shadow-sm",
+               status === 'backlog' ? "bg-slate-400" :
+               status === 'in-progress' ? "bg-amber-500" :
+               status === 'in-review' ? "bg-brand-600" : "bg-emerald-600"
+             )} />
+            <h3 className="text-[12px] font-black text-slate-800 uppercase tracking-[0.15em] font-mono">
+              {title}
+            </h3>
         </div>
-        <div className="flex items-center gap-1.5">
-           <div className="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-lg text-[10px] font-bold">
+        <div className="flex items-center gap-2">
+           <div className="px-2 py-0.5 bg-slate-950/5 border border-slate-200 text-slate-500 rounded text-[10px] font-mono font-bold">
               {tasks.length}
            </div>
            <button 
              onClick={() => setIsAdding(isAdding ? null : status)}
              className={cn(
-               "w-8 h-8 flex items-center justify-center rounded-lg border border-slate-100 bg-white text-slate-300 hover:text-slate-950 hover:bg-slate-50 transition-all", 
-               isAdding && "bg-slate-900 text-white border-transparent"
+               "w-7 h-7 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:text-slate-900 hover:border-slate-900 transition-all shadow-sm", 
+               isAdding && "bg-slate-900 text-white border-transparent shadow-md"
              )}
            >
              <Plus size={14} strokeWidth={2.5} className={cn("transition-transform", isAdding ? "rotate-45" : "")} />
@@ -75,36 +83,32 @@ const KanbanColumn = React.memo(({
         {(provided: any, snapshot: any) => (
           <div
             {...provided.droppableProps}
-            ref={provided.innerRef}
+            ref={(el) => {
+              provided.innerRef(el);
+              (scrollRef as any).current = el;
+            }}
             className={cn(
-              "flex-1 overflow-y-auto no-scrollbar transition-all duration-300 bg-white/10 backdrop-blur-3xl rounded-[2rem] p-4 border border-slate-100/50 shadow-[inset_0_-20px_40px_-20px_rgba(0,0,0,0.02)] relative tech-corners",
-              snapshot.isDraggingOver && "bg-slate-100/50 border-brand-200/50"
+              "flex-1 overflow-y-auto no-scrollbar transition-all duration-300 bg-transparent rounded-2xl p-3 relative",
+              snapshot.isDraggingOver && "bg-brand-500/[0.04] rounded-2xl"
             )}
           >
-            {snapshot.isDraggingOver && (
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="absolute inset-4 border-2 border-dashed border-brand-500/20 rounded-[1.5rem] pointer-events-none z-0"
-              />
-            )}
             <AnimatePresence>
               {isAdding && (
                 <motion.div 
-                  initial={{ opacity: 0, y: 30, scale: 0.9 }} 
-                  animate={{ opacity: 1, y: 0, scale: 1 }} 
-                  exit={{ opacity: 0, y: -30, scale: 0.9 }} 
-                  className="p-1 bg-white border border-brand-500/20 rounded-[2.5rem] mb-8 shadow-3xl shadow-brand-500/10 overflow-hidden"
+                  initial={{ opacity: 0, scale: 0.95 }} 
+                  animate={{ opacity: 1, scale: 1 }} 
+                  exit={{ opacity: 0, scale: 0.95 }} 
+                  className="p-1 bg-slate-900 border border-brand-500/20 rounded-xl mb-4 shadow-2xl overflow-hidden"
                 >
-                  <div className="p-8">
-                    <div className="text-[10px] font-black text-brand-600 uppercase tracking-[0.3em] mb-6 font-mono flex items-center gap-3">
-                       <div className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse" />
-                       THIẾT LẬP MỚI
+                  <div className="p-4">
+                    <div className="text-[9px] font-black text-brand-400 uppercase tracking-widest mb-4 font-mono flex items-center gap-2">
+                       <Terminal size={10} />
+                       NEW_TASK_INIT
                     </div>
                     <textarea
                       autoFocus
-                      rows={3}
-                      className="w-full bg-transparent border-none p-0 text-sm font-bold text-slate-950 outline-none placeholder:text-slate-200 mb-8 resize-none font-sans tracking-tight"
+                      rows={2}
+                      className="w-full bg-transparent border-none p-0 text-sm font-bold text-white outline-none placeholder:text-slate-600 mb-6 resize-none font-sans tracking-tight"
                       placeholder="Nhập nội dung công việc..."
                       value={newBugTitle}
                       onChange={(e) => setNewBugTitle(e.target.value)}
@@ -116,16 +120,16 @@ const KanbanColumn = React.memo(({
                         if (e.key === 'Escape') setIsAdding(null);
                       }}
                     />
-                    <div className="flex gap-4">
+                    <div className="flex gap-2">
                       <button 
                         onClick={() => handleAddBug(status)} 
-                        className="flex-1 h-14 bg-slate-950 text-white rounded-[1.5rem] text-[11px] font-black hover:bg-brand-600 transition-all uppercase tracking-[0.3em] shadow-2xl shadow-slate-950/20 active:scale-95"
+                        className="flex-1 h-10 bg-brand-500 text-white rounded-lg text-[10px] font-black hover:bg-brand-600 transition-all uppercase tracking-widest active:scale-95 shadow-lg shadow-brand-500/20"
                       >
                         Khởi tạo
                       </button>
                       <button 
                         onClick={() => setIsAdding(null)} 
-                        className="h-14 px-8 text-[11px] font-black text-slate-400 hover:text-slate-950 transition-all uppercase tracking-widest font-mono"
+                        className="h-10 px-4 text-[10px] font-black text-slate-500 hover:text-white transition-all uppercase tracking-widest font-mono"
                       >
                         Hủy
                       </button>
@@ -135,7 +139,7 @@ const KanbanColumn = React.memo(({
               )}
             </AnimatePresence>
 
-            <div className="min-h-[200px] space-y-0.5 pb-20">
+            <div className="min-h-[200px] space-y-0.5 pb-10 relative z-10">
               {tasks.map((bug, index) => (
                 <BugCard 
                   key={bug.id} 
@@ -150,9 +154,66 @@ const KanbanColumn = React.memo(({
               ))}
               {provided.placeholder}
             </div>
+            
+            {/* Subtle Gradient Shadow for scroll hint */}
+            {showScrollHint && (
+              <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white/20 to-transparent pointer-events-none z-20" />
+            )}
           </div>
         )}
       </Droppable>
+
+      {/* Scroll Indicator Hint - Premium Industrial HUD Style */}
+      <AnimatePresence>
+        {showScrollHint && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.8, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: 10 }}
+            className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-1 cursor-pointer pointer-events-auto"
+            onClick={() => {
+               if (scrollRef.current) {
+                 scrollRef.current.scrollBy({ top: 200, behavior: 'smooth' });
+               }
+            }}
+            whileHover={{ y: -2 }}
+            whileTap={{ scale: 0.95 }}
+          >
+             <div className="group relative flex flex-col items-center">
+                {/* Tech Glow Background */}
+                <div className="absolute inset-0 bg-brand-500/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                
+                {/* Main HUD Button */}
+                <div className="relative px-5 py-2 bg-slate-950/90 backdrop-blur-xl rounded-full border border-brand-500/50 shadow-[0_0_30px_rgba(99,102,241,0.2)] flex items-center gap-3 overflow-hidden">
+                   {/* Decorative corner lines */}
+                   <div className="absolute top-0 left-4 w-2 h-[1px] bg-brand-500/40" />
+                   <div className="absolute bottom-0 right-4 w-2 h-[1px] bg-brand-500/40" />
+                   
+                   <div className="flex items-center gap-2">
+                      <div className="relative flex items-center justify-center">
+                         <div className="w-2 h-2 rounded-full bg-brand-500 animate-ping absolute" />
+                         <div className="w-1.5 h-1.5 rounded-full bg-brand-500 relative" />
+                      </div>
+                      <span className="text-[10px] font-black text-white uppercase tracking-[0.2em] font-mono whitespace-nowrap">XEM THÊM</span>
+                   </div>
+                   
+                   <div className="h-4 w-[1px] bg-white/10" />
+                   
+                   <motion.div 
+                     animate={{ y: [0, 3, 0] }}
+                     transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                     className="text-brand-400"
+                   >
+                      <Plus size={12} className="rotate-45" /> {/* Using Plus as a tech-cross but styled better */}
+                   </motion.div>
+                </div>
+                
+                {/* Sub-label technical hint */}
+                <span className="text-[7px] font-bold text-slate-500 uppercase tracking-[0.3em] font-mono mt-1 opacity-60">SYS_DATA_EXPAND</span>
+             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 });

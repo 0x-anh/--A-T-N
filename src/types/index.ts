@@ -49,7 +49,7 @@ export const ROLE_CONFIG: Record<UserRole, { label: string, color: string }> = {
 
 export const ROLE_PERMISSIONS: Record<UserRole, BugStatus[]> = {
   admin: ['backlog', 'in-progress', 'in-review', 'done'],
-  developer: ['in-progress', 'in-review'],
+  developer: ['backlog', 'in-progress', 'in-review'],
   qa: ['backlog', 'in-review', 'done'],
   viewer: []
 };
@@ -94,7 +94,8 @@ export interface Bug {
   updatedAt?: any;
   creatorId: string;
   assigneeId?: string;
-  dueDate?: string; // YYYY-MM-DDTHH:mm
+  dueDate?: string;
+  members?: string[];
 }
 
 export const STATUS_COLUMNS: { id: BugStatus, label: string }[] = [
@@ -105,8 +106,8 @@ export const STATUS_COLUMNS: { id: BugStatus, label: string }[] = [
 ];
 
 export const PRIORITY_CONFIG: Record<BugPriority, { label: string, color: string, icon: any }> = {
-  low: { label: 'Ưu tiên thấp', color: 'text-slate-400', icon: Zap },
-  medium: { label: 'Trung bình', color: 'text-blue-400', icon: ChevronUp },
-  high: { label: 'Ưu tiên cao', color: 'text-orange-400', icon: AlertTriangle },
-  critical: { label: 'Nghiêm trọng', color: 'text-red-400', icon: AlertCircle }
+  low: { label: 'Thấp [LV-0]', color: 'text-slate-400', icon: Zap },
+  medium: { label: 'Trung Bình [LV-1]', color: 'text-blue-400', icon: ChevronUp },
+  high: { label: 'Cao [LV-2]', color: 'text-amber-500', icon: AlertTriangle },
+  critical: { label: 'Nghiêm Trọng [LV-MAX]', color: 'text-violet-500', icon: AlertCircle }
 };
