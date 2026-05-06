@@ -37,7 +37,7 @@ export default function App() {
     handleRemoveMember 
   } = useProjects(user?.uid, userProfiles);
   
-  const { bugs, overdueTasks, urgentTasks, appStats } = useProjectData(user, selectedProject, userProfiles);
+  const { bugs, events, overdueTasks, urgentTasks, appStats } = useProjectData(user, selectedProject, userProfiles);
 
   const [activeTab, setActiveTab] = useState<'board' | 'metrics' | 'logs' | 'members' | 'dashboard'>('dashboard');
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -148,6 +148,9 @@ export default function App() {
                 appStats={appStats}
                 currentTime={currentTime}
                 bugs={bugs}
+                events={events}
+                userProfiles={userProfiles}
+                setActiveTab={setActiveTab}
                 setShowProjectModal={setShowProjectModal}
                 setShowInviteModal={setShowInviteModal}
               />
@@ -171,7 +174,10 @@ export default function App() {
           )}
 
           {activeTab === 'logs' && (
-            <LogsPage projectId={selectedProject?.id || ''} />
+            <LogsPage 
+              projectId={selectedProject?.id || ''} 
+              userProfiles={userProfiles}
+            />
           )}
 
           {activeTab === 'members' && (

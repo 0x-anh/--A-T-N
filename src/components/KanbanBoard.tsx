@@ -80,13 +80,32 @@ const KanbanBoard = ({ projectId, userId, userProfiles, bugs, isProjectOwner }: 
     return () => unsubscribe();
   }, [selectedBug]);
 
-  const logActivity = async (bugId: string, type: string, content: string) => {
+  const logActivity = async (bugId: string, type: string, message: string) => {
+    if (!userProfiles || !userId) return;
+    const profile = userProfiles.find(u => u.userId === userId);
+    const userName = profile?.displayName || 'Unknown';
+    const userPhoto = profile?.photoURL || '';
+
+    const logData = {
+      projectId,
+      bugId,
+      type,
+      message,
+      userId,
+      userName,
+      userPhoto,
+      createdAt: serverTimestamp()
+    };
+
     try {
+      // Log to global activity
+      await addDoc(collection(db, 'activity_logs'), logData);
+      
+      // Log to bug specific activities (legacy)
       await addDoc(collection(db, 'bugs', bugId, 'activities'), {
-        type, content, userId, userName: userProfiles.find(u => u.userId === userId)?.displayName || 'Unknown',
-        createdAt: serverTimestamp()
+        type, content: message, userId, userName, createdAt: serverTimestamp()
       });
-    } catch (e) { console.error("Activity log failed"); }
+    } catch (e) { console.error("Activity log failed:", e); }
   };
 
   const handleUpdateBugDetails = async (bugId: string, updates: Partial<Bug>) => {
@@ -121,10 +140,11 @@ const KanbanBoard = ({ projectId, userId, userProfiles, bugs, isProjectOwner }: 
   const handleAddBug = async (status: BugStatus) => {
     if (!newBugTitle.trim()) return;
     try {
-      await addDoc(collection(db, 'bugs'), {
+      const docRef = await addDoc(collection(db, 'bugs'), {
         projectId, title: newBugTitle.trim(), status, priority: 'low',
         ownerId: userId, members: [userId], createdAt: serverTimestamp(), updatedAt: serverTimestamp()
       });
+      logActivity(docRef.id, 'BUG_CREATED', `Khởi tạo nhiệm vụ: ${newBugTitle.trim()}`);
       setNewBugTitle('');
       setIsAdding(null);
       toast.success("Nút dữ liệu mới đã được khởi tạo");
@@ -134,10 +154,11 @@ const KanbanBoard = ({ projectId, userId, userProfiles, bugs, isProjectOwner }: 
   const handleQuickAdd = async () => {
     if (!quickAddTitle.trim()) return;
     try {
-      await addDoc(collection(db, 'bugs'), {
+      const docRef = await addDoc(collection(db, 'bugs'), {
         projectId, title: quickAddTitle.trim(), status: 'backlog', priority: quickAddPriority,
         ownerId: userId, members: [userId], createdAt: serverTimestamp(), updatedAt: serverTimestamp()
       });
+      logActivity(docRef.id, 'BUG_CREATED', `Triển khai nhiệm vụ chiến lược: ${quickAddTitle.trim()}`);
       setQuickAddTitle('');
       setShowQuickAdd(false);
       toast.success("Nhiệm vụ chiến lược đã được triển khai");

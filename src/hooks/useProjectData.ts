@@ -25,21 +25,21 @@ export const useProjectData = (user: any, selectedProject: Project | null, userP
       handleFirestoreError(error, 'list', 'bugs');
     });
 
-    const qEvents = query(
-      collection(db, 'events'),
+    const qActivity = query(
+      collection(db, 'activity_logs'),
       where('projectId', '==', selectedProject.id),
       orderBy('createdAt', 'desc'),
       limit(10)
     );
-    const unsubscribeEvents = onSnapshot(qEvents, (snapshot) => {
+    const unsubscribeActivity = onSnapshot(qActivity, (snapshot) => {
       setEvents(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     }, (error) => {
-      handleFirestoreError(error, 'list', 'events');
+      handleFirestoreError(error, 'list', 'activity_logs');
     });
 
     return () => {
       unsubscribeBugs();
-      unsubscribeEvents();
+      unsubscribeActivity();
     };
   }, [user, selectedProject]);
 

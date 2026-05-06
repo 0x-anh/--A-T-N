@@ -9,7 +9,7 @@ interface LogsPageProps {
   projectId: string;
 }
 
-const LogsPage = ({ projectId }: LogsPageProps) => {
+const LogsPage = ({ projectId, userProfiles }: { projectId: string, userProfiles: any[] }) => {
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -45,46 +45,71 @@ const LogsPage = ({ projectId }: LogsPageProps) => {
             <Activity size={24} />
           </div>
           <div>
-            <h2 className="text-2xl font-black text-slate-950 tracking-tight uppercase leading-none">Danh_SÁch_Nhân_Sự</h2>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono mt-2">Live_Telemetry_Relay</p>
+            <h2 className="text-2xl font-black text-slate-950 tracking-tight uppercase leading-none">Nhật_Ký_Hệ_Thống</h2>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono mt-2">Live_Activity_Relay</p>
           </div>
         </div>
       </header>
 
-      <div className="bg-white border border-slate-100 rounded-[2.5rem] overflow-hidden shadow-sm p-8">
+      <div className="bg-white/40 backdrop-blur-3xl border border-white/60 rounded-[2.5rem] overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.02)] p-10 relative">
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-brand-500/20 to-transparent" />
+        
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
-             <div className="w-1.5 h-1.5 rounded-full bg-slate-950 animate-ping" />
-             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono">Đang tải dữ liệu...</span>
+             <div className="w-2 h-2 rounded-full bg-brand-500 animate-ping" />
+             <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono">Xác_Thực_Dữ_Liệu...</span>
           </div>
         ) : logs.length === 0 ? (
           <div className="text-center py-20">
-            <Terminal className="w-12 h-12 text-slate-100 mx-auto mb-4" />
-            <h3 className="text-xs font-black text-slate-950 uppercase tracking-widest">Năng suất khởi tạo</h3>
+            <Terminal className="w-16 h-16 text-slate-200 mx-auto mb-6 opacity-50" />
+            <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.3em]">Hệ thống chưa ghi nhận hoạt động</h3>
           </div>
         ) : (
-          <div className="space-y-8">
+          <div className="space-y-10 relative">
             {logs.map((log, i) => (
-              <div key={log.id} className="flex gap-6 group relative">
+              <div key={log.id} className="flex gap-8 group relative">
                 {i !== logs.length - 1 && (
-                  <div className="absolute left-6 top-12 bottom-[-32px] w-[2px] bg-slate-50 group-hover:bg-indigo-50 transition-colors" />
+                  <div className="absolute left-[23px] top-14 bottom-[-40px] w-[2px] bg-slate-200/30 group-hover:bg-brand-200 transition-colors" />
                 )}
-                <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center shrink-0 border border-slate-100 group-hover:bg-indigo-50 group-hover:border-indigo-100 transition-all">
-                  {log.type === 'comment' ? <MessageSquare size={16} className="text-indigo-500" /> : <Clock size={16} className="text-slate-400" />}
+                
+                <div className="w-12 h-12 rounded-2xl bg-white/80 flex items-center justify-center shrink-0 border border-white shadow-sm group-hover:scale-110 group-hover:border-brand-500/30 group-hover:shadow-brand-500/10 transition-all duration-500 relative z-10">
+                  {log.type === 'comment' ? (
+                    <MessageSquare size={18} className="text-brand-500" />
+                  ) : (
+                    <Clock size={18} className="text-slate-400 group-hover:text-brand-500 transition-colors" />
+                  )}
                 </div>
-                <div className="flex-1 pt-1 pb-6 border-b border-slate-50 last:border-0">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-lg font-black text-slate-950 uppercase tracking-tight truncate">
-                      {log.createdAt?.toDate ? new Date(log.createdAt.toDate()).toLocaleString() : 'Just now'}
-                    </h3>
-                    <span className="px-3 py-1 bg-slate-50 border border-slate-100 rounded-lg text-[9px] font-black text-slate-400 uppercase tracking-widest font-mono flex items-center gap-2">
-                      <User size={10} />
-                      {log.userName || 'System'}
-                    </span>
+
+                <div className="flex-1 pb-10 border-b border-slate-200/30 last:border-0">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                    <div className="space-y-1">
+                      <h3 className="text-lg font-heading font-black text-slate-950 tracking-tighter tabular-nums">
+                        {log.createdAt?.toDate ? new Date(log.createdAt.toDate()).toLocaleString('vi-VN', { 
+                          hour: '2-digit', minute: '2-digit', second: '2-digit',
+                          day: '2-digit', month: '2-digit', year: 'numeric'
+                        }) : 'Vừa xong'}
+                      </h3>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-[1px] bg-brand-500" />
+                        <span className="text-[9px] font-black text-brand-600 uppercase tracking-widest font-mono">Status_Verified</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-3 px-4 py-2 bg-slate-950 text-white rounded-xl shadow-lg shadow-slate-950/10 self-start md:self-center">
+                       <img 
+                         src={userProfiles.find(u => u.userId === log.userId)?.photoURL || log.userPhoto || `https://api.dicebear.com/7.x/notionists/svg?seed=${log.userId || 'system'}`} 
+                         className="w-5 h-5 rounded-lg border border-white/20"
+                         alt=""
+                       />
+                       <span className="text-[10px] font-black uppercase tracking-widest">{log.userName || 'System'}</span>
+                    </div>
                   </div>
-                  <p className="text-sm font-bold text-slate-950 leading-relaxed tracking-tight">
-                    {log.content || log.message || 'Hệ thống đã thực hiện một tác vụ tự động.'}
-                  </p>
+
+                  <div className="p-5 bg-white/30 rounded-2xl border border-white/40 group-hover:bg-white/60 transition-all duration-500">
+                    <p className="text-sm font-bold text-slate-700 leading-relaxed tracking-tight">
+                      {log.message || log.details || log.content || 'Hoạt động vận hành hệ thống đã được thực thi thành công.'}
+                    </p>
+                  </div>
                 </div>
               </div>
             ))}

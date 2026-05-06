@@ -39,9 +39,6 @@ const BugCard = React.memo(({ bug, index, userProfiles, onSelect, userId, isAdmi
             "mb-4 outline-none",
             snapshot.isDragging ? "z-[300]" : ""
           )}
-          style={{ 
-            ...provided.draggableProps.style,
-          }}
           style={{ ...provided.draggableProps.style }}
         >
           <motion.div 
