@@ -31,7 +31,7 @@ const LoginPage = ({ handleLogin }: LoginPageProps) => {
           <div className="flex flex-col items-end">
             <span className="text-[9px] font-mono uppercase tracking-widest opacity-40">System_Status</span>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold text-slate-900 font-mono">ONLINE_SECURED</span>
+              <span className="text-[10px] font-bold text-slate-900 font-mono">TRỰC_TUYẾN_BẢO_MẬT</span>
               <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)] animate-pulse" />
             </div>
           </div>
@@ -108,7 +108,7 @@ const LoginPage = ({ handleLogin }: LoginPageProps) => {
                       </div>
                       <div className="flex-1">
                         <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono mb-1">Access_Level</div>
-                        <div className="text-sm font-bold text-slate-900 uppercase font-mono">MASTER_ADMIN</div>
+                        <div className="text-sm font-bold text-slate-900 uppercase font-mono">QUẢN_TRỊ_VIÊN</div>
                       </div>
                    </div>
                 </div>
@@ -127,7 +127,7 @@ const LoginPage = ({ handleLogin }: LoginPageProps) => {
                 </button>
 
                 <p className="text-center text-[9px] font-mono text-slate-400 uppercase tracking-widest">
-                  Secure Connection: RSA-4096-BIT
+                  Kết nối bảo mật: RSA-4096-BIT
                 </p>
               </div>
             </div>
