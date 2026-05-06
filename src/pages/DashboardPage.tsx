@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Cpu, Activity, Zap, CheckCircle2, Plus, Users } from 'lucide-react';
+import { Cpu, Activity, Zap, CheckCircle2, Plus, Users, ChevronRight } from 'lucide-react';
 import { StatsCard, QuickAction } from '../components/ui/Cards';
 import { cn } from '../lib/utils';
 import { Bug } from '../types';
@@ -10,6 +10,7 @@ interface DashboardPageProps {
   currentTime: Date;
   bugs: Bug[];
   events: any[];
+  overdueTasks: any[];
   userProfiles: any[];
   setActiveTab: (tab: 'board' | 'metrics' | 'logs' | 'members' | 'dashboard') => void;
   setShowProjectModal: (val: boolean) => void;
@@ -21,6 +22,7 @@ const DashboardPage = ({
   currentTime,
   bugs,
   events,
+  overdueTasks,
   userProfiles,
   setActiveTab,
   setShowProjectModal,
@@ -134,6 +136,44 @@ const DashboardPage = ({
         </div>
 
         <div className="flex flex-col gap-8">
+          {/* Overdue Alerts Module */}
+          {overdueTasks.length > 0 && (
+            <section className="bg-rose-50/50 backdrop-blur-3xl rounded-3xl border border-rose-200 p-6 shadow-sm relative overflow-hidden group animate-in fade-in slide-in-from-right-4 duration-700">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/10 rounded-full blur-3xl -mr-16 -mt-16" />
+              <div className="flex items-center gap-4 mb-4 relative z-10">
+                <div className="w-10 h-10 rounded-xl bg-rose-500 text-white flex items-center justify-center shadow-lg shadow-rose-500/20">
+                  <Zap size={20} className="animate-pulse" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-black text-rose-600 uppercase tracking-widest">CẢNH BÁO QUÁ HẠN</h3>
+                  <p className="text-[10px] font-bold text-rose-400 font-mono italic">{overdueTasks.length} NHIỆM VỤ CẦN XỬ LÝ</p>
+                </div>
+              </div>
+              
+              <div className="space-y-3 relative z-10">
+                {overdueTasks.slice(0, 2).map(task => (
+                  <div key={task.id} className="p-3 bg-white/60 border border-rose-100 rounded-xl flex items-center justify-between group/task hover:bg-white transition-all">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[11px] font-black text-slate-800 line-clamp-1">{task.title}</span>
+                      <span className="text-[9px] font-bold text-rose-500 font-mono">QUÁ HẠN: {task.dueDate ? new Date(task.dueDate).toLocaleDateString('vi-VN') : '---'}</span>
+                    </div>
+                    <button 
+                      onClick={() => setActiveTab('board')}
+                      className="w-8 h-8 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center hover:bg-rose-600 hover:text-white transition-all"
+                    >
+                      <ChevronRight size={16} />
+                    </button>
+                  </div>
+                ))}
+                {overdueTasks.length > 2 && (
+                  <button onClick={() => setActiveTab('board')} className="w-full py-2 text-[9px] font-black text-rose-400 uppercase tracking-widest hover:text-rose-600 transition-colors">
+                    VÀ CÒN {overdueTasks.length - 2} NHIỆM VỤ KHÁC...
+                  </button>
+                )}
+              </div>
+            </section>
+          )}
+
           <section className="flex-1 bg-white/30 backdrop-blur-3xl rounded-3xl border border-white/60 p-8 shadow-sm tech-corners flex flex-col overflow-hidden relative">
             <div className="flex items-center justify-between mb-8 relative z-10">
               <div className="space-y-1">
@@ -226,7 +266,7 @@ const DashboardPage = ({
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <div className="flex justify-between text-[9px] font-bold text-slate-500 font-mono">
-                    <span>SỬ_DỤNG_CPU</span>
+                    <span>SỬ DỤNG CPU</span>
                     <span>24%</span>
                   </div>
                   <div className="h-1 bg-slate-100 rounded-full overflow-hidden">
@@ -239,7 +279,7 @@ const DashboardPage = ({
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between text-[9px] font-bold text-slate-500 font-mono">
-                    <span>CẤP_PHÁT_RAM</span>
+                    <span>CẤP PHÁT RAM</span>
                     <span>1.2GB</span>
                   </div>
                   <div className="h-1 bg-slate-100 rounded-full overflow-hidden">
@@ -254,7 +294,7 @@ const DashboardPage = ({
               <div className="p-3 bg-slate-50/50 rounded-xl border border-slate-100 flex items-center justify-between">
                 <div className="flex flex-col gap-1">
                   <span className="text-[8px] font-bold text-slate-400 uppercase font-mono">TRẠNG THÁI MẠNG</span>
-                  <span className="text-[10px] font-black text-slate-800 font-mono">ỔN ĐỊNH_0.002MS</span>
+                  <span className="text-[10px] font-black text-slate-800 font-mono">ỔN ĐỊNH 0.002MS</span>
                 </div>
                 <div className="flex gap-1">
                   {[1,2,3,4].map(i => (

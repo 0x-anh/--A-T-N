@@ -149,6 +149,7 @@ export default function App() {
                 currentTime={currentTime}
                 bugs={bugs}
                 events={events}
+                overdueTasks={overdueTasks}
                 userProfiles={userProfiles}
                 setActiveTab={setActiveTab}
                 setShowProjectModal={setShowProjectModal}
