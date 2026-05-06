@@ -271,12 +271,19 @@ export default function App() {
           )}
 
           {activeTab === 'metrics' && (
-            <MetricsPage bugs={bugs} appStats={appStats} setActiveTab={setActiveTab} />
+            <MetricsPage 
+              bugs={bugs} 
+              projects={projects}
+              selectedProject={selectedProject}
+              appStats={appStats} 
+              setActiveTab={setActiveTab} 
+            />
           )}
 
           {activeTab === 'logs' && (
             <LogsPage 
               selectedProject={selectedProject}
+              projects={projects}
               userId={user?.uid || ''}
               userProfiles={userProfiles}
             />

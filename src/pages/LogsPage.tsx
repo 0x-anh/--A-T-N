@@ -7,15 +7,25 @@ import { cn } from '../lib/utils';
 
 interface LogsPageProps {
   selectedProject: Project | null;
+  projects: Project[];
   userId: string;
   userProfiles: UserProfile[];
 }
 
-const LogsPage = ({ selectedProject, userId, userProfiles }: LogsPageProps) => {
-  const { logs } = useLogs(selectedProject?.id);
+const LogsPage = ({ selectedProject, projects, userId, userProfiles }: LogsPageProps) => {
+  const { logs } = useLogs();
+  const [projectFilter, setProjectFilter] = useState<string>('all');
   const [filterType, setFilterType] = useState<'all' | 'system' | 'admin'>('all');
   const [showFilterMenu, setShowFilterMenu] = useState(false);
+  const [showProjectMenu, setShowProjectMenu] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
+
+  // Initialize filter with current selected project if exists
+  useEffect(() => {
+    if (selectedProject && projectFilter === 'all') {
+      setProjectFilter(selectedProject.id);
+    }
+  }, [selectedProject]);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -23,8 +33,14 @@ const LogsPage = ({ selectedProject, userId, userProfiles }: LogsPageProps) => {
   }, []);
 
   const filteredLogs = React.useMemo(() => {
-    if (filterType === 'all') return logs;
     return logs.filter(log => {
+      // Project filter
+      const matchesProject = projectFilter === 'all' || log.projectId === projectFilter;
+      if (!matchesProject) return false;
+
+      // Type filter
+      if (filterType === 'all') return true;
+      
       const isRemoval = 
         log.action?.toLowerCase().includes('remove') || 
         log.action?.toLowerCase().includes('decline') ||
@@ -36,12 +52,12 @@ const LogsPage = ({ selectedProject, userId, userProfiles }: LogsPageProps) => {
       if (filterType === 'system') return !isRemoval;
       return true;
     });
-  }, [logs, filterType]);
+  }, [logs, projectFilter, filterType]);
 
   const stats = {
-    total: logs.length,
-    system: logs.filter(l => !l.action?.toLowerCase().includes('remove') && !l.action?.toLowerCase().includes('decline')).length,
-    admin: logs.filter(l => l.action?.toLowerCase().includes('remove') || l.action?.toLowerCase().includes('decline')).length,
+    total: filteredLogs.length,
+    system: filteredLogs.filter(l => !l.action?.toLowerCase().includes('remove') && !l.action?.toLowerCase().includes('decline')).length,
+    admin: filteredLogs.filter(l => l.action?.toLowerCase().includes('remove') || l.action?.toLowerCase().includes('decline')).length,
     health: 100
   };
 
@@ -56,71 +72,130 @@ const LogsPage = ({ selectedProject, userId, userProfiles }: LogsPageProps) => {
       <header className="flex flex-col gap-8 mb-8 relative px-4">
         <div className="flex items-center justify-between border-b border-slate-200/50 pb-8">
           <div className="flex items-center gap-8">
-            <div className="flex flex-col">
+            <div className="flex flex-col shrink-0">
               <h3 className="text-[11px] font-black text-brand-600 uppercase tracking-[0.5em] font-mono leading-none mb-2">QUẢN TRỊ RƠ-LE</h3>
               <h2 className="text-4xl md:text-5xl font-heading font-black tracking-tighter uppercase leading-none text-slate-950">
                 NHẬT KÝ <span className="text-slate-400">VẬN HÀNH</span>
               </h2>
             </div>
-            <div className="hidden lg:block w-[1px] h-16 bg-slate-200" />
-            <div className="hidden lg:block max-w-xs">
-              <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest leading-relaxed">
-                Giám sát toàn bộ luồng dữ liệu và lịch sử tương tác trên các Node dự án {selectedProject?.name}.
+            <div className="hidden lg:block w-[1px] h-16 bg-slate-200 shrink-0" />
+            <div className="hidden lg:block max-w-sm">
+              <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest leading-relaxed break-all line-clamp-2">
+                Giám sát toàn bộ luồng dữ liệu và lịch sử tương tác trên các Node dự án {projectFilter === 'all' ? 'Hệ thống' : projects.find(p => p.id === projectFilter)?.name}.
               </p>
             </div>
           </div>
 
-          <div className="flex flex-col items-end gap-4">
-             {/* Filter Dropdown */}
-             <div className="relative">
-                <button 
-                  onClick={() => setShowFilterMenu(!showFilterMenu)}
-                  className={cn(
-                    "h-10 px-5 rounded-xl border-2 transition-all flex items-center gap-3 group/filter",
-                    filterType !== 'all' 
-                      ? "bg-slate-950 text-white border-slate-950 shadow-lg" 
-                      : "bg-white/60 backdrop-blur-md text-slate-400 border-slate-300/40 hover:text-slate-900 hover:border-slate-400"
-                  )}
-                >
-                   <Filter size={16} className={cn("transition-transform duration-500", showFilterMenu && "rotate-180")} />
-                   <span className="text-[9px] font-black uppercase tracking-widest">
-                     {filterType === 'all' ? 'Bộ lọc luồng' : `Đang lọc: ${filterType === 'system' ? 'Hệ thống' : 'Quản trị'}`}
-                   </span>
-                </button>
+          <div className="flex flex-col items-end gap-4 shrink-0">
+             {/* Filter Section */}
+             <div className="flex items-center gap-3">
+                {/* Project Selector */}
+                <div className="relative">
+                  <button 
+                    onClick={() => setShowProjectMenu(!showProjectMenu)}
+                    className={cn(
+                      "h-10 px-5 rounded-xl border-2 transition-all flex items-center gap-3 group/project max-w-[240px] min-w-0",
+                      projectFilter !== 'all' 
+                        ? "bg-slate-900 text-white border-slate-900 shadow-lg" 
+                        : "bg-white/60 backdrop-blur-md text-slate-400 border-slate-300/40 hover:text-slate-900 hover:border-slate-400"
+                    )}
+                  >
+                     <Zap size={16} className={cn("transition-transform duration-500 shrink-0", showProjectMenu && "rotate-90 text-brand-400")} />
+                     <span className="text-[9px] font-black uppercase tracking-widest truncate">
+                       {projectFilter === 'all' ? 'Tất cả Dự án' : `Node: ${projects.find(p => p.id === projectFilter)?.name}`}
+                     </span>
+                  </button>
 
-                <AnimatePresence>
-                  {showFilterMenu && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute right-0 mt-3 w-52 bg-white/90 backdrop-blur-3xl rounded-2xl border border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.1)] z-50 overflow-hidden p-1.5"
-                    >
-                       {[
-                         { id: 'all', label: 'Tất cả dữ liệu', icon: Activity },
-                         { id: 'system', label: 'Luồng hệ thống', icon: Shield },
-                         { id: 'admin', label: 'Lệnh quản trị', icon: Cpu },
-                       ].map((f) => (
+                  <AnimatePresence>
+                    {showProjectMenu && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        className="absolute right-0 mt-3 w-64 bg-white/90 backdrop-blur-3xl rounded-2xl border border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.1)] z-50 overflow-hidden p-1.5"
+                      >
                          <button
-                           key={f.id}
-                           onClick={() => {
-                             setFilterType(f.id as any);
-                             setShowFilterMenu(false);
-                           }}
+                           onClick={() => { setProjectFilter('all'); setShowProjectMenu(false); }}
                            className={cn(
                              "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all text-left",
-                             filterType === f.id 
-                               ? "bg-slate-900 text-white shadow-xl shadow-slate-900/20" 
-                               : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                             projectFilter === 'all' ? "bg-slate-900 text-white shadow-xl" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
                            )}
                          >
-                           <f.icon size={14} className={cn(filterType === f.id ? "text-brand-400" : "text-slate-400")} />
-                           {f.label}
+                           <Terminal size={14} className="shrink-0" />
+                           <span className="truncate">HỆ THỐNG TỔNG (GLOBAL)</span>
                          </button>
-                       ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                         <div className="my-1.5 h-[1px] bg-slate-100" />
+                         <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
+                           {projects.map((p) => (
+                             <button
+                               key={p.id}
+                               onClick={() => { setProjectFilter(p.id); setShowProjectMenu(false); }}
+                               className={cn(
+                                 "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all text-left",
+                                 projectFilter === p.id ? "bg-slate-900 text-white shadow-xl" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                               )}
+                             >
+                               <div className="w-1.5 h-1.5 rounded-full bg-brand-500 shrink-0" />
+                               <span className="truncate">{p.name}</span>
+                             </button>
+                           ))}
+                         </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Filter Type Dropdown */}
+                <div className="relative">
+                  <button 
+                    onClick={() => setShowFilterMenu(!showFilterMenu)}
+                    className={cn(
+                      "h-10 px-5 rounded-xl border-2 transition-all flex items-center gap-3 group/filter",
+                      filterType !== 'all' 
+                        ? "bg-slate-950 text-white border-slate-950 shadow-lg" 
+                        : "bg-white/60 backdrop-blur-md text-slate-400 border-slate-300/40 hover:text-slate-900 hover:border-slate-400"
+                    )}
+                  >
+                     <Filter size={16} className={cn("transition-transform duration-500", showFilterMenu && "rotate-180")} />
+                     <span className="text-[9px] font-black uppercase tracking-widest">
+                       {filterType === 'all' ? 'Bộ lọc luồng' : `Đang lọc: ${filterType === 'system' ? 'Hệ thống' : 'Quản trị'}`}
+                     </span>
+                  </button>
+
+                  <AnimatePresence>
+                    {showFilterMenu && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        className="absolute right-0 mt-3 w-52 bg-white/90 backdrop-blur-3xl rounded-2xl border border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.1)] z-50 overflow-hidden p-1.5"
+                      >
+                         {[
+                           { id: 'all', label: 'Tất cả dữ liệu', icon: Activity },
+                           { id: 'system', label: 'Luồng hệ thống', icon: Shield },
+                           { id: 'admin', label: 'Lệnh quản trị', icon: Cpu },
+                         ].map((f) => (
+                           <button
+                             key={f.id}
+                             onClick={() => {
+                               setFilterType(f.id as any);
+                               setShowFilterMenu(false);
+                             }}
+                             className={cn(
+                               "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all text-left",
+                               filterType === f.id 
+                                 ? "bg-slate-900 text-white shadow-xl shadow-slate-900/20" 
+                                 : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                             )}
+                           >
+                             <f.icon size={14} className={cn(filterType === f.id ? "text-brand-400" : "text-slate-400")} />
+                             {f.label}
+                           </button>
+                         ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
              </div>
 
              <div className="flex flex-col items-end gap-1 group cursor-default">

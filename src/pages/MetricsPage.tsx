@@ -1,22 +1,38 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { PieChart as PieIcon, TrendingUp, Cpu, BarChart3, Target, Activity, Zap, CheckCircle2, AlertCircle, Clock, ArrowUpRight, Layers, Radio, ShieldCheck, Database, Terminal, ChevronRight, AlertTriangle, Info } from 'lucide-react';
-import { Bug } from '../types';
+import { Bug, Project } from '../types';
 import { cn } from '../lib/utils';
 
 interface MetricsPageProps {
   bugs: Bug[];
+  projects: Project[];
+  selectedProject: Project | null;
   appStats: any;
   setActiveTab: (tab: 'board' | 'metrics' | 'logs' | 'members' | 'dashboard') => void;
 }
 
-const MetricsPage = ({ bugs, appStats, setActiveTab }: MetricsPageProps) => {
+const MetricsPage = ({ bugs, projects, selectedProject, appStats, setActiveTab }: MetricsPageProps) => {
+  const [projectFilter, setProjectFilter] = useState<string>('all');
+  const [showProjectMenu, setShowProjectMenu] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
+
+  // Initialize filter with current selected project if exists
+  useEffect(() => {
+    if (selectedProject && projectFilter === 'all') {
+      setProjectFilter(selectedProject.id);
+    }
+  }, [selectedProject]);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  // Filtered bugs for metrics calculation
+  const filteredBugs = useMemo(() => {
+    return projectFilter === 'all' ? bugs : bugs.filter(b => b.projectId === projectFilter);
+  }, [bugs, projectFilter]);
 
   // Bar Chart Data Calculation
   const chartData = useMemo(() => {
@@ -32,7 +48,7 @@ const MetricsPage = ({ bugs, appStats, setActiveTab }: MetricsPageProps) => {
     }
 
     const stats = days.map(day => {
-      const count = bugs.filter(b => {
+      const count = filteredBugs.filter(b => {
         if (!b.createdAt) return false;
         const bugDate = (b.createdAt as any).toDate ? (b.createdAt as any).toDate() : new Date(b.createdAt);
         return bugDate.toLocaleDateString('vi-VN') === day.dateStr;
@@ -44,24 +60,24 @@ const MetricsPage = ({ bugs, appStats, setActiveTab }: MetricsPageProps) => {
     const scaleMax = actualMax || 1; 
     
     return { stats, max: scaleMax, actualMax };
-  }, [bugs]);
+  }, [filteredBugs]);
 
   // Pie Chart Data Calculation
   const pieData = useMemo(() => {
-    const total = bugs.length || 1;
-    const done = bugs.filter(b => b.status === 'done').length;
-    const overdue = bugs.filter(b => b.status !== 'done' && b.dueDate && new Date(b.dueDate) < currentTime).length;
-    const inProgress = bugs.filter(b => (b.status === 'in-progress' || b.status === 'in-review') && (!b.dueDate || new Date(b.dueDate) >= currentTime)).length;
-    const backlog = bugs.filter(b => b.status === 'backlog' && (!b.dueDate || new Date(b.dueDate) >= currentTime)).length;
+    const total = filteredBugs.length || 1;
+    const done = filteredBugs.filter(b => b.status === 'done').length;
+    const overdue = filteredBugs.filter(b => b.status !== 'done' && b.dueDate && new Date(b.dueDate) < currentTime).length;
+    const inProgress = filteredBugs.filter(b => (b.status === 'in-progress' || b.status === 'in-review') && (!b.dueDate || new Date(b.dueDate) >= currentTime)).length;
+    const backlog = filteredBugs.filter(b => b.status === 'backlog' && (!b.dueDate || new Date(b.dueDate) >= currentTime)).length;
 
     return {
       done: { val: done, per: Math.round((done / total) * 100) },
       overdue: { val: overdue, per: Math.round((overdue / total) * 100) },
       inProgress: { val: inProgress, per: Math.round((inProgress / total) * 100) },
       backlog: { val: backlog, per: Math.round((backlog / total) * 100) },
-      total: bugs.length
+      total: filteredBugs.length
     };
-  }, [bugs, currentTime]);
+  }, [filteredBugs, currentTime]);
 
   // Smart Analytics Logic
   const systemInsight = useMemo(() => {
@@ -106,24 +122,88 @@ const MetricsPage = ({ bugs, appStats, setActiveTab }: MetricsPageProps) => {
       <header className="flex flex-col gap-8 mb-8 relative">
         <div className="flex items-center justify-between border-b border-slate-200/50 pb-8">
           <div className="flex items-center gap-8">
-            <div className="flex flex-col">
+            <div className="flex flex-col shrink-0">
               <h3 className="text-[11px] font-black text-brand-600 uppercase tracking-[0.5em] font-mono leading-none mb-2">PHÂN TÍCH HỆ THỐNG</h3>
               <h2 className="text-4xl md:text-5xl font-heading font-black tracking-tighter uppercase leading-none text-slate-950">
                 HIỆU NĂNG <span className="text-slate-400">TÀI NGUYÊN</span>
               </h2>
             </div>
+            <div className="hidden lg:block w-[1px] h-16 bg-slate-200 shrink-0" />
+            <div className="hidden lg:block max-w-sm">
+              <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest leading-relaxed break-all line-clamp-2">
+                Phân tích hiệu suất vận hành và thông lượng xử lý của {projectFilter === 'all' ? 'Toàn hệ thống' : `Dự án ${projects.find(p => p.id === projectFilter)?.name}`}.
+              </p>
+            </div>
           </div>
 
-          <div className="flex flex-col items-end gap-1 group cursor-default">
-             <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-heading font-black text-slate-950 tracking-tighter tabular-nums leading-none">
-                  {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
-                </span>
-                <span className="text-[10px] font-black text-slate-400 uppercase font-mono">{currentTime.getHours() >= 12 ? 'PM' : 'AM'}</span>
+          <div className="flex flex-col items-end gap-4 shrink-0">
+             {/* Project Selector HUD */}
+             <div className="relative">
+                <button 
+                  onClick={() => setShowProjectMenu(!showProjectMenu)}
+                  className={cn(
+                    "h-10 px-5 rounded-xl border-2 transition-all flex items-center gap-3 group/project max-w-[240px] min-w-0",
+                    projectFilter !== 'all' 
+                      ? "bg-slate-900 text-white border-slate-900 shadow-lg" 
+                      : "bg-white/60 backdrop-blur-md text-slate-400 border-slate-300/40 hover:text-slate-900 hover:border-slate-400"
+                  )}
+                >
+                   <Zap size={16} className={cn("transition-transform duration-500 shrink-0", showProjectMenu && "rotate-90 text-brand-400")} />
+                   <span className="text-[9px] font-black uppercase tracking-widest truncate">
+                     {projectFilter === 'all' ? 'Tất cả Dự án' : `Node: ${projects.find(p => p.id === projectFilter)?.name}`}
+                   </span>
+                </button>
+
+                <AnimatePresence>
+                  {showProjectMenu && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      className="absolute right-0 mt-3 w-64 bg-white/90 backdrop-blur-3xl rounded-2xl border border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.1)] z-[100] overflow-hidden p-1.5"
+                    >
+                       <button
+                         onClick={() => { setProjectFilter('all'); setShowProjectMenu(false); }}
+                         className={cn(
+                           "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all text-left",
+                           projectFilter === 'all' ? "bg-slate-900 text-white shadow-xl" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                         )}
+                       >
+                         <Terminal size={14} className="shrink-0" />
+                         <span className="truncate">HỆ THỐNG TỔNG (GLOBAL)</span>
+                       </button>
+                       <div className="my-1.5 h-[1px] bg-slate-100" />
+                       <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
+                         {projects.map((p) => (
+                           <button
+                             key={p.id}
+                             onClick={() => { setProjectFilter(p.id); setShowProjectMenu(false); }}
+                             className={cn(
+                               "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all text-left min-w-0",
+                               projectFilter === p.id ? "bg-slate-900 text-white shadow-xl" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                             )}
+                           >
+                             <div className="w-1.5 h-1.5 rounded-full bg-brand-500 shrink-0" />
+                             <span className="truncate">{p.name}</span>
+                           </button>
+                         ))}
+                       </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
              </div>
-             <div className="flex items-center gap-2 px-3 py-1 bg-brand-500/5 border border-brand-500/10 rounded-full">
-                <div className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse" />
-                <span className="text-[8px] font-black text-brand-600 uppercase tracking-[0.2em] font-mono">DỮ LIỆU ĐỒNG BỘ</span>
+
+             <div className="flex flex-col items-end gap-1 group cursor-default">
+                <div className="flex items-baseline gap-2">
+                   <span className="text-3xl font-heading font-black text-slate-950 tracking-tighter tabular-nums leading-none">
+                     {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
+                   </span>
+                   <span className="text-[10px] font-black text-slate-400 uppercase font-mono">{currentTime.getHours() >= 12 ? 'PM' : 'AM'}</span>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1 bg-brand-500/5 border border-brand-500/10 rounded-full">
+                   <div className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse" />
+                   <span className="text-[8px] font-black text-brand-600 uppercase tracking-[0.2em] font-mono">DỮ LIỆU ĐỒNG BỘ</span>
+                </div>
              </div>
           </div>
         </div>
@@ -132,10 +212,10 @@ const MetricsPage = ({ bugs, appStats, setActiveTab }: MetricsPageProps) => {
       {/* Stats Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: 'Hiệu năng xử lý', value: `${appStats.resolutionRate}%`, icon: <Cpu />, trend: 'ỔN ĐỊNH' },
-          { label: 'Tổng Node khởi tạo', value: bugs.length, icon: <TrendingUp />, trend: 'TĂNG TRƯỞng' },
+          { label: 'Hiệu năng xử lý', value: `${projectFilter === 'all' ? appStats.resolutionRate : Math.round((filteredBugs.filter(b => b.status === 'done').length / (filteredBugs.length || 1)) * 100)}%`, icon: <Cpu />, trend: 'ỔN ĐỊNH' },
+          { label: 'Tổng Node khởi tạo', value: filteredBugs.length, icon: <TrendingUp />, trend: 'DỮ LIỆU' },
           { label: 'Nhiệm vụ Quá hạn', value: pieData.overdue.val, icon: <AlertCircle className="text-rose-500" />, trend: 'RỦI RO' },
-          { label: 'Tỉ lệ xác thực', value: `${Math.round(appStats.resolved / (bugs.length || 1) * 100)}%`, icon: <Target />, trend: 'XÁC THỰC' },
+          { label: 'Tỉ lệ xác thực', value: `${Math.round(filteredBugs.filter(b => b.status === 'done').length / (filteredBugs.length || 1) * 100)}%`, icon: <Target />, trend: 'XÁC THỰC' },
         ].map((s, i) => (
           <motion.div 
             key={i}

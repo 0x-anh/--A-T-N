@@ -28,12 +28,14 @@ const Topbar = ({
   return (
     <header className="h-16 md:h-20 bg-white/40 backdrop-blur-md shrink-0 border-b border-slate-100/80 flex items-center justify-between px-6 md:px-10 relative z-[60] shadow-sm">
       <div className="flex items-center gap-6">
-        {(activeTab === 'dashboard' || activeTab === 'metrics') ? (
+        {(activeTab === 'dashboard' || activeTab === 'metrics' || activeTab === 'logs') ? (
           <div className="flex items-center gap-3 px-4 py-1.5 bg-slate-900 text-white rounded-lg shadow-lg shadow-slate-900/10 border border-slate-800">
              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
              <span className="text-[10px] font-black uppercase tracking-[0.2em] font-mono">HỆ THỐNG TỔNG QUÁT</span>
           </div>
-        ) : (
+        ) : null}
+        
+        {!['dashboard', 'metrics', 'logs'].includes(activeTab) && (
           <div className="relative">
             <button 
               onClick={() => setShowProjectDropdown(!showProjectDropdown)}

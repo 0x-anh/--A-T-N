@@ -8,18 +8,21 @@ export const useProjectData = (user: any, selectedProject: Project | null, userP
   const [events, setEvents] = useState<any[]>([]);
 
   useEffect(() => {
-    if (!user || !selectedProject) {
+    if (!user) {
       setBugs([]);
       setEvents([]);
       return;
     }
 
+    // Fetch ALL bugs where user is a creator, owner, or member
+    // In a real production app with massive data, we'd use 'projectId' in a list of allowed IDs
+    // But for global overview, we fetch all relevant bugs to the user
     const qBugs = query(
       collection(db, 'bugs'),
-      where('projectId', '==', selectedProject.id),
       orderBy('createdAt', 'desc')
     );
     const unsubscribeBugs = onSnapshot(qBugs, (snapshot) => {
+      // Filter bugs based on project access (if needed, but for now we assume user sees what they have access to)
       setBugs(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Bug[]);
     }, (error) => {
       handleFirestoreError(error, 'list', 'bugs');
@@ -27,9 +30,8 @@ export const useProjectData = (user: any, selectedProject: Project | null, userP
 
     const qActivity = query(
       collection(db, 'activity_logs'),
-      where('projectId', '==', selectedProject.id),
       orderBy('createdAt', 'desc'),
-      limit(10)
+      limit(50) // Increased limit for global logs
     );
     const unsubscribeActivity = onSnapshot(qActivity, (snapshot) => {
       setEvents(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
@@ -41,7 +43,7 @@ export const useProjectData = (user: any, selectedProject: Project | null, userP
       unsubscribeBugs();
       unsubscribeActivity();
     };
-  }, [user, selectedProject]);
+  }, [user]);
 
   const overdueTasks = useMemo(() => {
     return bugs.filter(b => {
@@ -56,13 +58,14 @@ export const useProjectData = (user: any, selectedProject: Project | null, userP
   }, [bugs, currentTime]);
 
   const urgentTasks = useMemo(() => {
-    if (!user || !selectedProject) return [];
+    if (!user) return [];
     const profile = userProfiles.find(u => u.userId === user.uid);
-    const isAdminUser = profile?.roles?.includes('admin') || profile?.email === 'jokerducanh@gmail.com' || selectedProject?.ownerId === user.uid;
+    const isAdminGlobal = profile?.roles?.includes('admin') || profile?.email === 'jokerducanh@gmail.com';
     
-    if (isAdminUser) return overdueTasks;
+    // If admin, see all overdue, otherwise only assigned/owned across all projects
+    if (isAdminGlobal) return overdueTasks;
     return overdueTasks.filter(b => b.assigneeId === user.uid || b.ownerId === user.uid);
-  }, [overdueTasks, user, userProfiles, selectedProject]);
+  }, [overdueTasks, user, userProfiles]);
 
   const appStats = useMemo(() => {
     const total = bugs.length;
@@ -76,7 +79,7 @@ export const useProjectData = (user: any, selectedProject: Project | null, userP
       open,
       critical,
       resolutionRate: total > 0 ? Math.round((resolved / total) * 100) : 100,
-      activeEvents: events.filter(e => e.status === 'in-progress').length
+      activeEvents: events.length
     };
   }, [bugs, events]);
 

@@ -58,12 +58,13 @@ const KanbanBoard = ({
 
   const filteredBugs = useMemo(() => {
     return bugs.filter(bug => {
+      const matchesProject = bug.projectId === selectedProject?.id;
       const matchesSearch = bug.title.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesPriority = filterPriority === 'all' || bug.priority === filterPriority;
       const matchesOverdue = !showOverdueOnly || (bug.status !== 'done' && bug.dueDate && new Date(bug.dueDate) < currentTime);
-      return matchesSearch && matchesPriority && matchesOverdue;
+      return matchesProject && matchesSearch && matchesPriority && matchesOverdue;
     });
-  }, [bugs, searchQuery, filterPriority, showOverdueOnly, currentTime]);
+  }, [bugs, selectedProject, searchQuery, filterPriority, showOverdueOnly, currentTime]);
 
   const tasksByStatus = useMemo(() => {
     const groups: Record<BugStatus, Bug[]> = {

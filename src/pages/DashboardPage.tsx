@@ -192,50 +192,95 @@ const DashboardPage = ({
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
         <div className="lg:col-span-2 flex flex-col gap-8">
-          <section className="bg-white/30 backdrop-blur-3xl rounded-3xl border border-white/60 p-8 shadow-[0_8px_32px_rgba(0,0,0,0.02)] tech-corners relative overflow-hidden">
+          <section className="bg-white/40 backdrop-blur-md rounded-[2.5rem] p-8 border border-white/60 shadow-2xl relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-64 h-64 bg-brand-500/5 rounded-full blur-3xl -mr-32 -mt-32" />
             
-            <div className="flex items-center justify-between mb-8 relative z-10">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 relative z-10">
               <div className="space-y-1">
-                <h3 className="text-sm font-black text-slate-950 uppercase tracking-[0.3em] font-heading flex items-center gap-3">
-                  LỊCH TRÌNH VẬN HÀNH
+                <h3 className="text-[13px] font-black text-slate-900 uppercase tracking-[0.3em] flex items-center gap-3">
+                  <div className="w-8 h-[2px] bg-brand-500" />
+                  Lịch trình vận hành
                 </h3>
-                <div className="w-12 h-1 bg-brand-500/20" />
+                {/* Color Legend */}
+                <div className="flex items-center gap-4 pl-11 pt-2">
+                   <div className="flex items-center gap-1.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_5px_rgba(59,130,246,0.5)]" />
+                      <span className="text-[7px] font-bold text-slate-400 uppercase tracking-widest">Ngày khởi tạo</span>
+                   </div>
+                   <div className="flex items-center gap-1.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-rose-500 shadow-[0_0_5px_rgba(244,63,94,0.5)] animate-pulse" />
+                      <span className="text-[7px] font-bold text-slate-400 uppercase tracking-widest">Ngày hết hạn</span>
+                   </div>
+                </div>
               </div>
-              <div className="text-[10px] font-black text-slate-900 bg-white/50 px-4 py-2 rounded-xl border border-white/80 uppercase tracking-[0.2em] font-mono shadow-sm">
-                {currentTime.toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' })}
+              <div className="px-6 py-3 bg-white/80 rounded-2xl border border-slate-100 shadow-sm self-start">
+                <span className="text-[11px] font-black text-slate-900 uppercase tracking-widest font-mono">
+                  Tháng {currentTime.getMonth() + 1} Năm {currentTime.getFullYear()}
+                </span>
               </div>
             </div>
             
             <div className="grid grid-cols-7 gap-1 bg-slate-200/20 p-1 rounded-2xl border border-white/40 relative z-10">
               {['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map(day => (
-                <div key={day} className="py-3 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono">{day}</div>
+                <div key={day} className="py-2 text-center text-[9px] font-black text-slate-400 uppercase tracking-widest font-mono">{day}</div>
               ))}
               {Array.from({ length: 35 }).map((_, i) => {
                 const dayNum = i - 2; 
                 const isToday = dayNum === currentTime.getDate(); 
                 const isCurrentMonth = dayNum > 0 && dayNum <= 31;
                 
+                // Data filtering logic
+                const dateStr = isCurrentMonth ? `${currentTime.getFullYear()}-${String(currentTime.getMonth() + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}` : null;
+                
+                // Tasks created on this day
+                const createdTasks = bugs.filter(b => {
+                  if (!dateStr || !b.createdAt) return false;
+                  // Handle both Firestore Timestamp and JS Date
+                  const createdDate = b.createdAt.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+                  return createdDate.toISOString().startsWith(dateStr);
+                });
+
+                // Tasks due on this day
+                const dueTasks = bugs.filter(b => b.dueDate && b.dueDate.startsWith(dateStr || 'never'));
+
                 return (
                   <div key={i} className={cn(
-                    "min-h-[64px] p-2 rounded-xl flex flex-col gap-2 transition-all group/cell relative overflow-hidden",
-                    isCurrentMonth ? "bg-white/40 hover:bg-white/80 cursor-pointer border border-white/40 hover:border-brand-500/30" : "bg-transparent opacity-10 pointer-events-none",
+                    "min-h-[60px] p-2.5 rounded-xl flex flex-col gap-1.5 transition-all group/cell relative overflow-hidden",
+                    isCurrentMonth ? "bg-white/40 hover:bg-white/80 cursor-pointer border border-white/40 hover:border-brand-500/30 shadow-sm" : "bg-transparent opacity-5 pointer-events-none",
                     isToday && "ring-2 ring-brand-500/50 bg-white/90 shadow-lg shadow-brand-500/10"
                   )}>
-                    <div className="flex justify-between items-start">
+                    <div className="flex justify-between items-start relative z-10">
                       <span className={cn(
-                        "text-[12px] font-black font-mono",
+                        "text-[11px] font-black font-mono",
                         isToday ? "text-brand-600" : "text-slate-950"
                       )}>
-                        {dayNum > 0 && dayNum <= 31 ? dayNum : ''}
+                        {isCurrentMonth ? dayNum : ''}
                       </span>
-                      {isToday && <div className="w-1.5 h-1.5 rounded-full bg-brand-500" />}
+                      
+                      <div className="flex gap-1">
+                        {createdTasks.length > 0 && (
+                          <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_5px_rgba(59,130,246,0.5)]" />
+                        )}
+                        {dueTasks.length > 0 && (
+                          <div className="w-1.5 h-1.5 rounded-full bg-rose-500 shadow-[0_0_5px_rgba(244,63,94,0.5)] animate-pulse" />
+                        )}
+                      </div>
                     </div>
-                    <div className="flex flex-wrap gap-1 mt-auto">
-                      {isCurrentMonth && Math.random() > 0.6 && (
-                        <div className="w-full h-1 bg-brand-500/20 rounded-full overflow-hidden">
-                          <div className="h-full bg-brand-500 w-[60%]" />
+
+                    <div className="mt-auto relative z-10">
+                      {(createdTasks.length > 0 || dueTasks.length > 0) ? (
+                        <div className="space-y-1 w-full">
+                           <div className="h-1 bg-slate-200/50 rounded-full overflow-hidden flex">
+                              {createdTasks.length > 0 && <div className="h-full bg-blue-500" style={{ width: '50%' }} />}
+                              {dueTasks.length > 0 && <div className="h-full bg-rose-500" style={{ width: '50%' }} />}
+                           </div>
+                           <div className="flex justify-between items-center text-[7px] font-black text-slate-400 uppercase font-mono tracking-tighter">
+                             <span>VẬN HÀNH</span>
+                             <span className="text-slate-900">{createdTasks.length + dueTasks.length}</span>
+                           </div>
                         </div>
+                      ) : isCurrentMonth && (
+                        <div className="text-[6px] font-bold text-slate-300 uppercase tracking-tighter opacity-0 group-hover/cell:opacity-100 transition-opacity">Sạch_</div>
                       )}
                     </div>
                   </div>

@@ -16,9 +16,10 @@ const Sidebar = ({ activeTab, setActiveTab, user, handleLogout }: SidebarProps) 
   const menuItems = [
     { id: 'dashboard', icon: LayoutGrid, label: 'TỔNG QUAN' },
     { id: 'metrics', icon: PieChart, label: 'PHÂN TÍCH' },
+    { id: 'logs', icon: Activity, label: 'NHẬT KÝ' },
+    { id: 'separator', isSeparator: true },
     { id: 'board', icon: FolderKanban, label: 'BẢNG CÔNG VIỆC' },
     { id: 'members', icon: Users, label: 'ĐỘI NGŨ' },
-    { id: 'logs', icon: Activity, label: 'NHẬT KÝ' },
   ];
 
   return (
@@ -34,32 +35,75 @@ const Sidebar = ({ activeTab, setActiveTab, user, handleLogout }: SidebarProps) 
         </div>
       </div>
 
-      <div className="flex-1 px-4 space-y-1 mt-2">
-        {menuItems.map(item => (
-          <button 
-            key={item.id} 
-            onClick={() => setActiveTab(item.id)}
-            className={cn(
-              "relative flex items-center gap-4 w-full px-4 py-2.5 rounded-xl transition-all duration-300 group outline-none",
-              activeTab === item.id 
-                ? "bg-slate-950 text-white shadow-lg shadow-slate-950/10" 
-                : "text-slate-500 hover:text-slate-950 hover:bg-slate-50/50"
-            )}
-          >
-            <item.icon 
-              size={18} 
-              strokeWidth={activeTab === item.id ? 2.5 : 2}
+      <div className="flex-1 px-4 mt-4 overflow-y-auto custom-scrollbar space-y-8">
+        {/* Operations Section */}
+        <div className="space-y-1">
+          <div className="px-4 mb-3">
+            <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] font-mono opacity-50">OPERATIONS</span>
+          </div>
+          {menuItems.slice(0, 3).map(item => (
+            <button 
+              key={item.id} 
+              onClick={() => setActiveTab(item.id)}
               className={cn(
-                "transition-all duration-300",
-                activeTab === item.id ? "text-white" : "group-hover:scale-110"
+                "relative flex items-center gap-4 w-full px-4 py-2.5 rounded-xl transition-all duration-300 group outline-none",
+                activeTab === item.id 
+                  ? "bg-slate-950 text-white shadow-lg shadow-slate-950/10" 
+                  : "text-slate-500 hover:text-slate-950 hover:bg-slate-50/50"
               )}
-            />
-            <span className="text-[12px] font-bold uppercase tracking-wide">{item.label}</span>
-            {activeTab === item.id && (
-              <motion.div layoutId="activeTabIndicator" className="absolute right-4 w-1 h-1 rounded-full bg-brand-400" />
-            )}
-          </button>
-        ))}
+            >
+              {item.icon && <item.icon 
+                size={18} 
+                strokeWidth={activeTab === item.id ? 2.5 : 2}
+                className={cn(
+                  "transition-all duration-300",
+                  activeTab === item.id ? "text-white" : "group-hover:scale-110"
+                )}
+              />}
+              <span className="text-[12px] font-bold uppercase tracking-wide">{item.label}</span>
+              {activeTab === item.id && (
+                <motion.div layoutId="activeTabIndicator" className="absolute right-4 w-1 h-1 rounded-full bg-brand-400" />
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* Separator Line */}
+        <div className="px-4 py-2">
+          <div className="h-px bg-slate-200/60 w-full" />
+        </div>
+
+        {/* Project Section */}
+        <div className="space-y-1">
+          <div className="px-4 mb-3">
+            <span className="text-[9px] font-black text-brand-600 uppercase tracking-[0.3em] font-mono opacity-60">NODE CONTROL</span>
+          </div>
+          {menuItems.slice(4).map(item => (
+            <button 
+              key={item.id} 
+              onClick={() => setActiveTab(item.id)}
+              className={cn(
+                "relative flex items-center gap-4 w-full px-4 py-2.5 rounded-xl transition-all duration-300 group outline-none",
+                activeTab === item.id 
+                  ? "bg-slate-950 text-white shadow-lg shadow-slate-950/10" 
+                  : "text-slate-500 hover:text-slate-950 hover:bg-slate-50/50"
+              )}
+            >
+              {item.icon && <item.icon 
+                size={18} 
+                strokeWidth={activeTab === item.id ? 2.5 : 2}
+                className={cn(
+                  "transition-all duration-300",
+                  activeTab === item.id ? "text-white" : "group-hover:scale-110"
+                )}
+              />}
+              <span className="text-[12px] font-bold uppercase tracking-wide">{item.label}</span>
+              {activeTab === item.id && (
+                <motion.div layoutId="activeTabIndicator" className="absolute right-4 w-1 h-1 rounded-full bg-brand-400" />
+              )}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="p-8 mt-auto border-t border-slate-50 space-y-4">

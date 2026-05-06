@@ -2,20 +2,14 @@ import { useState, useEffect } from 'react';
 import { db } from '../lib/firebase';
 import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
 
-export const useLogs = (projectId: string | undefined) => {
+export const useLogs = () => {
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!projectId) {
-      setLogs([]);
-      setLoading(false);
-      return;
-    }
-
+    // Fetch ALL activity logs across the entire system
     const q = query(
       collection(db, 'activity_logs'),
-      where('projectId', '==', projectId),
       orderBy('createdAt', 'desc')
     );
 
@@ -23,7 +17,7 @@ export const useLogs = (projectId: string | undefined) => {
       const logsData = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
-        timestamp: doc.data().createdAt // Mapping createdAt to timestamp for consistency
+        timestamp: doc.data().createdAt
       }));
       setLogs(logsData);
       setLoading(false);
@@ -33,7 +27,7 @@ export const useLogs = (projectId: string | undefined) => {
     });
 
     return () => unsubscribe();
-  }, [projectId]);
+  }, []);
 
   return { logs, loading };
 };
