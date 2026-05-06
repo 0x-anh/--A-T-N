@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { db, handleFirestoreError } from '../lib/firebase';
-import { collection, query, where, orderBy, onSnapshot, doc, updateDoc, arrayUnion, arrayRemove, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, where, orderBy, onSnapshot, doc, updateDoc, arrayUnion, arrayRemove, addDoc, serverTimestamp, getDocs, writeBatch } from 'firebase/firestore';
 import { Project, UserProfile, UserRole } from '../types';
 import { toast } from 'sonner';
 
@@ -8,16 +8,18 @@ export const useProjects = (userId: string | undefined, userProfiles: UserProfil
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [pendingInvitations, setPendingInvitations] = useState<any[]>([]);
+  const [sentInvitations, setSentInvitations] = useState<any[]>([]);
 
   // Get current user profile
   const currentUserProfile = userProfiles.find(u => u.userId === userId);
-  const isSystemAdmin = currentUserProfile?.roles?.includes('admin') || currentUserProfile?.email === 'jokerducanh@gmail.com';
+  const isSystemAdmin = currentUserProfile?.email === 'jokerducanh@gmail.com';
 
   useEffect(() => {
     if (!userId) {
       setProjects([]);
       setSelectedProject(null);
       setPendingInvitations([]);
+      setSentInvitations([]);
       return;
     }
 
@@ -31,14 +33,23 @@ export const useProjects = (userId: string | undefined, userProfiles: UserProfil
     const unsubProjects = onSnapshot(qProjects, (snapshot) => {
       const projList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Project[];
       setProjects(projList);
-      if (projList.length > 0 && !selectedProject) {
-        const lastId = localStorage.getItem('lastProjectId');
-        const found = projList.find(p => p.id === lastId);
-        setSelectedProject(found || projList[0]);
-      }
+      
+      setSelectedProject(currentSelected => {
+        if (projList.length === 0) return null;
+        
+        if (!currentSelected) {
+          const lastId = localStorage.getItem('lastProjectId');
+          const found = projList.find(p => p.id === lastId);
+          return found || projList[0];
+        }
+        
+        // Find the same project in the new list to get updated data
+        const updated = projList.find(p => p.id === currentSelected.id);
+        return updated || projList[0]; // Fallback to first if selected one is gone (e.g. removed)
+      });
     });
 
-    // Fetch pending invitations for this user
+    // Fetch pending invitations for this user (Received)
     const qInvites = query(
       collection(db, 'invitations'),
       where('targetUserId', '==', userId),
@@ -49,11 +60,25 @@ export const useProjects = (userId: string | undefined, userProfiles: UserProfil
       setPendingInvitations(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     });
 
+    // Fetch invitations sent FROM this project (to track progress)
+    let unsubSentInvites = () => {};
+    if (selectedProject?.id) {
+      const qSent = query(
+        collection(db, 'invitations'),
+        where('projectId', '==', selectedProject.id),
+        where('status', '==', 'pending')
+      );
+      unsubSentInvites = onSnapshot(qSent, (snapshot) => {
+        setSentInvitations(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      });
+    }
+
     return () => {
       unsubProjects();
       unsubInvites();
+      unsubSentInvites();
     };
-  }, [userId]);
+  }, [userId, selectedProject?.id]);
 
   useEffect(() => {
     if (selectedProject) {
@@ -186,54 +211,79 @@ export const useProjects = (userId: string | undefined, userProfiles: UserProfil
     const memberProfile = userProfiles.find(u => u.userId === memberId);
     const displayName = memberProfile?.displayName || "Nhân sự";
 
-    // CLEANER UNDO LOGIC: Use explicit setTimeout
-    const deleteTimeout = setTimeout(async () => {
-      try {
-        const projectRef = doc(db, 'projects', selectedProject.id);
-        await updateDoc(projectRef, { 
-          members: arrayRemove(memberId) 
-        });
+    try {
+      const projectRef = doc(db, 'projects', selectedProject.id);
+      const batch = writeBatch(db);
 
-        // LOG THE REMOVAL
-        await addDoc(collection(db, 'activity_logs'), {
-          projectId: selectedProject.id,
-          projectName: selectedProject.name,
-          userId: userId,
-          userName: currentUserProfile?.displayName || 'Admin',
-          userEmail: currentUserProfile?.email || '',
-          userPhoto: currentUserProfile?.photoURL || '',
-          action: 'MEMBER_REMOVED',
-          details: `Hệ thống đã giải phóng nhân sự ${displayName} khỏi dự án.`,
-          createdAt: serverTimestamp()
-        });
+      // 1. Queue project member removal in batch
+      batch.update(projectRef, { 
+        members: arrayRemove(memberId) 
+      });
 
-        toast.success(`Đã chính thức giải phóng ${displayName} khỏi hệ thống.`);
-      } catch (e) {
-        handleFirestoreError(e, 'update', `projects/${selectedProject.id}`);
-        toast.error("Lỗi vận hành hệ thống: Không thể xóa.");
-      }
-      delete (window as any)[`timeout_${memberId}`];
-    }, 5000);
+      // 2. DEEP SCRUB: Scan EVERY bug in this project to ensure NO trace remains
+      console.log(`[ZENITH_DEEP_SCRUB] Khởi động quét toàn diện dự án cho ID: ${memberId}`);
+      const bugsRef = collection(db, 'bugs');
+      const qProjectBugs = query(
+        bugsRef, 
+        where('projectId', '==', selectedProject.id)
+      );
+      
+      const projectBugsSnapshot = await getDocs(qProjectBugs);
+      console.log(`[ZENITH_DEEP_SCRUB] Quét ${projectBugsSnapshot.size} nhiệm vụ cho ID: ${memberId}`);
+      
+      let scrubbedCount = 0;
 
-    // Store timeout ID to allow cancellation
-    (window as any)[`timeout_${memberId}`] = deleteTimeout;
+      projectBugsSnapshot.forEach(bugDoc => {
+        const bugData = bugDoc.data();
+        let needsUpdate = false;
+        const updates: any = {};
 
-    toast(`Đang giải phóng Node ${displayName}...`, {
-      duration: 5000,
-      action: {
-        label: "HOÀN TÁC",
-        onClick: () => {
-          const tId = (window as any)[`timeout_${memberId}`];
-          if (tId) {
-            clearTimeout(tId);
-            delete (window as any)[`timeout_${memberId}`];
-            toast.info(`Đã hủy lệnh giải phóng ${displayName}.`);
-          }
+        // Force scrub assigneeId
+        if (bugData.assigneeId === memberId) {
+          updates.assigneeId = '';
+          needsUpdate = true;
         }
-      }
-    });
 
-    return true;
+        // Force scrub members array
+        if (bugData.members && bugData.members.includes(memberId)) {
+          updates.members = bugData.members.filter((id: string) => id !== memberId);
+          needsUpdate = true;
+        }
+
+        if (needsUpdate) {
+          batch.update(bugDoc.ref, {
+            ...updates,
+            updatedAt: serverTimestamp()
+          });
+          scrubbedCount++;
+        }
+      });
+      
+      console.log(`[ZENITH_DEEP_SCRUB] Hoàn tất: Đã dọn sạch dấu vết tại ${scrubbedCount} nhiệm vụ.`);
+
+      // 3. ATOMIC COMMIT: Execute everything at once
+      await batch.commit();
+
+      // 4. LOG THE REMOVAL AFTER COMMIT SUCCESS
+      await addDoc(collection(db, 'activity_logs'), {
+        projectId: selectedProject.id,
+        projectName: selectedProject.name,
+        userId: userId,
+        userName: currentUserProfile?.displayName || 'Admin',
+        userEmail: currentUserProfile?.email || '',
+        userPhoto: currentUserProfile?.photoURL || '',
+        action: 'MEMBER_REMOVED',
+        details: `Hệ thống đã thực thi lệnh ATOMIC_SCRUB cho nhân sự ${displayName}. Đã dọn sạch ${scrubbedCount} nhiệm vụ.`,
+        createdAt: serverTimestamp()
+      });
+
+      toast.success(`Hệ thống đã dọn sạch dấu vết của ${displayName}.`);
+      return true;
+    } catch (e) {
+      handleFirestoreError(e, 'update', `projects/${selectedProject.id}`);
+      toast.error("Lỗi vận hành hệ thống: Không thể xóa.");
+      return false;
+    }
   };
 
   const handleUpdateUserRoles = async (targetUserId: string, newRoles: UserRole[]) => {
@@ -257,6 +307,7 @@ export const useProjects = (userId: string | undefined, userProfiles: UserProfil
     selectedProject,
     setSelectedProject,
     pendingInvitations,
+    sentInvitations,
     handleInviteMember,
     handleAcceptInvitation,
     handleDeclineInvitation,

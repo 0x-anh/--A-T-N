@@ -10,7 +10,7 @@ import {
   UserProfile, Project, UserRole, canUserMoveTo 
 } from '../types';
 import { toast } from 'sonner';
-import { Plus, Bug as BugIcon, Search, LayoutDashboard, ListFilter, Activity, Grid, List, Terminal, LayoutList } from 'lucide-react';
+import { Plus, Bug as BugIcon, Search, LayoutDashboard, ListFilter, Activity, Grid, List, Terminal, LayoutList, CheckCircle2 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -43,7 +43,9 @@ const KanbanBoard = ({
   const [isAdding, setIsAdding] = useState<BugStatus | null>(null);
   const [newBugTitle, setNewBugTitle] = useState('');
   const [showTeamModal, setShowTeamModal] = useState(false);
-  const [selectedBug, setSelectedBug] = useState<Bug | null>(null);
+  const [selectedBugId, setSelectedBugId] = useState<string | null>(null);
+  const selectedBug = useMemo(() => bugs.find(b => b.id === selectedBugId) || null, [bugs, selectedBugId]);
+  
   const [comments, setComments] = useState<any[]>([]);
   const [newComment, setNewComment] = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -57,14 +59,16 @@ const KanbanBoard = ({
   };
 
   const filteredBugs = useMemo(() => {
+    if (!selectedProject) return [];
     return bugs.filter(bug => {
-      const matchesProject = bug.projectId === selectedProject?.id;
+      const matchesProject = bug.projectId === selectedProject.id;
       const matchesSearch = bug.title.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesPriority = filterPriority === 'all' || bug.priority === filterPriority;
       const matchesOverdue = !showOverdueOnly || (bug.status !== 'done' && bug.dueDate && new Date(bug.dueDate) < currentTime);
       return matchesProject && matchesSearch && matchesPriority && matchesOverdue;
     });
   }, [bugs, selectedProject, searchQuery, filterPriority, showOverdueOnly, currentTime]);
+
 
   const tasksByStatus = useMemo(() => {
     const groups: Record<BugStatus, Bug[]> = {
@@ -80,6 +84,32 @@ const KanbanBoard = ({
   }, [filteredBugs]);
 
   // Firebase Logic
+  const prevAssignments = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!userId || bugs.length === 0) return;
+    
+    const currentAssignments = bugs
+      .filter(b => b.assigneeId === userId || b.members?.includes(userId))
+      .map(b => b.id);
+    
+    // Find new assignments
+    currentAssignments.forEach(bugId => {
+      if (!prevAssignments.current.has(bugId)) {
+        const bug = bugs.find(b => b.id === bugId);
+        if (bug) {
+          toast.info("NHIỆM VỤ MỚI: Bạn đã được phân công vào một nút dữ liệu mới.", {
+            description: bug.title,
+            icon: <Terminal className="text-brand-500" />,
+            duration: 8000
+          });
+        }
+      }
+    });
+
+    prevAssignments.current = new Set(currentAssignments);
+  }, [bugs, userId]);
+
   useEffect(() => {
     if (!selectedBug) return;
     const q = query(
@@ -91,6 +121,57 @@ const KanbanBoard = ({
     });
     return () => unsubscribe();
   }, [selectedBug]);
+
+  if (!selectedProject) {
+    return (
+      <div className="h-[calc(100vh-100px)] flex items-center justify-center p-8">
+        <div className="max-w-2xl w-full text-center space-y-12 relative">
+          <div className="absolute inset-0 bg-brand-500/5 blur-[120px] rounded-full" />
+          
+          <div className="relative space-y-6">
+            <div className="inline-flex items-center gap-3 px-4 py-2 bg-slate-900 border border-brand-500/30 rounded-full shadow-2xl">
+               <div className="w-2 h-2 rounded-full bg-brand-500 animate-pulse" />
+               <span className="text-[10px] font-black text-brand-400 uppercase tracking-[0.3em] font-mono">HỆ THỐNG_ĐANG_SẴN_SÀNG</span>
+            </div>
+
+            <h2 className="text-4xl md:text-6xl font-heading font-black tracking-tight uppercase leading-tight text-slate-950">
+              CHƯA CÓ <br/> <span className="text-slate-300">DỰ ÁN NÀO</span>
+            </h2>
+
+            <p className="max-w-md mx-auto text-slate-400 text-sm font-bold uppercase tracking-widest leading-relaxed">
+              Vui lòng chọn một dự án từ danh sách phía trên hoặc khởi tạo một nút dữ liệu mới để bắt đầu quy trình vận hành.
+            </p>
+
+            <div className="pt-8">
+               <button 
+                onClick={() => (window as any).triggerProjectModal?.()}
+                className="group relative h-16 px-12 bg-slate-950 text-white rounded-3xl text-sm font-black overflow-hidden transition-all active:scale-95 shadow-2xl shadow-slate-950/40"
+               >
+                  <div className="absolute inset-0 bg-gradient-to-r from-brand-600 to-violet-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="relative flex items-center gap-4 tracking-[0.3em]">
+                    <Plus size={20} strokeWidth={3} className="group-hover:rotate-90 transition-transform duration-500" />
+                    KHỞI TẠO DỰ ÁN MỚI
+                  </div>
+               </button>
+            </div>
+          </div>
+
+          <div className="pt-20 grid grid-cols-3 gap-8 opacity-40">
+             {[
+               { label: 'NODE_STATUS', value: 'WAITING' },
+               { label: 'UPLINK_SECURE', value: 'READY' },
+               { label: 'CORE_SYNC', value: 'STANDBY' }
+             ].map((s, i) => (
+               <div key={i} className="text-center">
+                  <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-2">{s.label}</div>
+                  <div className="text-xs font-black text-slate-900 font-mono tracking-tighter">{s.value}</div>
+               </div>
+             ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const logActivity = async (bugId: string, type: string, content: string) => {
     if (!selectedProject || !userId) return;
@@ -111,9 +192,26 @@ const KanbanBoard = ({
   };
 
   const handleUpdateBugDetails = async (bugId: string, updates: Partial<Bug>) => {
+    if (updates.status) {
+      const bug = bugs.find(b => b.id === bugId);
+      const currentUserProfile = userProfiles.find(u => u.userId === userId);
+      const isOwner = selectedProject?.ownerId === userId;
+      const isAssignee = bug?.assigneeId === userId || bug?.members?.includes(userId);
+      
+      if (!isOwner && !isAdmin) {
+        if (!isAssignee) {
+          toast.error("TRUY CẬP BỊ TỪ CHỐI: Bạn chỉ có quyền điều phối các nhiệm vụ được phân công cho mình.");
+          return;
+        }
+        if (bug && !canUserMoveTo(currentUserProfile?.roles, bug.status, updates.status)) {
+          toast.error("TRUY CẬP BỊ TỪ CHỐI: Luồng nghiệp vụ này không nằm trong quyền hạn của bạn.");
+          return;
+        }
+      }
+    }
+
     try {
       await updateDoc(doc(db, 'bugs', bugId), { ...updates, updatedAt: serverTimestamp() });
-      if (selectedBug?.id === bugId) setSelectedBug({ ...selectedBug, ...updates });
     } catch (e) { toast.error("Cập nhật thất bại"); }
   };
 
@@ -121,21 +219,53 @@ const KanbanBoard = ({
     const { destination, source, draggableId } = result;
     if (!destination || (destination.droppableId === source.droppableId && destination.index === source.index)) return;
 
-    const newStatus = destination.droppableId as BugStatus;
+    const fromStatus = source.droppableId as BugStatus;
+    const toStatus = destination.droppableId as BugStatus;
     const currentUserProfile = userProfiles.find(u => u.userId === userId);
 
-    if (!isAdmin && !canUserMoveTo(currentUserProfile?.roles, newStatus)) {
-      toast.error("Truy cập bị từ chối: Bạn không có quyền chuyển sang trạng thái này");
-      return;
+    const isOwner = selectedProject?.ownerId === userId;
+    const bug = bugs.find(b => b.id === draggableId);
+    const isAssignee = bug?.assigneeId === userId || bug?.members?.includes(userId);
+
+    if (!isOwner && !isAdmin) {
+      if (!isAssignee) {
+        toast.error("TRUY CẬP BỊ TỪ CHỐI: Bạn chỉ có quyền điều phối các nhiệm vụ được phân công cho mình.");
+        return;
+      }
+      if (!canUserMoveTo(currentUserProfile?.roles, fromStatus, toStatus)) {
+        toast.error("GIAO THỨC BỊ TỪ CHỐI: Luồng di chuyển này không hợp lệ với vai trò của bạn.");
+        return;
+      }
     }
 
     try {
       await updateDoc(doc(db, 'bugs', draggableId), {
-        status: newStatus,
+        status: toStatus,
         updatedAt: serverTimestamp()
       });
-      logActivity(draggableId, 'STATUS_CHANGE', `Chuyển trạng thái từ ${source.droppableId} sang ${newStatus}`);
-      toast.success(`Đã chuyển sang ${newStatus.toUpperCase()}`);
+
+      // Giao thức thông báo thông minh
+      if (toStatus === 'in-review') {
+        toast.info("YÊU CẦU KIỂM THỬ: Đã chuyển Node cho bộ phận TESTER phê duyệt.", {
+          icon: <Activity className="text-brand-500" />,
+          description: "Đang chờ xác nhận chất lượng vận hành."
+        });
+        logActivity(draggableId, 'CMD_TRANSFER', `Gửi yêu cầu kiểm thử: ${fromStatus} -> ${toStatus}`);
+      } else if (toStatus === 'backlog' && fromStatus === 'in-review') {
+        toast.error("PHÁT HIỆN LỖI: TESTER đã bác bỏ kết quả. EDITOR cần FIX LỖI ngay lập tức!", {
+          duration: 7000,
+          description: "Cảnh báo hệ thống: Node bị lỗi kỹ thuật."
+        });
+        logActivity(draggableId, 'SECURITY_ALERT', `Bác bỏ kết quả: Yêu cầu sửa lỗi khẩn cấp.`);
+      } else if (toStatus === 'done') {
+        toast.success("HOÀN TẤT: Nhiệm vụ đã được xác nhận và lưu trữ thành công.", {
+          icon: <CheckCircle2 className="text-emerald-500" />
+        });
+        logActivity(draggableId, 'CMD_FINALIZED', `Xác nhận hoàn tất: ${fromStatus} -> ${toStatus}`);
+      } else {
+        logActivity(draggableId, 'STATUS_CHANGE', `Cập nhật lộ trình: ${fromStatus} -> ${toStatus}`);
+      }
+
     } catch (e) { toast.error("Lỗi đồng bộ dữ liệu"); }
   };
 
@@ -167,7 +297,7 @@ const KanbanBoard = ({
       try {
         await deleteDoc(doc(db, 'bugs', bugId));
         logActivity(bugId, 'BUG_DELETED', `Đã xóa nút dữ liệu: ${bugTitle}`);
-        setSelectedBug(null);
+        setSelectedBugId(null);
         toast.success(`Đã chính thức giải phóng ${bugTitle}.`);
       } catch (e) { toast.error("Lỗi giải phóng dữ liệu."); }
       delete (window as any)[`timeout_bug_${bugId}`];
@@ -191,17 +321,21 @@ const KanbanBoard = ({
     });
   };
 
+  const handleOpenBugDetail = (bug: Bug) => {
+    setSelectedBugId(bug.id);
+  };
+
   const handleAddComment = async () => {
-    if (!selectedBug || !newComment.trim()) return;
+    if (!selectedBugId || !newComment.trim()) return;
     try {
       const profile = userProfiles.find(u => u.userId === userId);
-      await addDoc(collection(db, 'bugs', selectedBug.id, 'comments'), {
+      await addDoc(collection(db, 'bugs', selectedBugId, 'comments'), {
         userId,
         userName: profile?.displayName || 'Unknown',
         content: newComment.trim(), 
         createdAt: serverTimestamp()
       });
-      logActivity(selectedBug.id, 'COMMENT_ADDED', `Thêm phản hồi: ${newComment.trim().slice(0, 20)}...`);
+      logActivity(selectedBugId, 'COMMENT_ADDED', `Thêm phản hồi: ${newComment.trim().slice(0, 20)}...`);
       setNewComment('');
     } catch (e) { toast.error("Gửi phản hồi thất bại"); }
   };
@@ -324,7 +458,7 @@ const KanbanBoard = ({
                       status={status}
                       tasks={tasksByStatus[status]}
                       userProfiles={userProfiles}
-                      onSelect={setSelectedBug}
+                      onSelect={(bug) => setSelectedBugId(bug.id)}
                       isAdding={isAdding === status}
                       setIsAdding={setIsAdding}
                       newBugTitle={newBugTitle}
@@ -332,7 +466,9 @@ const KanbanBoard = ({
                       handleAddBug={handleAddBug}
                       userId={userId}
                       isAdmin={isAdmin}
+                      isOwner={selectedProject?.ownerId === userId}
                       currentTime={currentTime}
+                      projectMemberIds={selectedProject?.members || []}
                     />
                   ))}
                 </div>
@@ -411,7 +547,7 @@ const KanbanBoard = ({
                     </div>
 
                     {/* Mission Title - Bold White with Overflow Fix */}
-                    <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setSelectedBug(bug)}>
+                    <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setSelectedBugId(bug.id)}>
                       <h3 className="text-[15px] font-black text-white group-hover:text-brand-400 transition-colors uppercase tracking-widest leading-none mb-2.5 drop-shadow-md truncate line-clamp-1 break-all">
                         {bug.title}
                       </h3>
@@ -455,7 +591,7 @@ const KanbanBoard = ({
                     <div className="w-56 flex items-center justify-end gap-5 border-l border-white/5 pl-8">
                        <div className="text-right">
                           <div className="text-[12px] font-black text-white uppercase tracking-widest group-hover:text-brand-400 transition-colors mb-1.5 drop-shadow-sm">
-                             {userProfiles.find(p => p.userId === bug.assigneeId)?.displayName || 'UNASSIGNED'}
+                             {userProfiles.find(p => p.userId === bug.assigneeId && selectedProject?.members?.includes(p.userId))?.displayName || 'CHƯA PHÂN CÔNG'}
                           </div>
                           <div className="inline-flex items-center gap-2 px-2 py-0.5 bg-emerald-500/10 rounded border border-emerald-500/20">
                              <div className="w-1 h-1 rounded-full bg-emerald-500 shadow-[0_0_5px_rgba(16,185,129,0.8)]" />
@@ -463,8 +599,8 @@ const KanbanBoard = ({
                           </div>
                        </div>
                        <div className="w-12 h-12 rounded-xl bg-slate-900 border-2 border-slate-800 p-0.5 shadow-2xl group-hover:border-brand-500 transition-all overflow-hidden">
-                         {userProfiles.find(p => p.userId === bug.assigneeId)?.photoURL ? (
-                           <img src={userProfiles.find(p => p.userId === bug.assigneeId)?.photoURL} className="w-full h-full object-cover rounded-lg" />
+                         {userProfiles.find(p => p.userId === bug.assigneeId && selectedProject?.members?.includes(p.userId))?.photoURL ? (
+                           <img src={userProfiles.find(p => p.userId === bug.assigneeId && selectedProject?.members?.includes(p.userId))?.photoURL} className="w-full h-full object-cover rounded-lg" />
                          ) : (
                            <div className="w-full h-full bg-slate-800 rounded-lg flex items-center justify-center">
                               <Activity size={18} className="text-slate-600" />
@@ -493,7 +629,7 @@ const KanbanBoard = ({
 
       <BugDetailModal 
         selectedBug={selectedBug} 
-        onClose={() => setSelectedBug(null)}
+        onClose={() => setSelectedBugId(null)}
         userProfiles={userProfiles} 
         userId={userId} 
         isAdmin={isAdmin}
@@ -506,6 +642,7 @@ const KanbanBoard = ({
         handleAddComment={handleAddComment}
         bottomRef={bottomRef}
         projectMemberIds={selectedProject?.members || []}
+        isOwner={selectedProject?.ownerId === userId}
       />
     </motion.div>
   );

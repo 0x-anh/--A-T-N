@@ -3,26 +3,26 @@ import { db, handleFirestoreError } from '../lib/firebase';
 import { collection, query, where, orderBy, onSnapshot, limit } from 'firebase/firestore';
 import { Bug, UserProfile, Project } from '../types';
 
-export const useProjectData = (user: any, selectedProject: Project | null, userProfiles: UserProfile[], currentTime: Date) => {
+export const useProjectData = (user: any, selectedProject: Project | null, userProfiles: UserProfile[], currentTime: Date, projects: Project[]) => {
   const [bugs, setBugs] = useState<Bug[]>([]);
   const [events, setEvents] = useState<any[]>([]);
 
+  const projectIds = useMemo(() => (projects || []).map(p => p?.id).filter(Boolean), [projects]);
+
   useEffect(() => {
-    if (!user) {
+    if (!user || !projectIds || projectIds.length === 0) {
       setBugs([]);
       setEvents([]);
       return;
     }
 
-    // Fetch ALL bugs where user is a creator, owner, or member
-    // In a real production app with massive data, we'd use 'projectId' in a list of allowed IDs
-    // But for global overview, we fetch all relevant bugs to the user
     const qBugs = query(
       collection(db, 'bugs'),
+      where('projectId', 'in', projectIds.slice(0, 10)), // Firestore limits 'in' to 10 items
       orderBy('createdAt', 'desc')
     );
+    
     const unsubscribeBugs = onSnapshot(qBugs, (snapshot) => {
-      // Filter bugs based on project access (if needed, but for now we assume user sees what they have access to)
       setBugs(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Bug[]);
     }, (error) => {
       handleFirestoreError(error, 'list', 'bugs');
@@ -30,9 +30,11 @@ export const useProjectData = (user: any, selectedProject: Project | null, userP
 
     const qActivity = query(
       collection(db, 'activity_logs'),
+      where('projectId', 'in', projectIds.slice(0, 10)),
       orderBy('createdAt', 'desc'),
-      limit(50) // Increased limit for global logs
+      limit(50)
     );
+    
     const unsubscribeActivity = onSnapshot(qActivity, (snapshot) => {
       setEvents(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     }, (error) => {
@@ -43,7 +45,7 @@ export const useProjectData = (user: any, selectedProject: Project | null, userP
       unsubscribeBugs();
       unsubscribeActivity();
     };
-  }, [user]);
+  }, [user, projectIds]);
 
   const overdueTasks = useMemo(() => {
     return bugs.filter(b => {

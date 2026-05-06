@@ -22,6 +22,57 @@ const MetricsPage = ({ bugs, projects, selectedProject, appStats, setActiveTab }
     return () => clearInterval(timer);
   }, []);
 
+  if (projects.length === 0) {
+    return (
+      <div className="h-[calc(100vh-100px)] flex items-center justify-center p-8">
+        <div className="max-w-2xl w-full text-center space-y-12 relative">
+          <div className="absolute inset-0 bg-brand-500/5 blur-[120px] rounded-full" />
+          
+          <div className="relative space-y-6">
+            <div className="inline-flex items-center gap-3 px-4 py-2 bg-slate-900 border border-brand-500/30 rounded-full shadow-2xl">
+               <div className="w-2 h-2 rounded-full bg-brand-500 animate-pulse" />
+               <span className="text-[10px] font-black text-brand-400 uppercase tracking-[0.3em] font-mono">ANALYTICS_STANDBY</span>
+            </div>
+
+            <h2 className="text-3xl md:text-5xl font-heading font-black tracking-tight uppercase leading-tight text-slate-950">
+              PHÂN TÍCH <br/> <span className="text-slate-300">DỮ LIỆU</span>
+            </h2>
+
+            <p className="max-w-md mx-auto text-slate-400 text-sm font-bold uppercase tracking-widest leading-relaxed">
+              Hệ thống phân tích đang ở trạng thái chờ. Vui lòng thiết lập dự án để bắt đầu thu thập thông số vận hành và tối ưu hóa tài nguyên.
+            </p>
+
+            <div className="pt-8">
+               <button 
+                onClick={() => (window as any).triggerProjectModal?.()}
+                className="group relative h-16 px-12 bg-slate-950 text-white rounded-3xl text-sm font-black overflow-hidden transition-all active:scale-95 shadow-2xl shadow-slate-950/40"
+               >
+                  <div className="absolute inset-0 bg-gradient-to-r from-brand-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="relative flex items-center gap-4 tracking-[0.3em]">
+                    <BarChart3 size={20} className="text-brand-400 group-hover:text-white transition-colors" />
+                    KÍCH HOẠT DỰ ÁN
+                  </div>
+               </button>
+            </div>
+          </div>
+
+          <div className="pt-20 grid grid-cols-3 gap-8 opacity-40">
+             {[
+               { label: 'CALC_ENGINE', value: 'OFFLINE' },
+               { label: 'DATA_STREAM', value: 'DISCONNECTED' },
+               { label: 'THROUGHPUT', value: '0.00 UNIT/S' }
+             ].map((s, i) => (
+               <div key={i} className="text-center">
+                  <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-2">{s.label}</div>
+                  <div className="text-xs font-black text-slate-900 font-mono tracking-tighter">{s.value}</div>
+               </div>
+             ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Filtered bugs for metrics calculation
   const filteredBugs = useMemo(() => {
     return projectFilter === 'all' ? bugs : bugs.filter(b => b.projectId === projectFilter);
@@ -109,7 +160,7 @@ const MetricsPage = ({ bugs, projects, selectedProject, appStats, setActiveTab }
       initial={{ opacity: 0, y: 10 }} 
       animate={{ opacity: 1, y: 0 }} 
       exit={{ opacity: 0, y: -20 }} 
-      className="space-y-8 w-full max-w-7xl mx-auto py-6 font-sans selection:bg-brand-500/20 px-4"
+      className="space-y-8 w-full max-w-6xl mx-auto py-6 font-sans selection:bg-brand-500/20 px-4"
     >
       {/* Header */}
       <header className="flex flex-col gap-8 mb-8 relative">
@@ -117,7 +168,7 @@ const MetricsPage = ({ bugs, projects, selectedProject, appStats, setActiveTab }
           <div className="flex items-center gap-8">
             <div className="flex flex-col shrink-0">
               <h3 className="text-[11px] font-black text-brand-600 uppercase tracking-[0.5em] font-mono leading-none mb-2">PHÂN TÍCH HỆ THỐNG</h3>
-              <h2 className="text-4xl md:text-5xl font-heading font-black tracking-tighter uppercase leading-none text-slate-950">
+              <h2 className="text-3xl md:text-4xl font-heading font-black tracking-tighter uppercase leading-none text-slate-950">
                 HIỆU NĂNG <span className="text-slate-400">TÀI NGUYÊN</span>
               </h2>
             </div>

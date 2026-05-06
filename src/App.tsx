@@ -27,14 +27,14 @@ import DocsModal from './components/modals/DocsModal';
 import QuickAddModal from './components/kanban/QuickAddModal';
 
 import { db } from './lib/firebase';
-import { addDoc, collection, serverTimestamp, doc, setDoc, deleteDoc } from 'firebase/firestore';
+import { addDoc, collection, serverTimestamp, doc, setDoc, deleteDoc, getDocs, writeBatch, query, where } from 'firebase/firestore';
 import { handleFirestoreError } from './lib/firebase';
 
 export default function App() {
   const { user, loading, userProfiles, isAdmin, handleLogin, handleLogout } = useAuth();
   const { 
     projects, selectedProject, setSelectedProject, 
-    pendingInvitations,
+    pendingInvitations, sentInvitations,
     handleInviteMember: inviteMemberLogic, 
     handleAcceptInvitation,
     handleDeclineInvitation,
@@ -55,7 +55,7 @@ export default function App() {
   const [quickAddPriority, setQuickAddPriority] = useState<'low' | 'high' | 'critical'>('low');
   const [quickAddDueDate, setQuickAddDueDate] = useState('');
 
-  const { bugs, events, overdueTasks, urgentTasks, appStats } = useProjectData(user, selectedProject, userProfiles, currentTime);
+  const { bugs, events, overdueTasks, urgentTasks, appStats } = useProjectData(user, selectedProject, userProfiles, currentTime, projects);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -100,28 +100,38 @@ export default function App() {
     const projectId = projectToDelete.id;
     const projectName = projectToDelete.name;
 
-    const deleteTimeout = setTimeout(async () => {
-      try {
-        await deleteDoc(doc(db, 'projects', projectId)); 
-        
-        await addDoc(collection(db, 'activity_logs'), {
-          action: 'PROJECT_DELETED',
-          details: `Dự án ${projectName} đã bị giải phóng vĩnh viễn khỏi hệ thống.`,
-          createdAt: serverTimestamp(),
-          userId: user.uid,
-          userName: user.displayName || 'Admin'
-        });
+    const deleteTimeout = setTimeout(() => {
+      (async () => {
+        try {
+          // 1. Dọn dẹp dữ liệu liên quan (Bugs & Logs)
+          const bugsRef = collection(db, 'bugs');
+          const logsRef = collection(db, 'activity_logs');
+          
+          const [bugsSnapshot, logsSnapshot] = await Promise.all([
+            getDocs(query(bugsRef, where('projectId', '==', projectId))),
+            getDocs(query(logsRef, where('projectId', '==', projectId)))
+          ]);
 
-        toast.success(`Dự án ${projectName} đã được giải phóng.`);
-        if (selectedProject?.id === projectId) {
-          setSelectedProject(null);
-          setActiveTab('dashboard');
+          const batch = writeBatch(db);
+          bugsSnapshot.forEach(doc => batch.delete(doc.ref));
+          logsSnapshot.forEach(doc => batch.delete(doc.ref));
+          
+          // 2. Xóa dự án chính
+          batch.delete(doc(db, 'projects', projectId));
+          
+          await batch.commit();
+          
+          toast.success(`Dự án ${projectName} và toàn bộ dữ liệu đã được giải phóng.`);
+          if (selectedProject?.id === projectId) {
+            setSelectedProject(null);
+            setActiveTab('dashboard');
+          }
+        } catch (error) { 
+          console.error("Cleanup error:", error);
+          toast.error("Lỗi giải phóng dữ liệu hệ thống.");
         }
-      } catch (error) { 
-        handleFirestoreError(error, 'delete', 'projects'); 
-        toast.error("Lỗi giải phóng dự án.");
-      }
-      delete (window as any)[`timeout_project_${projectId}`];
+        delete (window as any)[`timeout_project_${projectId}`];
+      })();
     }, 5000);
 
     (window as any)[`timeout_project_${projectId}`] = deleteTimeout;
@@ -193,6 +203,12 @@ export default function App() {
     }
   };
 
+  // Expose modal trigger for sub-components
+  useEffect(() => {
+    (window as any).triggerProjectModal = () => setShowProjectModal(true);
+    return () => { delete (window as any).triggerProjectModal; };
+  }, []);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4">
@@ -209,13 +225,14 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen font-sans selection:bg-indigo-500/30">
+    <div className="min-h-screen font-sans selection:bg-indigo-500/30 relative">
       <MatrixBackground />
       
       {!user ? (
         <LoginPage handleLogin={handleLogin} onShowDocs={() => setShowDocsModal(true)} />
       ) : (
         <MainLayout
+          key={user.uid}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           user={user}
@@ -227,75 +244,73 @@ export default function App() {
           setShowInviteModal={setShowInviteModal}
           setShowSettingsModal={setShowSettingsModal}
           handleDeleteProject={handleDeleteProject}
+          isAdmin={isAdmin}
         >
-          <AnimatePresence mode="wait">
-            {activeTab === 'dashboard' && (
-              <div key="dashboard" className="w-full">
-                <DashboardPage 
-                  appStats={appStats}
-                  currentTime={currentTime}
-                  bugs={bugs}
-                  events={events}
-                  overdueTasks={overdueTasks}
-                  userProfiles={userProfiles}
-                  pendingInvitations={pendingInvitations}
-                  handleAcceptInvitation={handleAcceptInvitation}
-                  handleDeclineInvitation={handleDeclineInvitation}
-                  setActiveTab={setActiveTab}
-                  setShowProjectModal={setShowProjectModal}
-                  setShowInviteModal={setShowInviteModal}
-                  setShowQuickAdd={setShowQuickAdd}
-                />
-              </div>
-            )}
+          {activeTab === 'dashboard' && (
+            <DashboardPage 
+              appStats={appStats}
+              currentTime={currentTime}
+              bugs={bugs}
+              events={events}
+              overdueTasks={overdueTasks}
+              userProfiles={userProfiles}
+              projects={projects}
+              pendingInvitations={pendingInvitations}
+              handleAcceptInvitation={handleAcceptInvitation}
+              handleDeclineInvitation={handleDeclineInvitation}
+              setActiveTab={setActiveTab}
+              setShowProjectModal={setShowProjectModal}
+              setShowInviteModal={setShowInviteModal}
+              setShowQuickAdd={setShowQuickAdd}
+            />
+          )}
 
-            {activeTab === 'board' && (
-              <div key="board" className="h-full">
-                 <KanbanBoard 
-                    selectedProject={selectedProject}
-                    userId={user.uid}
-                    userProfiles={userProfiles}
-                    bugs={bugs}
-                    isAdmin={isAdmin}
-                    setShowQuickAdd={setShowQuickAdd}
-                    currentTime={currentTime}
-                    handleUpdateUserRoles={handleUpdateUserRoles}
-                    handleRemoveMember={handleRemoveMember}
-                 />
-              </div>
-            )}
-
-            {activeTab === 'metrics' && (
-              <MetricsPage 
-                bugs={bugs} 
-                projects={projects}
+          {activeTab === 'board' && (
+             <KanbanBoard 
                 selectedProject={selectedProject}
-                appStats={appStats} 
-                setActiveTab={setActiveTab} 
-              />
-            )}
-
-            {activeTab === 'logs' && (
-              <LogsPage 
-                selectedProject={selectedProject}
-                projects={projects}
-                userId={user?.uid || ''}
-                userProfiles={userProfiles}
-              />
-            )}
-
-            {activeTab === 'members' && (
-              <MembersPage 
-                userProfiles={userProfiles}
-                selectedProject={selectedProject}
-                isAdmin={isAdmin}
                 userId={user.uid}
-                setShowInviteModal={setShowInviteModal}
-                handleRemoveMember={handleRemoveMember}
+                userProfiles={userProfiles}
+                bugs={bugs}
+                isAdmin={isAdmin}
+                setShowQuickAdd={setShowQuickAdd}
+                currentTime={currentTime}
                 handleUpdateUserRoles={handleUpdateUserRoles}
-              />
-            )}
-          </AnimatePresence>
+                handleRemoveMember={handleRemoveMember}
+             />
+          )}
+
+          {activeTab === 'metrics' && (
+            <MetricsPage 
+              bugs={bugs} 
+              projects={projects}
+              selectedProject={selectedProject}
+              appStats={appStats} 
+              setActiveTab={setActiveTab} 
+            />
+          )}
+
+          {activeTab === 'logs' && (
+            <LogsPage 
+              selectedProject={selectedProject}
+              projects={projects}
+              userId={user?.uid || ''}
+              userProfiles={userProfiles}
+            />
+          )}
+
+          {activeTab === 'members' && (
+            <MembersPage 
+              userProfiles={userProfiles}
+              selectedProject={selectedProject}
+              isAdmin={isAdmin}
+              isOwner={selectedProject?.ownerId === user?.uid}
+              userId={user?.uid || ''}
+              setShowInviteModal={setShowInviteModal}
+              handleRemoveMember={handleRemoveMember}
+              handleUpdateUserRoles={handleUpdateUserRoles}
+              sentInvitations={sentInvitations}
+            />
+          )}
         </MainLayout>
       )}
 

@@ -19,13 +19,15 @@ interface KanbanColumnProps {
   handleAddBug: (status: BugStatus) => void;
   userId: string;
   isAdmin: boolean;
+  isOwner: boolean;
   currentTime: Date;
+  projectMemberIds: string[];
 }
 
 const KanbanColumn = React.memo(({ 
   title, tasks, status, userProfiles, onSelect, 
   isAdding, setIsAdding, newBugTitle, setNewBugTitle, 
-  handleAddBug, userId, isAdmin, currentTime
+  handleAddBug, userId, isAdmin, isOwner, currentTime, projectMemberIds
 }: KanbanColumnProps) => {
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const [showScrollHint, setShowScrollHint] = React.useState(false);
@@ -140,7 +142,9 @@ const KanbanColumn = React.memo(({
                   onSelect={onSelect} 
                   userId={userId} 
                   isAdmin={isAdmin} 
+                  isOwner={isOwner}
                   currentTime={currentTime}
+                  projectMemberIds={projectMemberIds}
                 />
               ))}
               {provided.placeholder}

@@ -8,28 +8,34 @@ interface MembersPageProps {
   userProfiles: UserProfile[];
   selectedProject: Project | null;
   isAdmin: boolean;
+  isOwner: boolean;
   userId: string;
   setShowInviteModal: (val: boolean) => void;
   handleRemoveMember: (userId: string) => void;
   handleUpdateUserRoles: (id: string, roles: string[]) => void;
+  sentInvitations?: any[];
 }
 
 const MembersPage = ({
   userProfiles,
   selectedProject,
   isAdmin,
+  isOwner,
   userId,
   setShowInviteModal,
   handleRemoveMember,
-  handleUpdateUserRoles
+  handleUpdateUserRoles,
+  sentInvitations = []
 }: MembersPageProps) => {
   const [removingIds, setRemovingIds] = useState<string[]>([]);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [pendingRemovals, setPendingRemovals] = useState<Record<string, any>>({});
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
+
 
   const projectMembers = React.useMemo(() => {
     if (!selectedProject || !selectedProject.members) return [];
@@ -40,10 +46,61 @@ const MembersPage = ({
 
   const stats = {
     total: projectMembers.length,
-    admins: projectMembers.filter(p => p.roles?.includes('admin')).length,
+    admins: projectMembers.filter(p => p.roles?.includes('editor')).length,
     active: 100,
     status: 'OPTIMAL'
   };
+
+  if (!selectedProject) {
+    return (
+      <div className="h-[calc(100vh-100px)] flex items-center justify-center p-8">
+        <div className="max-w-2xl w-full text-center space-y-12 relative">
+          <div className="absolute inset-0 bg-brand-500/5 blur-[120px] rounded-full" />
+          
+          <div className="relative space-y-6">
+            <div className="inline-flex items-center gap-3 px-4 py-2 bg-slate-900 border border-brand-500/30 rounded-full shadow-2xl">
+               <div className="w-2 h-2 rounded-full bg-brand-500 animate-pulse" />
+               <span className="text-[10px] font-black text-brand-400 uppercase tracking-[0.3em] font-mono">NODE_CONTROL_STANDBY</span>
+            </div>
+
+            <h2 className="text-4xl md:text-6xl font-heading font-black tracking-tight uppercase leading-tight text-slate-950">
+              ĐỘI NGŨ <br/> <span className="text-slate-300">TRỰC CHIẾN</span>
+            </h2>
+
+            <p className="max-w-md mx-auto text-slate-400 text-sm font-bold uppercase tracking-widest leading-relaxed">
+              Hệ thống nhân sự đang ở trạng thái chờ. Vui lòng thiết lập không gian dự án để phân bổ nguồn lực và điều hành đội ngũ.
+            </p>
+
+            <div className="pt-8">
+               <button 
+                onClick={() => (window as any).triggerProjectModal?.()}
+                className="group relative h-16 px-12 bg-slate-950 text-white rounded-3xl text-sm font-black overflow-hidden transition-all active:scale-95 shadow-2xl shadow-slate-950/40"
+               >
+                  <div className="absolute inset-0 bg-gradient-to-r from-brand-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="relative flex items-center gap-4 tracking-[0.3em]">
+                    <Zap size={20} className="text-brand-400 group-hover:text-white transition-colors" />
+                    KÍCH HOẠT DỰ ÁN
+                  </div>
+               </button>
+            </div>
+          </div>
+
+          <div className="pt-20 grid grid-cols-3 gap-8 opacity-40">
+             {[
+               { label: 'STAFF_SYNC', value: 'OFFLINE' },
+               { label: 'ROLE_ENGINE', value: 'IDLE' },
+               { label: 'ACCESS_LEVEL', value: 'RESTRICTED' }
+             ].map((s, i) => (
+               <div key={i} className="text-center">
+                  <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-2">{s.label}</div>
+                  <div className="text-xs font-black text-slate-900 font-mono tracking-tighter">{s.value}</div>
+               </div>
+             ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <motion.div 
@@ -71,13 +128,15 @@ const MembersPage = ({
           </div>
 
           <div className="flex flex-col items-end gap-4">
-             <button 
-               onClick={() => setShowInviteModal(true)}
-               className="h-10 px-6 bg-slate-950 text-white rounded-xl flex items-center gap-3 hover:bg-brand-600 hover:shadow-xl hover:shadow-brand-500/20 transition-all duration-300 active:scale-95"
-             >
-               <UserPlus size={16} />
-               <span className="text-[10px] font-black uppercase tracking-widest">Mời nhân sự</span>
-             </button>
+             {(isAdmin || isOwner) && (
+               <button 
+                 onClick={() => setShowInviteModal(true)}
+                 className="h-10 px-6 bg-slate-950 text-white rounded-xl flex items-center gap-3 hover:bg-brand-600 hover:shadow-xl hover:shadow-brand-500/20 transition-all duration-300 active:scale-95"
+               >
+                 <UserPlus size={16} />
+                 <span className="text-[10px] font-black uppercase tracking-widest">Mời nhân sự</span>
+               </button>
+             )}
 
              <div className="flex flex-col items-end gap-1 group cursor-default">
                 <div className="flex items-baseline gap-2">
@@ -99,7 +158,7 @@ const MembersPage = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 px-4">
         {[
           { label: 'Tổng nhân sự', value: stats.total, icon: <Users />, trend: 'ĐỘI NGŨ' },
-          { label: 'Quản trị viên', value: stats.admins, icon: <Shield />, trend: 'QUYỀN HẠN' },
+          { label: 'Điều hành viên', value: stats.admins, icon: <Shield />, trend: 'QUYỀN HẠN' },
           { label: 'Độ phủ dự án', value: `${stats.active}%`, icon: <Zap />, trend: 'HIỆU SUẤT' },
           { label: 'Trạng thái Node', value: stats.status, icon: <CheckCircle2 />, trend: 'HỆ THỐNG' },
         ].map((s, i) => (
@@ -130,10 +189,9 @@ const MembersPage = ({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-4 pt-4">
         <AnimatePresence mode="popLayout">
           {projectMembers.map((profile, idx) => {
-            const isOwner = selectedProject?.ownerId === profile.userId;
+            const isTargetOwner = profile.userId === selectedProject.ownerId;
             const isSelf = profile.userId === userId;
-            const roles = profile.roles || ['viewer'];
-            const currentRole = roles[0];
+            const currentRole = profile.roles?.[0] || 'viewer';
             
             return (
               <motion.div 
@@ -155,7 +213,7 @@ const MembersPage = ({
                             alt="" 
                           />
                        </div>
-                       {isOwner && (
+                       {isTargetOwner && (
                          <div className="absolute -top-2 -right-2 w-7 h-7 bg-amber-400 text-white rounded-xl flex items-center justify-center shadow-xl border-2 border-white animate-bounce-slow">
                            <Crown size={14} />
                          </div>
@@ -186,15 +244,14 @@ const MembersPage = ({
                  <div className="space-y-3 mb-6 relative z-10">
                     <div className="flex items-center justify-between">
                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest font-mono">PROTOCOL_LEVEL</span>
-                       {isOwner && <span className="text-[8px] font-black text-amber-500 bg-amber-50 px-2 py-0.5 rounded border border-amber-100 uppercase tracking-widest">OWNER</span>}
+                       {isTargetOwner && <span className="text-[8px] font-black text-amber-500 bg-amber-50 px-2 py-0.5 rounded border border-amber-100 uppercase tracking-widest">OWNER</span>}
                     </div>
                     
-                    {(!isSelf && !isOwner) ? (
+                    {(isAdmin || isOwner) && !isSelf && !isTargetOwner ? (
                       <div className="p-1.5 bg-slate-100/50 backdrop-blur-md rounded-2xl flex gap-1 border border-white/50">
-                         {['admin', 'editor', 'viewer'].map((roleOption) => (
+                         {['editor', 'tester', 'viewer'].map((roleOption) => (
                            <button
                              key={roleOption}
-                             disabled={!isAdmin}
                              onClick={() => handleUpdateUserRoles(profile.userId, [roleOption])}
                              className={cn(
                                "flex-1 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all",
@@ -203,16 +260,21 @@ const MembersPage = ({
                                  : "text-slate-400 hover:text-slate-600"
                              )}
                            >
-                             {roleOption}
+                             {roleOption.toUpperCase()}
                            </button>
                          ))}
                       </div>
                     ) : (
                       <div className="py-3 px-5 bg-slate-950 rounded-2xl flex items-center justify-between shadow-2xl shadow-slate-900/30">
                          <span className="text-[10px] font-black text-white uppercase tracking-[0.2em] font-mono">
-                           {isOwner ? "SYSTEM OWNER" : `${currentRole.toUpperCase()}_ACCESS`}
+                           {isTargetOwner ? "SYSTEM OWNER" : `${currentRole.toUpperCase()}_ACCESS`}
                          </span>
-                         <div className="w-2 h-2 rounded-full bg-brand-500 shadow-[0_0_10px_#10b981]" />
+                         <div className={cn(
+                           "w-2 h-2 rounded-full shadow-[0_0_10px]",
+                           currentRole === 'editor' ? "bg-indigo-400 shadow-indigo-500" :
+                           currentRole === 'tester' ? "bg-amber-400 shadow-amber-500" :
+                           "bg-slate-400 shadow-slate-500"
+                         )} />
                       </div>
                     )}
                  </div>
@@ -224,19 +286,54 @@ const MembersPage = ({
                     </div>
                     
                     <div className="flex gap-2">
-                       {isAdmin && !isSelf && !isOwner && (
+                       {(isAdmin || isOwner) && !isSelf && !isTargetOwner && (
                          <button 
-                           onClick={() => {
-                             setRemovingIds(prev => [...prev, profile.userId]);
-                             handleRemoveMember(profile.userId);
-                             setTimeout(() => {
-                               setRemovingIds(prev => prev.filter(id => id !== profile.userId));
-                             }, 7000);
-                           }}
-                           className="w-9 h-9 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-100 transition-all flex items-center justify-center group/del"
-                         >
-                           <Trash2 size={16} />
-                         </button>
+                            onClick={() => {
+                              const mId = profile.userId;
+                              const mName = profile.displayName;
+                              
+                              // 1. Hide immediately from UI
+                              setRemovingIds(prev => [...prev, mId]);
+                              
+                              // 2. Set a timer for actual deletion
+                              const timer = setTimeout(() => {
+                                handleRemoveMember(mId);
+                                setRemovingIds(prev => prev.filter(id => id !== mId));
+                                setPendingRemovals(prev => {
+                                  const next = { ...prev };
+                                  delete next[mId];
+                                  return next;
+                                });
+                              }, 5000); // 5 seconds to undo
+
+                              // 3. Store timer to allow cancellation
+                              setPendingRemovals(prev => ({ ...prev, [mId]: timer }));
+
+                              // 4. Show Toast with UNDO button
+                              import('sonner').then(({ toast }) => {
+                                toast.warning(`Đang gỡ ${mName}...`, {
+                                  duration: 5000,
+                                  action: {
+                                    label: 'HOÀN TÁC',
+                                    onClick: () => {
+                                      // Cancel deletion
+                                      clearTimeout(timer);
+                                      setRemovingIds(prev => prev.filter(id => id !== mId));
+                                      setPendingRemovals(prev => {
+                                        const next = { ...prev };
+                                        delete next[mId];
+                                        return next;
+                                      });
+                                      toast.success(`Đã khôi phục ${mName}`);
+                                    }
+                                  }
+                                });
+                              });
+                            }}
+                            className="w-9 h-9 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-100 transition-all flex items-center justify-center group/del"
+                          >
+                            <Trash2 size={16} />
+                          </button>
                        )}
                        <button className="w-9 h-9 rounded-xl text-slate-400 hover:text-brand-600 hover:bg-brand-50 border border-transparent hover:border-brand-100 transition-all flex items-center justify-center">
                           <ChevronRight size={16} />
@@ -248,6 +345,39 @@ const MembersPage = ({
           })}
         </AnimatePresence>
       </div>
+
+      {/* Pending Invitations Section */}
+      {sentInvitations.length > 0 && (
+        <div className="px-4 space-y-6 pt-8 border-t-2 border-slate-200/50">
+          <div className="flex items-center gap-3">
+             <div className="w-1.5 h-6 bg-brand-500 rounded-full" />
+             <h3 className="text-sm font-black text-slate-900 uppercase tracking-[0.3em]">LỜI MỜI ĐANG CHỜ PHẢN HỒI_</h3>
+             <span className="px-2 py-0.5 bg-slate-100 text-slate-500 rounded-lg text-[9px] font-black">{sentInvitations.length}</span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {sentInvitations.map((invite) => {
+              const targetProfile = userProfiles.find(u => u.userId === invite.targetUserId);
+              return (
+                <div key={invite.id} className="bg-slate-50/50 backdrop-blur-xl rounded-[2rem] border-2 border-dashed border-slate-300 p-6 flex items-center gap-4 group opacity-70 hover:opacity-100 transition-opacity">
+                   <div className="relative">
+                      <img 
+                        src={targetProfile?.photoURL || `https://api.dicebear.com/7.x/notionists/svg?seed=${invite.targetUserId}`} 
+                        className="w-12 h-12 rounded-xl object-cover grayscale opacity-50" 
+                        alt="" 
+                      />
+                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-amber-500 rounded-full border-2 border-white animate-pulse" />
+                   </div>
+                   <div className="flex-1 min-w-0">
+                      <p className="text-xs font-black text-slate-600 uppercase truncate">{targetProfile?.displayName || 'ĐANG TẢI...'}</p>
+                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest font-mono">TRẠNG THÁI: PENDING</p>
+                   </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </motion.div>
   );
 };

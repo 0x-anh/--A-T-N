@@ -30,7 +30,7 @@ export interface ActivityLog {
   createdAt: any;
 }
 
-export type UserRole = 'admin' | 'developer' | 'qa' | 'viewer';
+export type UserRole = 'editor' | 'tester' | 'viewer'; 
 
 export interface UserProfile {
   userId: string;
@@ -41,46 +41,51 @@ export interface UserProfile {
 }
 
 export const ROLE_CONFIG: Record<UserRole, { label: string, color: string }> = {
-  admin: { label: 'Quản trị viên', color: 'bg-indigo-500' },
-  developer: { label: 'Lập trình viên', color: 'bg-emerald-500' },
-  qa: { label: 'Kiểm thử viên', color: 'bg-amber-500' },
+  editor: { label: 'Điều hành viên', color: 'bg-indigo-500' },
+  tester: { label: 'Kiểm thử viên', color: 'bg-amber-500' },
   viewer: { label: 'Người quan sát', color: 'bg-slate-400' }
 };
 
 export const ROLE_PERMISSIONS: Record<UserRole, BugStatus[]> = {
-  admin: ['backlog', 'in-progress', 'in-review', 'done'],
-  developer: ['backlog', 'in-progress', 'in-review'],
-  qa: ['backlog', 'in-review', 'done'],
+  editor: ['backlog', 'in-progress', 'in-review', 'done'],
+  tester: ['backlog', 'in-review', 'done'],
   viewer: []
 };
 
-export const canUserMoveTo = (userRoles: UserRole[] | undefined, targetStatus: BugStatus): boolean => {
+export const canUserMoveTo = (userRoles: UserRole[] | undefined, fromStatus: BugStatus, toStatus: BugStatus): boolean => {
   if (!userRoles || userRoles.length === 0) return false;
-  if (userRoles.includes('admin')) return true;
   
-  const allowedStatuses = new Set<BugStatus>();
-  userRoles.forEach(role => {
-    ROLE_PERMISSIONS[role].forEach(status => allowedStatuses.add(status));
-  });
+  // Editor logic: Điều hành viên làm việc chính
+  if (userRoles.includes('editor')) {
+    if (fromStatus === 'backlog' && toStatus === 'in-progress') return true;
+    if (fromStatus === 'in-progress' && toStatus === 'in-review') return true;
+    // Editor không được tự ý Done hoặc tự ý bỏ vào Review từ Backlog mà không qua In-progress
+    // Nhưng để linh hoạt, cho phép Editor di chuyển trong phạm vi công việc của họ
+    if (toStatus === 'done') return false; 
+  }
   
-  return allowedStatuses.has(targetStatus);
-};
-
-export const canEditBug = (userRoles: UserRole[] | undefined, status: BugStatus): boolean => {
-  if (!userRoles || userRoles.length === 0) return false;
-  if (userRoles.includes('admin')) return true;
-  
-  // Developer can edit while in their active states
-  if (userRoles.includes('developer') && (status === 'in-progress' || status === 'in-review')) return true;
-  // QA can edit during review or initial backlog setup
-  if (userRoles.includes('qa') && (status === 'backlog' || status === 'in-review' || status === 'done')) return true;
+  // Tester logic: Kiểm thử viên chốt kết quả hoặc bác bỏ
+  if (userRoles.includes('tester')) {
+    if (fromStatus === 'in-review') {
+      if (toStatus === 'done' || toStatus === 'backlog') return true;
+    }
+  }
   
   return false;
 };
 
-export const canDeleteBug = (userRoles: UserRole[] | undefined): boolean => {
+export const canEditBug = (userRoles: UserRole[] | undefined, status: BugStatus): boolean => {
   if (!userRoles || userRoles.length === 0) return false;
-  return userRoles.includes('admin') || userRoles.includes('qa');
+  // Editor chỉ có thể sửa khi đang làm việc (Backlog/In-progress)
+  if (userRoles.includes('editor')) {
+    return status === 'backlog' || status === 'in-progress';
+  }
+  if (userRoles.includes('tester') && status === 'in-review') return true;
+  return false;
+};
+
+export const canDeleteBug = (userRoles: UserRole[] | undefined): boolean => {
+  return false; // Chỉ Owner mới có quyền xóa (logic xử lý tại component)
 };
 
 export interface Bug {

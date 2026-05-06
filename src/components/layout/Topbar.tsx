@@ -13,6 +13,8 @@ interface TopbarProps {
   setShowSettingsModal: (show: boolean) => void;
   handleDeleteProject: (project: Project) => void;
   activeTab: string;
+  userId: string;
+  isAdmin: boolean;
 }
 
 const Topbar = ({
@@ -23,7 +25,9 @@ const Topbar = ({
   setShowInviteModal,
   setShowSettingsModal,
   handleDeleteProject,
-  activeTab
+  activeTab,
+  userId,
+  isAdmin
 }: TopbarProps) => {
   const [showProjectDropdown, setShowProjectDropdown] = useState(false);
 
@@ -71,13 +75,15 @@ const Topbar = ({
                            {selectedProject?.id === p.id && <Check size={12} className="shrink-0" />}
                           </button>
                           
-                          <button 
-                            onClick={(e) => { e.stopPropagation(); handleDeleteProject(p); }}
-                            className="w-9 h-9 flex items-center justify-center text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all opacity-0 group-hover:opacity-100"
-                            title="Xóa dự án"
-                          >
-                            <Trash2 size={14} />
-                          </button>
+                          {(isAdmin || p.ownerId === userId) && (
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); handleDeleteProject(p); }}
+                              className="w-9 h-9 flex items-center justify-center text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all opacity-0 group-hover:opacity-100"
+                              title="Xóa dự án"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          )}
                         </div>
                      ))}
                      <div className="h-px bg-slate-100 my-1.5 mx-1.5" />
@@ -101,10 +107,12 @@ const Topbar = ({
       </div>
 
       <div className="flex items-center gap-4">
-        <button onClick={() => setShowInviteModal(true)} className="h-9 px-4 bg-slate-950 text-white rounded-lg text-xs font-bold hover:bg-brand-600 transition-all flex items-center gap-2">
-           <UserPlus size={14} /> 
-           <span className="hidden sm:inline">Mời</span>
-        </button>
+        {(isAdmin || selectedProject?.ownerId === userId) && (
+          <button onClick={() => setShowInviteModal(true)} className="h-9 px-4 bg-slate-950 text-white rounded-lg text-xs font-bold hover:bg-brand-600 transition-all flex items-center gap-2">
+             <UserPlus size={14} /> 
+             <span className="hidden sm:inline">Mời</span>
+          </button>
+        )}
       </div>
     </header>
   );

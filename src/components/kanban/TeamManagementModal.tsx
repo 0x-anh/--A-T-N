@@ -89,7 +89,7 @@ const TeamManagementModal = ({
                      </div>
 
                      <div className="flex-1 flex flex-wrap gap-2">
-                        {(['admin', 'developer', 'reviewer'] as UserRole[]).map(role => {
+                        {(['editor', 'tester', 'viewer'] as UserRole[]).map(role => {
                           const hasRole = profile.roles?.includes(role);
                           const config = ROLE_CONFIG[role];
                           return (

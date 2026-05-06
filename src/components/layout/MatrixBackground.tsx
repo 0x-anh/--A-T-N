@@ -18,35 +18,51 @@ const MatrixBackground = () => {
     const columns = canvas.width / fontSize;
     const drops: number[] = Array(Math.ceil(columns)).fill(0);
 
-    const draw = () => {
-      ctx.fillStyle = "rgba(253, 254, 255, 0.15)"; 
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.font = `${fontSize}px "JetBrains Mono"`;
+    let animationFrameId: number;
 
-      drops.forEach((y, i) => {
-        const text = chars[Math.floor(Math.random() * chars.length)];
-        const x = i * fontSize;
+    let lastTime = 0;
+    const fps = 20; // Target frames per second for the matrix update
+    const interval = 1000 / fps;
+
+    const render = (time: number) => {
+      try {
+        const delta = time - lastTime;
         
-        // Tạo sự biến thiên màu sắc cho các cột để có chiều sâu
-        const opacity = Math.random() > 0.9 ? 0.3 : 0.15;
-        ctx.fillStyle = `rgba(15, 23, 42, ${opacity})`; 
-        ctx.fillText(text, x, y * fontSize);
+        if (delta > interval) {
+          ctx.fillStyle = 'rgba(253, 254, 255, 0.2)';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          
+          ctx.fillStyle = '#6366f1';
+          ctx.font = fontSize + 'px monospace';
 
-        if (y * fontSize > canvas.height && Math.random() > 0.975) {
-          drops[i] = 0;
+          for (let i = 0; i < drops.length; i++) {
+            const text = chars.charAt(Math.floor(Math.random() * chars.length));
+            ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+            if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+              drops[i] = 0;
+            }
+            drops[i]++;
+          }
+          lastTime = time - (delta % interval);
         }
-        drops[i]++;
-      });
+        animationFrameId = requestAnimationFrame(render);
+      } catch (e) {
+        console.error("Matrix animation failed:", e);
+      }
     };
 
-    const interval = setInterval(draw, 40);
+    requestAnimationFrame(render);
+
     const handleResize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      if (canvas) {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
     };
     window.addEventListener('resize', handleResize);
     return () => {
-      clearInterval(interval);
+      cancelAnimationFrame(animationFrameId);
       window.removeEventListener('resize', handleResize);
     };
   }, []);

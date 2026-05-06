@@ -17,6 +17,8 @@ interface MainLayoutProps {
   setShowInviteModal: (show: boolean) => void;
   setShowSettingsModal: (show: boolean) => void;
   handleDeleteProject: (project: Project) => void;
+  isAdmin: boolean;
+  key?: string;
 }
 
 const MainLayout = ({
@@ -31,7 +33,8 @@ const MainLayout = ({
   setShowProjectModal,
   setShowInviteModal,
   setShowSettingsModal,
-  handleDeleteProject
+  handleDeleteProject,
+  isAdmin
 }: MainLayoutProps) => {
   return (
     <div className="flex h-screen bg-transparent overflow-hidden font-sans selection:bg-slate-200">
@@ -52,6 +55,8 @@ const MainLayout = ({
           setShowSettingsModal={setShowSettingsModal}
           handleDeleteProject={handleDeleteProject}
           activeTab={activeTab}
+          userId={user?.uid || ''}
+          isAdmin={isAdmin}
         />
         
         <div className="flex-1 overflow-auto custom-scrollbar p-4 lg:p-6">

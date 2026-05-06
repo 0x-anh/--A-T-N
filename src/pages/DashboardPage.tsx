@@ -12,6 +12,7 @@ interface DashboardPageProps {
   events: any[];
   overdueTasks: any[];
   userProfiles: any[];
+  projects: any[];
   pendingInvitations: any[];
   handleAcceptInvitation: (id: string) => void;
   handleDeclineInvitation: (id: string) => void;
@@ -28,6 +29,7 @@ const DashboardPage = ({
   events,
   overdueTasks,
   userProfiles,
+  projects,
   pendingInvitations,
   handleAcceptInvitation,
   handleDeclineInvitation,
@@ -41,14 +43,14 @@ const DashboardPage = ({
       initial={{ opacity: 0, y: 10 }} 
       animate={{ opacity: 1, y: 0 }} 
       exit={{ opacity: 0, y: -20 }} 
-      className="space-y-8 w-full max-w-7xl mx-auto py-6"
+      className="space-y-12 w-full max-w-6xl mx-auto py-10 px-4"
     >
       <header className="flex flex-col gap-8 mb-8 relative">
         <div className="flex items-center justify-between border-b border-slate-200/50 pb-8">
           <div className="flex items-center gap-8">
             <div className="flex flex-col">
               <h3 className="text-[11px] font-black text-brand-600 uppercase tracking-[0.5em] font-mono leading-none mb-2">CHỈ HUY VẬN HÀNH</h3>
-              <h2 className="text-4xl md:text-5xl font-heading font-black tracking-tighter uppercase leading-none text-slate-950">
+              <h2 className="text-3xl md:text-4xl font-heading font-black tracking-tighter uppercase leading-none text-slate-950">
                 TRUNG TÂM <span className="text-slate-400">ĐIỀU HÀNH</span>
               </h2>
             </div>
@@ -101,7 +103,7 @@ const DashboardPage = ({
                  <div key={invite.id} className="bg-white/5 border border-white/10 rounded-3xl p-6 hover:bg-white/10 transition-all group">
                     <div className="flex items-start justify-between mb-6">
                        <div className="space-y-1">
-                          <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest font-mono italic">PROJECT_DEPLOYMENT</span>
+                          <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest font-mono">PROJECT_DEPLOYMENT</span>
                           <h4 className="text-2xl font-black tracking-tighter uppercase leading-none group-hover:text-brand-400 transition-colors">
                             {invite.projectName}
                           </h4>
@@ -154,7 +156,7 @@ const DashboardPage = ({
               </div>
               <div>
                 <h3 className="text-sm font-black text-rose-600 uppercase tracking-[0.3em] mb-1">CẢNH BÁO QUÁ HẠN HỆ THỐNG</h3>
-                <p className="text-[11px] font-bold text-rose-400 font-mono italic">PHÁT HIỆN {overdueTasks.length} ĐIỂM NGHẼN CẦN XỬ LÝ NGAY LẬP TỨC</p>
+                <p className="text-[11px] font-bold text-rose-400 font-mono">PHÁT HIỆN {overdueTasks.length} ĐIỂM NGHẼN CẦN XỬ LÝ NGAY LẬP TỨC</p>
               </div>
             </div>
 
@@ -183,7 +185,7 @@ const DashboardPage = ({
         </motion.section>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
         <StatsCard label="Năng suất" value={`${appStats.resolutionRate}%`} icon={<Cpu />} trend="ỔN ĐỊNH" />
         <StatsCard label="Xử lý" value={appStats.open} icon={<Activity />} trend="HOẠT ĐỘNG" />
         <StatsCard label="Khẩn cấp" value={appStats.critical} icon={<Zap />} trend="CẢNH BÁO" />
@@ -381,7 +383,7 @@ const DashboardPage = ({
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono">GIÁM SÁT TÀI NGUYÊN</span>
                 <div className="flex items-center gap-2">
                    <div className="w-1 h-1 rounded-full bg-blue-500 animate-pulse" />
-                   <span className="text-[9px] font-bold text-blue-600 font-mono italic">THỜI GIAN THỰC</span>
+                   <span className="text-[9px] font-bold text-blue-600 font-mono">THỜI GIAN THỰC</span>
                 </div>
               </div>
               

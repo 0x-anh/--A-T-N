@@ -14,22 +14,32 @@ interface BugCardProps {
   onSelect: (bug: Bug) => void;
   userId: string;
   isAdmin: boolean;
+  isOwner: boolean;
   currentTime: Date;
+  projectMemberIds: string[];
 }
 
-const BugCard = React.memo(({ bug, index, userProfiles, onSelect, userId, isAdmin, currentTime }: BugCardProps) => {
+const BugCard = React.memo(({ bug, index, userProfiles, onSelect, userId, isAdmin, isOwner, currentTime, projectMemberIds }: BugCardProps) => {
   const currentUser = userProfiles.find(u => u.userId === userId);
   
   const members = useMemo(() => {
     const ids = bug.members || (bug.assigneeId ? [bug.assigneeId] : []);
-    return userProfiles.filter(u => ids.includes(u.userId));
-  }, [bug.members, bug.assigneeId, userProfiles]);
+    return userProfiles.filter(u => ids.includes(u.userId) && projectMemberIds.includes(u.userId));
+  }, [bug.members, bug.assigneeId, userProfiles, projectMemberIds]);
 
   const canMove = useMemo(() => {
-    if (isAdmin) return true;
+    // 1. Super-users can move anything
+    if (isAdmin || isOwner) return true;
+    
+    // 2. Check if user is assigned to THIS task
+    const isAssigned = bug.assigneeId === userId || bug.members?.includes(userId);
+    
+    if (!isAssigned) return false;
     if (!currentUser?.roles) return false;
-    return STATUS_COLUMNS.some(col => col.id !== bug.status && canUserMoveTo(currentUser.roles, col.id));
-  }, [currentUser?.roles, bug.status, isAdmin]);
+    
+    // 3. Check role-based transition permissions
+    return STATUS_COLUMNS.some(col => col.id !== bug.status && canUserMoveTo(currentUser.roles, bug.status, col.id));
+  }, [currentUser?.roles, bug.status, isAdmin, isOwner, bug.assigneeId, bug.members, userId]);
 
   const isOverdue = useMemo(() => {
     if (bug.status === 'done' || !bug.dueDate) return false;

@@ -22,6 +22,7 @@ interface BugDetailModalProps {
   handleAddComment: () => Promise<void>;
   bottomRef: React.RefObject<HTMLDivElement | null>;
   projectMemberIds: string[];
+  isOwner: boolean;
 }
 
 const BugDetailModal = ({ 
@@ -37,7 +38,8 @@ const BugDetailModal = ({
   setNewComment,
   handleAddComment,
   bottomRef,
-  projectMemberIds
+  projectMemberIds,
+  isOwner
 }: BugDetailModalProps) => {
   const [activeTab, setActiveTab] = React.useState<'details' | 'logs' | 'team'>('details');
   const [isPriorityOpen, setIsPriorityOpen] = React.useState(false);
@@ -72,15 +74,18 @@ const BugDetailModal = ({
   const currentUser = userProfiles.find(u => u.userId === userId);
   
   // STRICT PERMISSIONS
-  const canModifyGeneral = isAdmin || canEditBug(currentUser?.roles, selectedBug.status);
-  const canManageTeam = isAdmin || currentUser?.roles?.includes('qa'); // Only Admin/QA can assign team
+  const canModifyGeneral = isAdmin || isOwner || canEditBug(currentUser?.roles, selectedBug.status);
+  const canManageTeam = isAdmin || isOwner; // Only Admin/Owner can assign team/roles
   const isAssigned = selectedBug.assigneeId === userId || selectedBug.members?.includes(userId);
   
   // Final edit right: Either has role-based edit right OR is assigned to this task (for comments/updates)
   const isEditable = canModifyGeneral || isAssigned;
   
-  const assigneeProfiles = userProfiles.filter(u => (selectedBug.members || (selectedBug.assigneeId ? [selectedBug.assigneeId] : [])).includes(u.userId));
-  const assigneeIds = selectedBug.members || (selectedBug.assigneeId ? [selectedBug.assigneeId] : []);
+  const assigneeProfiles = userProfiles.filter(u => 
+    (selectedBug.members || (selectedBug.assigneeId ? [selectedBug.assigneeId] : [])).includes(u.userId) &&
+    projectMemberIds.includes(u.userId)
+  );
+  const assigneeIds = (selectedBug.members || (selectedBug.assigneeId ? [selectedBug.assigneeId] : [])).filter(id => projectMemberIds.includes(id));
   const isOverdue = selectedBug.dueDate && new Date(selectedBug.dueDate) < new Date() && selectedBug.status !== 'done';
 
   return (
@@ -130,7 +135,13 @@ const BugDetailModal = ({
 
             <div className="grid grid-cols-2 gap-4">
               <div className="relative">
-                 <div className="p-4 rounded-2xl bg-white/40 border-2 border-slate-950/50 space-y-2 cursor-pointer group" onClick={() => setIsPriorityOpen(!isPriorityOpen)}>
+                 <div 
+                   className={cn(
+                     "p-4 rounded-2xl bg-white/40 border-2 border-slate-950/50 space-y-2 transition-all group",
+                     (isAdmin || isOwner) ? "cursor-pointer hover:bg-white/60 hover:border-slate-950" : "cursor-not-allowed opacity-80"
+                   )}
+                   onClick={() => (isAdmin || isOwner) && setIsPriorityOpen(!isPriorityOpen)}
+                 >
                     <div className="flex items-center justify-between text-slate-950">
                        <div className="flex items-center gap-2">
                           <AlertCircle size={12} />
@@ -157,7 +168,7 @@ const BugDetailModal = ({
                           {(Object.entries(PRIORITY_CONFIG) as [BugPriority, any][]).map(([key, cfg]) => (
                             <button 
                               key={key}
-                              disabled={!canModifyGeneral}
+                              disabled={!(isAdmin || isOwner)}
                               onClick={() => {
                                 handleUpdateBugDetails(selectedBug.id, { priority: key });
                                 setIsPriorityOpen(false);
@@ -188,7 +199,7 @@ const BugDetailModal = ({
                  <input 
                     type="datetime-local"
                     value={selectedBug.dueDate || ''}
-                    disabled={!canModifyGeneral}
+                    disabled={!(isAdmin || isOwner)}
                     onChange={(e) => handleUpdateBugDetails(selectedBug.id, { dueDate: e.target.value })}
                     className="w-full bg-transparent text-[11px] font-black text-slate-950 outline-none cursor-pointer uppercase disabled:cursor-not-allowed appearance-none"
                  />

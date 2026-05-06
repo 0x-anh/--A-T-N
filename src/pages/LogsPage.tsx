@@ -25,13 +25,74 @@ const LogsPage = ({ selectedProject, projects, userId, userProfiles }: LogsPageP
     return () => clearInterval(timer);
   }, []);
 
+  if (projects.length === 0) {
+    return (
+      <div className="h-[calc(100vh-100px)] flex items-center justify-center p-8">
+        <div className="max-w-2xl w-full text-center space-y-12 relative">
+          <div className="absolute inset-0 bg-brand-500/5 blur-[120px] rounded-full" />
+          
+          <div className="relative space-y-6">
+            <div className="inline-flex items-center gap-3 px-4 py-2 bg-slate-900 border border-brand-500/30 rounded-full shadow-2xl">
+               <div className="w-2 h-2 rounded-full bg-brand-500 animate-pulse" />
+               <span className="text-[10px] font-black text-brand-400 uppercase tracking-[0.3em] font-mono">LOG_STREAM_STANDBY</span>
+            </div>
+
+            <h2 className="text-4xl md:text-6xl font-heading font-black tracking-tight uppercase leading-tight text-slate-950">
+              NHẬT KÝ <br/> <span className="text-slate-300">VẬN HÀNH</span>
+            </h2>
+
+            <p className="max-w-md mx-auto text-slate-400 text-sm font-bold uppercase tracking-widest leading-relaxed">
+              Dòng dữ liệu nhật ký đang ở trạng thái chờ. Vui lòng thiết lập dự án để bắt đầu giám sát các luồng tương tác và quản trị hệ thống.
+            </p>
+
+            <div className="pt-8">
+               <button 
+                onClick={() => (window as any).triggerProjectModal?.()}
+                className="group relative h-16 px-12 bg-slate-950 text-white rounded-3xl text-sm font-black overflow-hidden transition-all active:scale-95 shadow-2xl shadow-slate-950/40"
+               >
+                  <div className="absolute inset-0 bg-gradient-to-r from-brand-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="relative flex items-center gap-4 tracking-[0.3em]">
+                    <Terminal size={20} className="text-brand-400 group-hover:text-white transition-colors" />
+                    KÍCH HOẠT DỰ ÁN
+                  </div>
+               </button>
+            </div>
+          </div>
+
+          <div className="pt-20 grid grid-cols-3 gap-8 opacity-40">
+             {[
+               { label: 'STREAM_SYNC', value: 'OFFLINE' },
+               { label: 'EVENT_BUS', value: 'IDLE' },
+               { label: 'BUFFER_SIZE', value: '0.00 KB' }
+             ].map((s, i) => (
+               <div key={i} className="text-center">
+                  <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-2">{s.label}</div>
+                  <div className="text-xs font-black text-slate-900 font-mono tracking-tighter">{s.value}</div>
+               </div>
+             ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const filteredLogs = React.useMemo(() => {
+    if (projects.length === 0) return [];
+    
+    const activeProjectIds = projects.map(p => p.id);
     return logs.filter(log => {
-      // Project filter
+      // 1. Chỉ giữ lại log thuộc về dự án đang tồn tại
+      if (!log.projectId || !activeProjectIds.includes(log.projectId)) {
+        // Ngoại trừ các thông báo toàn cầu quan trọng (nếu có)
+        if (log.action === 'GLOBAL_ANNOUNCEMENT') return true;
+        return false;
+      }
+
+      // 2. Bộ lọc theo dự án đã chọn
       const matchesProject = projectFilter === 'all' || log.projectId === projectFilter;
       if (!matchesProject) return false;
 
-      // Type filter
+      // 3. Bộ lọc theo loại (Hệ thống/Quản trị)
       if (filterType === 'all') return true;
       
       const isRemoval = 
@@ -45,7 +106,7 @@ const LogsPage = ({ selectedProject, projects, userId, userProfiles }: LogsPageP
       if (filterType === 'system') return !isRemoval;
       return true;
     });
-  }, [logs, projectFilter, filterType]);
+  }, [logs, projectFilter, filterType, projects]);
 
   const stats = {
     total: filteredLogs.length,
