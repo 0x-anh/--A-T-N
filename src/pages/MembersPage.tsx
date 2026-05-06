@@ -49,7 +49,7 @@ const MembersPage = ({
                <span className="text-[11px] font-black text-brand-600 uppercase tracking-[0.6em] font-mono">PERSONNEL_CORE_LOGIC</span>
             </div>
             <h2 className="text-7xl font-black text-slate-950 tracking-[-0.05em] leading-none uppercase">
-              QUẢN TRỊ <span className="text-slate-400 font-light italic">Nhân Sự.</span>
+              QUẢN TRỊ <span className="text-slate-400 font-light">Nhân Sự</span>
             </h2>
           </div>
 
