@@ -68,6 +68,50 @@ const DashboardPage = ({
         </div>
       </header>
 
+      {/* Global Alerts Row - Full Width for Balance */}
+      {overdueTasks.length > 0 && (
+        <motion.section 
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="bg-rose-50/50 backdrop-blur-3xl rounded-3xl border border-rose-200 p-6 shadow-sm relative overflow-hidden group mb-8"
+        >
+          <div className="absolute top-0 right-0 w-64 h-full bg-gradient-to-l from-rose-500/5 to-transparent" />
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+            <div className="flex items-center gap-5">
+              <div className="w-12 h-12 rounded-2xl bg-rose-500 text-white flex items-center justify-center shadow-lg shadow-rose-500/20 shrink-0">
+                <Zap size={24} className="animate-pulse" />
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-rose-600 uppercase tracking-[0.3em] mb-1">CẢNH BÁO QUÁ HẠN HỆ THỐNG</h3>
+                <p className="text-[11px] font-bold text-rose-400 font-mono italic">PHÁT HIỆN {overdueTasks.length} ĐIỂM NGHẼN CẦN XỬ LÝ NGAY LẬP TỨC</p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-3 flex-1 max-w-2xl">
+              {overdueTasks.slice(0, 3).map(task => (
+                <div key={task.id} className="flex-1 min-w-[200px] p-3 bg-white/60 border border-rose-100 rounded-xl flex items-center justify-between group/task hover:bg-white transition-all">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[11px] font-black text-slate-800 line-clamp-1">{task.title}</span>
+                    <span className="text-[9px] font-bold text-rose-500 font-mono">HẠN: {task.dueDate ? new Date(task.dueDate).toLocaleDateString('vi-VN') : '---'}</span>
+                  </div>
+                  <button 
+                    onClick={() => setActiveTab('board')}
+                    className="w-7 h-7 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center hover:bg-rose-600 hover:text-white transition-all"
+                  >
+                    <ChevronRight size={14} />
+                  </button>
+                </div>
+              ))}
+              {overdueTasks.length > 3 && (
+                <button onClick={() => setActiveTab('board')} className="px-4 text-[10px] font-black text-rose-400 uppercase tracking-widest hover:text-rose-600 transition-colors whitespace-nowrap">
+                  + {overdueTasks.length - 3} KHÁC
+                </button>
+              )}
+            </div>
+          </div>
+        </motion.section>
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatsCard label="Năng suất" value={`${appStats.resolutionRate}%`} icon={<Cpu />} trend="ỔN ĐỊNH" />
         <StatsCard label="Xử lý" value={appStats.open} icon={<Activity />} trend="HOẠT ĐỘNG" />
@@ -136,44 +180,6 @@ const DashboardPage = ({
         </div>
 
         <div className="flex flex-col gap-8">
-          {/* Overdue Alerts Module */}
-          {overdueTasks.length > 0 && (
-            <section className="bg-rose-50/50 backdrop-blur-3xl rounded-3xl border border-rose-200 p-6 shadow-sm relative overflow-hidden group animate-in fade-in slide-in-from-right-4 duration-700">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/10 rounded-full blur-3xl -mr-16 -mt-16" />
-              <div className="flex items-center gap-4 mb-4 relative z-10">
-                <div className="w-10 h-10 rounded-xl bg-rose-500 text-white flex items-center justify-center shadow-lg shadow-rose-500/20">
-                  <Zap size={20} className="animate-pulse" />
-                </div>
-                <div>
-                  <h3 className="text-xs font-black text-rose-600 uppercase tracking-widest">CẢNH BÁO QUÁ HẠN</h3>
-                  <p className="text-[10px] font-bold text-rose-400 font-mono italic">{overdueTasks.length} NHIỆM VỤ CẦN XỬ LÝ</p>
-                </div>
-              </div>
-              
-              <div className="space-y-3 relative z-10">
-                {overdueTasks.slice(0, 2).map(task => (
-                  <div key={task.id} className="p-3 bg-white/60 border border-rose-100 rounded-xl flex items-center justify-between group/task hover:bg-white transition-all">
-                    <div className="flex flex-col gap-1">
-                      <span className="text-[11px] font-black text-slate-800 line-clamp-1">{task.title}</span>
-                      <span className="text-[9px] font-bold text-rose-500 font-mono">QUÁ HẠN: {task.dueDate ? new Date(task.dueDate).toLocaleDateString('vi-VN') : '---'}</span>
-                    </div>
-                    <button 
-                      onClick={() => setActiveTab('board')}
-                      className="w-8 h-8 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center hover:bg-rose-600 hover:text-white transition-all"
-                    >
-                      <ChevronRight size={16} />
-                    </button>
-                  </div>
-                ))}
-                {overdueTasks.length > 2 && (
-                  <button onClick={() => setActiveTab('board')} className="w-full py-2 text-[9px] font-black text-rose-400 uppercase tracking-widest hover:text-rose-600 transition-colors">
-                    VÀ CÒN {overdueTasks.length - 2} NHIỆM VỤ KHÁC...
-                  </button>
-                )}
-              </div>
-            </section>
-          )}
-
           <section className="flex-1 bg-white/30 backdrop-blur-3xl rounded-3xl border border-white/60 p-8 shadow-sm tech-corners flex flex-col overflow-hidden relative">
             <div className="flex items-center justify-between mb-8 relative z-10">
               <div className="space-y-1">
