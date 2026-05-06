@@ -246,15 +246,15 @@ const KanbanBoard = ({
                   />
                 </div>
 
-                <div className="h-10 w-[1px] bg-slate-200 hidden md:block" />
+                <div className="h-10 w-[1px] bg-slate-800 hidden md:block" />
 
                 {/* View Toggle */}
-                <div className="flex items-center bg-white/60 backdrop-blur-md p-1 rounded-xl border border-slate-200">
+                <div className="flex items-center bg-slate-900/80 backdrop-blur-md p-1 rounded-xl border border-slate-800">
                   <button 
                     onClick={() => setViewMode('board')}
                     className={cn(
                       "px-4 py-2 rounded-lg text-[9px] font-black transition-all uppercase tracking-widest flex items-center gap-2",
-                      viewMode === 'board' ? "bg-slate-950 text-white shadow-xl shadow-slate-950/20" : "text-slate-400 hover:text-slate-600"
+                      viewMode === 'board' ? "bg-slate-950 text-white shadow-xl shadow-slate-950/20" : "text-slate-400 hover:text-slate-200"
                     )}
                   >
                     <Grid size={12} />
@@ -264,7 +264,7 @@ const KanbanBoard = ({
                     onClick={() => setViewMode('list')}
                     className={cn(
                       "px-4 py-2 rounded-lg text-[9px] font-black transition-all uppercase tracking-widest flex items-center gap-2",
-                      viewMode === 'list' ? "bg-slate-950 text-white shadow-xl shadow-slate-950/20" : "text-slate-400 hover:text-slate-600"
+                      viewMode === 'list' ? "bg-slate-950 text-white shadow-xl shadow-slate-950/20" : "text-slate-400 hover:text-slate-200"
                     )}
                   >
                     <List size={12} />
@@ -274,15 +274,15 @@ const KanbanBoard = ({
              </div>
 
              <div className="flex flex-col items-end gap-1 group cursor-default">
-                <div className="flex items-baseline gap-2 text-slate-950">
+                <div className="flex items-baseline gap-2 text-white">
                    <span className="text-3xl font-heading font-black tracking-tighter tabular-nums leading-none">
                      {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
                    </span>
-                   <span className="text-[10px] font-black text-slate-400 uppercase font-mono">{currentTime.getHours() >= 12 ? 'PM' : 'AM'}</span>
+                   <span className="text-[10px] font-black text-slate-500 uppercase font-mono">{currentTime.getHours() >= 12 ? 'PM' : 'AM'}</span>
                 </div>
-                <div className="flex items-center gap-2 px-3 py-1 bg-brand-500/5 border border-brand-500/10 rounded-full">
+                <div className="flex items-center gap-2 px-3 py-1 bg-brand-500/10 border border-brand-500/20 rounded-full">
                    <div className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse" />
-                   <span className="text-[8px] font-black text-brand-600 uppercase tracking-[0.2em] font-mono">DỮ LIỆU ĐANG XỬ LÝ</span>
+                   <span className="text-[8px] font-black text-brand-400 uppercase tracking-[0.2em] font-mono">DỮ LIỆU ĐANG XỬ LÝ</span>
                 </div>
              </div>
           </div>
@@ -328,11 +328,11 @@ const KanbanBoard = ({
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
-              className="bg-white/40 backdrop-blur-3xl rounded-2xl border border-white/60 h-full overflow-hidden flex flex-col shadow-sm"
+              className="bg-slate-950/80 backdrop-blur-3xl rounded-2xl border border-slate-800 h-full overflow-hidden flex flex-col shadow-2xl"
             >
-              <div className="p-8 border-b border-slate-100 flex items-center justify-between relative z-10">
+              <div className="p-8 border-b border-slate-800 flex items-center justify-between relative z-10">
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-slate-950 flex items-center justify-center text-white shadow-2xl shadow-slate-950/20">
+                  <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white shadow-2xl shadow-slate-950/20">
                     <LayoutDashboard size={18} />
                   </div>
                   <div>
@@ -378,7 +378,7 @@ const KanbanBoard = ({
                             {statusLabels[bug.status]}
                           </span>
                         </td>
-                        <td className="px-6 py-5 bg-white/60 backdrop-blur-md border-y border-slate-200 text-center group-hover:bg-white transition-colors">
+                        <td className="px-6 py-5 bg-slate-900/40 last:rounded-r-xl border-y border-r border-slate-800 group-hover:bg-slate-900 transition-colors">
                           <span className={cn(
                             "text-[10px] font-black uppercase tracking-widest font-mono",
                             bug.priority === 'high' ? "text-rose-600" :

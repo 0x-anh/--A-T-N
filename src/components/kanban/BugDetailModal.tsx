@@ -109,7 +109,7 @@ const BugDetailModal = ({
           <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-brand-600 rounded-br-[2rem] md:rounded-br-[3rem]" />
 
           {/* Sidebar */}
-          <div className="w-full lg:w-[400px] bg-white/20 backdrop-blur-xl border-r-2 border-slate-400/50 flex flex-col p-6 md:p-10 space-y-8 overflow-y-auto no-scrollbar">
+          <div className="w-full lg:w-[400px] bg-white border-r-2 border-slate-300 flex flex-col p-6 md:p-10 space-y-8 overflow-y-auto no-scrollbar">
             <div className="flex items-center justify-between">
               <div className="flex flex-col">
                 <span className="text-[10px] font-black text-brand-700 uppercase tracking-[0.4em] font-mono mb-2">SYSTEM_NODE_01</span>
@@ -308,7 +308,7 @@ const BugDetailModal = ({
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 flex flex-col h-full bg-white/5 backdrop-blur-md">
+          <div className="flex-1 flex flex-col h-full bg-slate-50">
              <div className="flex items-center px-10 pt-8 gap-8 border-b-2 border-slate-400/30">
                 {[
                   { id: 'details', label: 'THÔNG SỐ KỸ THUẬT', icon: Cpu },

@@ -66,12 +66,11 @@ const BugCard = React.memo(({ bug, index, userProfiles, onSelect, userId, isAdmi
                "relative overflow-hidden group p-3.5 rounded-xl border transition-all duration-300",
                snapshot.isDragging 
                 ? "border-brand-500/50 bg-slate-900 shadow-2xl scale-[1.05] ring-1 ring-brand-500/40" 
-                : "bg-slate-950/90 backdrop-blur-xl border-white/5 hover:border-brand-500/40 hover:shadow-2xl hover:shadow-brand-500/10 hover:-translate-y-0.5",
-               isOverdue && !snapshot.isDragging && "border-rose-500/40 bg-slate-950"
+                : "bg-slate-950 border-white/5 hover:border-brand-500/40 hover:shadow-2xl hover:shadow-brand-500/10 hover:-translate-y-0.5",
+               isOverdue && !snapshot.isDragging && "border-rose-500/60 bg-slate-950 shadow-[0_0_20px_rgba(244,63,94,0.2)] animate-pulse-slow"
             )}
           >
-            {/* Dark Pixel Grid Overlay */}
-            <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '8px 8px' }} />
+            {/* Clean Background */}
 
             {/* Status Accent Line (Glowing) */}
             <div className={cn(
@@ -158,8 +157,6 @@ const BugCard = React.memo(({ bug, index, userProfiles, onSelect, userId, isAdmi
               )}
             </div>
 
-            {/* Subtle Inner Glow on Hover */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-brand-500/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
           </motion.div>
         </div>
       )}

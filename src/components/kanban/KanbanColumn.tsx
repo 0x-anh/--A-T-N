@@ -155,9 +155,9 @@ const KanbanColumn = React.memo(({
               {provided.placeholder}
             </div>
             
-            {/* Subtle Gradient Shadow for scroll hint */}
+            {/* Crystal Clear Bottom Area */}
             {showScrollHint && (
-              <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white/20 to-transparent pointer-events-none z-20" />
+              <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-transparent to-transparent pointer-events-none z-20" />
             )}
           </div>
         )}
