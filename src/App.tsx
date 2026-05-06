@@ -276,7 +276,8 @@ export default function App() {
 
           {activeTab === 'logs' && (
             <LogsPage 
-              projectId={selectedProject?.id || ''} 
+              selectedProject={selectedProject}
+              userId={user?.uid || ''}
               userProfiles={userProfiles}
             />
           )}

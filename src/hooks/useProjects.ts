@@ -123,6 +123,8 @@ export const useProjects = (userId: string | undefined, userProfiles: UserProfil
         projectName: invite.projectName,
         userId: userId,
         userName: currentUserProfile?.displayName || 'Thành viên mới',
+        userEmail: currentUserProfile?.email || '',
+        userPhoto: currentUserProfile?.photoURL || '',
         action: 'INVITATION_ACCEPTED',
         details: `${currentUserProfile?.displayName} đã chấp nhận lời mời tham gia dự án.`,
         createdAt: serverTimestamp()
@@ -157,6 +159,8 @@ export const useProjects = (userId: string | undefined, userProfiles: UserProfil
         projectName: invite.projectName,
         userId: userId,
         userName: currentUserProfile?.displayName || 'Nhân sự',
+        userEmail: currentUserProfile?.email || '',
+        userPhoto: currentUserProfile?.photoURL || '',
         action: 'INVITATION_DECLINED',
         details: `${currentUserProfile?.displayName} đã từ chối lời mời tham gia dự án.`,
         createdAt: serverTimestamp()
@@ -196,6 +200,8 @@ export const useProjects = (userId: string | undefined, userProfiles: UserProfil
           projectName: selectedProject.name,
           userId: userId,
           userName: currentUserProfile?.displayName || 'Admin',
+          userEmail: currentUserProfile?.email || '',
+          userPhoto: currentUserProfile?.photoURL || '',
           action: 'MEMBER_REMOVED',
           details: `Hệ thống đã giải phóng nhân sự ${displayName} khỏi dự án.`,
           createdAt: serverTimestamp()

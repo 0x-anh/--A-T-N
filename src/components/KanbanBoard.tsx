@@ -10,8 +10,9 @@ import {
   UserProfile, Project, UserRole, canUserMoveTo 
 } from '../types';
 import { toast } from 'sonner';
-import { Plus, Bug as BugIcon, Search, LayoutDashboard, ListFilter } from 'lucide-react';
+import { Plus, Bug as BugIcon, Search, LayoutDashboard, ListFilter, Activity, SearchIcon, Grid, List } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { motion, AnimatePresence } from 'motion/react';
 
 // Import sub-components
 import KanbanHeader from './kanban/KanbanHeader';
@@ -47,7 +48,7 @@ const KanbanBoard = ({
   const [newComment, setNewComment] = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // Mapping labels directly to avoid lookup issues
+  // Mapping labels
   const statusLabels: Record<BugStatus, string> = {
     'backlog': 'HÀNG ĐỢI CHIẾN LƯỢC',
     'in-progress': 'TIẾN TRÌNH VẬN HÀNH',
@@ -77,7 +78,7 @@ const KanbanBoard = ({
     return groups;
   }, [filteredBugs]);
 
-  // Firebase Activity & Comments logic
+  // Firebase Logic
   useEffect(() => {
     if (!selectedBug) return;
     const q = query(
@@ -101,6 +102,7 @@ const KanbanBoard = ({
         details: content,
         userId,
         userName: profile?.displayName || 'Unknown',
+        userEmail: profile?.email || '',
         userPhoto: profile?.photoURL || '',
         createdAt: serverTimestamp()
       });
@@ -157,7 +159,6 @@ const KanbanBoard = ({
   };
 
   const handleDeleteBug = async (bugId: string) => {
-    // Advanced Undo Logic: Explicit setTimeout for stability
     const bugToDelete = bugs.find(b => b.id === bugId);
     const bugTitle = bugToDelete?.title || "Nút dữ liệu";
 
@@ -167,9 +168,7 @@ const KanbanBoard = ({
         logActivity(bugId, 'BUG_DELETED', `Đã xóa nút dữ liệu: ${bugTitle}`);
         setSelectedBug(null);
         toast.success(`Đã chính thức giải phóng ${bugTitle}.`);
-      } catch (e) {
-        toast.error("Lỗi giải phóng dữ liệu.");
-      }
+      } catch (e) { toast.error("Lỗi giải phóng dữ liệu."); }
       delete (window as any)[`timeout_bug_${bugId}`];
     }, 5000);
 
@@ -207,161 +206,211 @@ const KanbanBoard = ({
   };
 
   return (
-    <div className="h-[calc(100vh-120px)] flex flex-col overflow-hidden bg-slate-50" style={{ position: 'relative', zIndex: 10 }}>
-      {/* Header section */}
-      <div className="px-4 md:px-8 py-6 bg-white border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white shadow-lg shadow-slate-900/20">
-            <BugIcon size={20} />
-          </div>
-          <div>
-            <h1 className="text-xl font-black text-slate-950 tracking-tight uppercase">Bảng Quản Trị</h1>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Hệ thống theo dõi vận hành • Zenith v4.0</p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div className="relative group">
-            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-400 group-focus-within:text-slate-950 transition-colors">
-              <Search size={14} strokeWidth={3} />
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }} 
+      animate={{ opacity: 1, y: 0 }} 
+      exit={{ opacity: 0, y: -20 }} 
+      className="h-[calc(100vh-120px)] flex flex-col overflow-hidden space-y-6"
+    >
+      {/* Overview Style Header */}
+      <header className="flex flex-col gap-8 mb-4 relative px-4 pt-4 shrink-0">
+        <div className="flex items-center justify-between border-b border-slate-200/50 pb-8">
+          <div className="flex items-center gap-8">
+            <div className="flex flex-col">
+              <h3 className="text-[11px] font-black text-brand-600 uppercase tracking-[0.5em] font-mono leading-none mb-2">TRUNG TÂM ĐIỀU PHỐI</h3>
+              <h2 className="text-4xl md:text-5xl font-heading font-black tracking-tighter uppercase leading-none text-slate-950">
+                BẢNG <span className="text-slate-400">CHIẾN LƯỢC</span>
+              </h2>
             </div>
-            <input 
-              type="text" 
-              placeholder="Tìm kiếm công việc..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold text-slate-950 outline-none focus:ring-2 focus:ring-slate-950/5 focus:border-slate-950 transition-all w-[200px] md:w-[300px]"
-            />
-          </div>
-          
-          <div className="h-8 w-[1px] bg-slate-100 mx-1" />
-          
-          <div className="flex items-center bg-slate-50 p-1 rounded-xl border border-slate-100">
-            <button 
-              onClick={() => setViewMode('board')}
-              className={cn(
-                "px-3 py-1.5 rounded-lg text-[10px] font-black transition-all uppercase tracking-wider",
-                viewMode === 'board' ? "bg-white text-slate-950 shadow-sm" : "text-slate-400 hover:text-slate-600"
-              )}
-            >
-              Bảng
-            </button>
-            <button 
-              onClick={() => setViewMode('list')}
-              className={cn(
-                "px-3 py-1.5 rounded-lg text-[10px] font-black transition-all uppercase tracking-wider",
-                viewMode === 'list' ? "bg-white text-slate-950 shadow-sm" : "text-slate-400 hover:text-slate-600"
-              )}
-            >
-              Danh sách
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex-1 p-2 md:p-4 pb-10 overflow-hidden">
-        {viewMode === 'board' ? (
-          <DragDropContext onDragEnd={onDragEnd}>
-            <div className="flex h-full gap-4 overflow-x-auto no-scrollbar pb-4">
-              {(['backlog', 'in-progress', 'in-review', 'done'] as BugStatus[]).map(status => (
-                <KanbanColumn 
-                  key={status}
-                  title={statusLabels[status]}
-                  status={status}
-                  tasks={tasksByStatus[status]}
-                  userProfiles={userProfiles}
-                  onSelect={setSelectedBug}
-                  isAdding={isAdding === status}
-                  setIsAdding={setIsAdding}
-                  newBugTitle={newBugTitle}
-                  setNewBugTitle={setNewBugTitle}
-                  handleAddBug={handleAddBug}
-                  userId={userId}
-                  isAdmin={isAdmin}
-                  currentTime={currentTime}
-                />
-              ))}
+            <div className="hidden lg:block w-[1px] h-16 bg-slate-200" />
+            <div className="hidden lg:block max-w-xs">
+              <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest leading-relaxed">
+                Quản lý tiến trình vận hành, phân bổ nhiệm vụ và giám sát chất lượng thực thi.
+              </p>
             </div>
-          </DragDropContext>
-        ) : (
-          <div className="bg-white rounded-[2rem] border border-slate-100 h-full overflow-hidden flex flex-col shadow-sm">
-            <div className="p-6 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-white">
-                  <LayoutDashboard size={14} />
+          </div>
+
+          <div className="flex flex-col items-end gap-4">
+             <div className="flex items-center gap-3">
+                {/* Search Bar */}
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-400 group-focus-within:text-slate-950 transition-colors">
+                    <Search size={14} strokeWidth={3} />
+                  </div>
+                  <input 
+                    type="text" 
+                    placeholder="TÌM KIẾM NHIỆM VỤ..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 pr-4 py-2.5 bg-white/40 backdrop-blur-md border border-slate-300/40 rounded-xl text-[10px] font-black text-slate-950 outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500/50 transition-all w-[200px] md:w-[280px] uppercase tracking-widest"
+                  />
                 </div>
-                <h2 className="text-sm font-black text-slate-950 uppercase tracking-wider">Danh sách công việc</h2>
-              </div>
-              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-white px-3 py-1 rounded-full border border-slate-100">
-                Tổng cộng: {filteredBugs.length} nhiệm vụ
-              </div>
-            </div>
-            <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
-              <table className="w-full text-left border-separate border-spacing-y-2">
-                <thead>
-                  <tr className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                    <th className="px-4 pb-4">Mã số</th>
-                    <th className="px-4 pb-4">Công việc</th>
-                    <th className="px-4 pb-4">Trạng thái</th>
-                    <th className="px-4 pb-4">Độ ưu tiên</th>
-                    <th className="px-4 pb-4">Người thực hiện</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredBugs.map(bug => (
-                    <tr 
-                      key={bug.id} 
-                      onClick={() => setSelectedBug(bug)}
-                      className="group cursor-pointer hover:translate-x-1 transition-all"
-                    >
-                      <td className="px-4 py-4 bg-slate-50 first:rounded-l-2xl border-y border-l border-slate-100 text-[10px] font-bold font-mono text-slate-400">
-                        {bug.id.substring(0, 8)}
-                      </td>
-                      <td className="px-4 py-4 bg-slate-50 border-y border-slate-100 text-xs font-bold text-slate-950">
-                        {bug.title}
-                      </td>
-                      <td className="px-4 py-4 bg-slate-50 border-y border-slate-100">
-                        <span className={cn(
-                          "px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider",
-                          bug.status === 'backlog' ? "bg-slate-200 text-slate-600" :
-                          bug.status === 'in-progress' ? "bg-amber-100 text-amber-600" :
-                          bug.status === 'in-review' ? "bg-brand-100 text-brand-600" : "bg-emerald-100 text-emerald-600"
-                        )}>
-                          {statusLabels[bug.status]}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4 bg-slate-50 border-y border-slate-100">
-                        <span className={cn(
-                          "text-[10px] font-bold uppercase tracking-widest",
-                          bug.priority === 'high' ? "text-rose-500" :
-                          bug.priority === 'medium' ? "text-amber-500" : "text-slate-400"
-                        )}>
-                          {bug.priority === 'high' ? 'Cao' : bug.priority === 'medium' ? 'Trung bình' : 'Thấp'}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4 bg-slate-50 last:rounded-r-2xl border-y border-r border-slate-100">
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden">
-                            {userProfiles.find(p => p.userId === bug.assigneeId)?.photoURL ? (
-                              <img src={userProfiles.find(p => p.userId === bug.assigneeId)?.photoURL} alt="Avatar" className="w-full h-full object-cover" />
-                            ) : (
-                              <span className="text-[8px] font-bold text-slate-400">
-                                {userProfiles.find(p => p.userId === bug.assigneeId)?.displayName?.substring(0, 1) || '?'}
-                              </span>
-                            )}
-                          </div>
-                          <span className="text-[10px] font-bold text-slate-600">
-                            {userProfiles.find(p => p.userId === bug.assigneeId)?.displayName || 'Chưa phân công'}
-                          </span>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+
+                <div className="h-10 w-[1px] bg-slate-200 hidden md:block" />
+
+                {/* View Toggle */}
+                <div className="flex items-center bg-white/40 backdrop-blur-md p-1 rounded-xl border border-slate-300/40">
+                  <button 
+                    onClick={() => setViewMode('board')}
+                    className={cn(
+                      "px-4 py-2 rounded-lg text-[9px] font-black transition-all uppercase tracking-widest flex items-center gap-2",
+                      viewMode === 'board' ? "bg-slate-950 text-white shadow-xl shadow-slate-950/20" : "text-slate-400 hover:text-slate-600"
+                    )}
+                  >
+                    <Grid size={12} />
+                    BẢNG
+                  </button>
+                  <button 
+                    onClick={() => setViewMode('list')}
+                    className={cn(
+                      "px-4 py-2 rounded-lg text-[9px] font-black transition-all uppercase tracking-widest flex items-center gap-2",
+                      viewMode === 'list' ? "bg-slate-950 text-white shadow-xl shadow-slate-950/20" : "text-slate-400 hover:text-slate-600"
+                    )}
+                  >
+                    <List size={12} />
+                    DANH SÁCH
+                  </button>
+                </div>
+             </div>
+
+             <div className="flex flex-col items-end gap-1 group cursor-default">
+                <div className="flex items-baseline gap-2">
+                   <span className="text-3xl font-heading font-black text-slate-950 tracking-tighter tabular-nums leading-none">
+                     {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
+                   </span>
+                   <span className="text-[10px] font-black text-slate-400 uppercase font-mono">{currentTime.getHours() >= 12 ? 'PM' : 'AM'}</span>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1 bg-brand-500/5 border border-brand-500/10 rounded-full">
+                   <div className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse" />
+                   <span className="text-[8px] font-black text-brand-600 uppercase tracking-[0.2em] font-mono">DỮ LIỆU ĐANG XỬ LÝ</span>
+                </div>
+             </div>
           </div>
-        )}
+        </div>
+      </header>
+
+      <div className="flex-1 px-4 md:px-8 pb-10 overflow-hidden relative">
+        <AnimatePresence mode="wait">
+          {viewMode === 'board' ? (
+            <motion.div 
+              key="board"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="h-full"
+            >
+              <DragDropContext onDragEnd={onDragEnd}>
+                <div className="flex h-full gap-6 overflow-x-auto no-scrollbar pb-6">
+                  {(['backlog', 'in-progress', 'in-review', 'done'] as BugStatus[]).map(status => (
+                    <KanbanColumn 
+                      key={status}
+                      title={statusLabels[status]}
+                      status={status}
+                      tasks={tasksByStatus[status]}
+                      userProfiles={userProfiles}
+                      onSelect={setSelectedBug}
+                      isAdding={isAdding === status}
+                      setIsAdding={setIsAdding}
+                      newBugTitle={newBugTitle}
+                      setNewBugTitle={setNewBugTitle}
+                      handleAddBug={handleAddBug}
+                      userId={userId}
+                      isAdmin={isAdmin}
+                      currentTime={currentTime}
+                    />
+                  ))}
+                </div>
+              </DragDropContext>
+            </motion.div>
+          ) : (
+            <motion.div 
+              key="list"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              className="bg-white/30 backdrop-blur-3xl rounded-[2.5rem] border border-white/60 h-full overflow-hidden flex flex-col shadow-sm tech-corners"
+            >
+              <div className="p-8 border-b border-white/50 flex items-center justify-between relative z-10">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-slate-950 flex items-center justify-center text-white shadow-2xl shadow-slate-950/20">
+                    <LayoutDashboard size={18} />
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-black text-slate-950 uppercase tracking-widest italic">DANH SÁCH NHIỆM VỤ</h2>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono mt-1">OPERATIONAL_DATA_STREAM</p>
+                  </div>
+                </div>
+                <div className="text-[10px] font-black text-slate-900 bg-white/50 px-5 py-2 rounded-xl border border-white/80 uppercase tracking-widest font-mono shadow-sm">
+                  TỔNG_CỘNG: {filteredBugs.length} NODE
+                </div>
+              </div>
+              <div className="flex-1 overflow-y-auto p-8 custom-scrollbar relative z-10">
+                <table className="w-full text-left border-separate border-spacing-y-3">
+                  <thead>
+                    <tr className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] font-mono">
+                      <th className="px-6 pb-4">MÃ_SỐ</th>
+                      <th className="px-6 pb-4">CHIẾN_LƯỢC_VẬN_HÀNH</th>
+                      <th className="px-6 pb-4 text-center">TRẠNG_THÁI</th>
+                      <th className="px-6 pb-4 text-center">ƯU_TIÊN</th>
+                      <th className="px-6 pb-4">NHÂN_SỰ_THỰC_THI</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredBugs.map(bug => (
+                      <tr 
+                        key={bug.id} 
+                        onClick={() => setSelectedBug(bug)}
+                        className="group cursor-pointer hover:translate-x-2 transition-all duration-500"
+                      >
+                        <td className="px-6 py-5 bg-white/40 backdrop-blur-md first:rounded-l-[1.5rem] border-y border-l border-white/60 text-[10px] font-black font-mono text-slate-400 group-hover:bg-white transition-colors">
+                          {bug.id.substring(0, 8).toUpperCase()}
+                        </td>
+                        <td className="px-6 py-5 bg-white/40 backdrop-blur-md border-y border-white/60 text-xs font-black text-slate-900 group-hover:bg-white transition-colors">
+                          {bug.title}
+                        </td>
+                        <td className="px-6 py-5 bg-white/40 backdrop-blur-md border-y border-white/60 text-center group-hover:bg-white transition-colors">
+                          <span className={cn(
+                            "px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border",
+                            bug.status === 'backlog' ? "bg-slate-50 text-slate-500 border-slate-200" :
+                            bug.status === 'in-progress' ? "bg-amber-50 text-amber-600 border-amber-100" :
+                            bug.status === 'in-review' ? "bg-brand-50 text-brand-600 border-brand-100" : "bg-emerald-50 text-emerald-600 border-emerald-100"
+                          )}>
+                            {statusLabels[bug.status]}
+                          </span>
+                        </td>
+                        <td className="px-6 py-5 bg-white/40 backdrop-blur-md border-y border-white/60 text-center group-hover:bg-white transition-colors">
+                          <span className={cn(
+                            "text-[10px] font-black uppercase tracking-widest font-mono",
+                            bug.priority === 'high' ? "text-rose-500" :
+                            bug.priority === 'medium' ? "text-amber-500" : "text-slate-400"
+                          )}>
+                            {bug.priority === 'high' ? 'CRITICAL' : bug.priority === 'medium' ? 'STABLE' : 'LOW'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-5 bg-white/40 backdrop-blur-md last:rounded-r-[1.5rem] border-y border-r border-white/60 group-hover:bg-white transition-colors">
+                          <div className="flex items-center gap-3">
+                            <div className="w-7 h-7 rounded-lg bg-slate-950 flex items-center justify-center overflow-hidden ring-2 ring-white shadow-sm">
+                              {userProfiles.find(p => p.userId === bug.assigneeId)?.photoURL ? (
+                                <img src={userProfiles.find(p => p.userId === bug.assigneeId)?.photoURL} alt="Avatar" className="w-full h-full object-cover" />
+                              ) : (
+                                <span className="text-[8px] font-black text-white">
+                                  {userProfiles.find(p => p.userId === bug.assigneeId)?.displayName?.substring(0, 1) || '?'}
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[10px] font-black text-slate-600 uppercase tracking-tight">
+                              {userProfiles.find(p => p.userId === bug.assigneeId)?.displayName || 'CHƯA_PHÂN_CÔNG'}
+                            </span>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       <TeamManagementModal 
@@ -390,7 +439,7 @@ const KanbanBoard = ({
         handleAddComment={handleAddComment}
         bottomRef={bottomRef}
       />
-    </div>
+    </motion.div>
   );
 };
 
