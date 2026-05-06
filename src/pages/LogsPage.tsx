@@ -46,7 +46,7 @@ const LogsPage = ({ projectId, userProfiles }: { projectId: string, userProfiles
           </div>
           <div>
             <h2 className="text-2xl font-black text-slate-950 tracking-tight uppercase leading-none">Nhật_Ký_Hệ_Thống</h2>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono mt-2">Live_Activity_Relay</p>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] font-mono mt-2">TRUYỀN_TẢI_DỮ_LIỆU_TRỰC_TIẾP</p>
           </div>
         </div>
       </header>
@@ -91,7 +91,7 @@ const LogsPage = ({ projectId, userProfiles }: { projectId: string, userProfiles
                       </h3>
                       <div className="flex items-center gap-2">
                         <div className="w-3 h-[1px] bg-brand-500" />
-                        <span className="text-[9px] font-black text-brand-600 uppercase tracking-widest font-mono">Status_Verified</span>
+                        <span className="text-[9px] font-black text-brand-600 uppercase tracking-widest font-mono">XÁC_THỰC_TRẠNG_THÁI</span>
                       </div>
                     </div>
                     

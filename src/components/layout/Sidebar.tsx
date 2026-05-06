@@ -30,7 +30,7 @@ const Sidebar = ({ activeTab, setActiveTab, user, handleLogout }: SidebarProps) 
         </div>
         <div className="flex flex-col">
           <span className="text-sm font-bold text-slate-950 tracking-tight uppercase leading-none group-hover:text-brand-600 transition-colors">ZENITH</span>
-          <span className="text-[9px] font-bold text-brand-600 uppercase tracking-[0.4em] font-mono mt-1.5 opacity-60">SYSTEM_X</span>
+          <span className="text-[9px] font-bold text-brand-600 uppercase tracking-[0.4em] font-mono mt-1.5 opacity-60">HỆ_THỐNG_X</span>
         </div>
       </div>
 
@@ -80,9 +80,9 @@ const Sidebar = ({ activeTab, setActiveTab, user, handleLogout }: SidebarProps) 
                {user?.displayName || 'Guest User'}
              </div>
              <div className="flex items-center gap-3">
-               <span className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] font-mono">
-                 {user?.email ? 'Authorized' : 'Guest Mode'}
-               </span>
+                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] font-mono">
+                  {user?.email ? 'Đã xác thực' : 'Chế độ khách'}
+                </span>
                <button 
                  onClick={handleLogout}
                  className="flex items-center gap-1 text-[9px] font-bold text-rose-500 hover:text-rose-700 transition-colors uppercase tracking-widest font-mono opacity-60 group-hover/profile:opacity-100 flex-shrink-0"
@@ -96,10 +96,10 @@ const Sidebar = ({ activeTab, setActiveTab, user, handleLogout }: SidebarProps) 
         
         <div className="flex flex-col gap-1 pt-2 opacity-30">
           <p className="text-[8px] font-bold text-slate-400 uppercase tracking-[0.3em] font-mono text-center">
-            ZENITH_X • SYSTEM_STABLE
+            ZENITH_X • HỆ_THỐNG_ỔN_ĐỊNH
           </p>
           <p className="text-[7px] font-medium text-slate-300 uppercase tracking-[0.2em] text-center">
-            DEVELOPED BY NGUYỄN ĐỨC ANH
+            PHÁT TRIỂN BỞI NGUYỄN ĐỨC ANH
           </p>
         </div>
       </div>

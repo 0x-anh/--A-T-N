@@ -60,7 +60,7 @@ export default function App() {
     try {
       await addDoc(collection(db, 'projects'), {
         name: newProjectName,
-        description: 'New Project',
+        description: 'Dự án mới',
         createdAt: serverTimestamp(),
         ownerId: user.uid,
         members: [user.uid]
@@ -111,7 +111,7 @@ export default function App() {
             className="w-full h-full border border-slate-200 border-t-slate-900 rounded-full" 
           />
         </div>
-        <span className="text-[9px] font-bold text-slate-300 uppercase tracking-[0.3em] animate-pulse">Zenith System Init</span>
+        <span className="text-[9px] font-bold text-slate-300 uppercase tracking-[0.3em] animate-pulse">Khởi tạo hệ thống Zenith</span>
       </div>
     );
   }

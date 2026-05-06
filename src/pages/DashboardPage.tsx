@@ -37,7 +37,7 @@ const DashboardPage = ({
         <div className="flex items-center justify-between border-b border-slate-200/50 pb-8">
           <div className="flex items-center gap-8">
             <div className="flex flex-col">
-              <h3 className="text-[11px] font-black text-brand-600 uppercase tracking-[0.5em] font-mono leading-none mb-2">OPERATIONAL_COMMAND</h3>
+              <h3 className="text-[11px] font-black text-brand-600 uppercase tracking-[0.5em] font-mono leading-none mb-2">CHỈ_HUY_VẬN_HÀNH</h3>
               <h2 className="text-4xl md:text-5xl font-heading font-black tracking-tighter uppercase leading-none text-slate-950">
                 TRUNG TÂM <span className="text-slate-400">ĐIỀU HÀNH</span>
               </h2>
@@ -51,7 +51,7 @@ const DashboardPage = ({
           </div>
 
           <div className="flex flex-col items-end gap-2 group cursor-default">
-             <div className="text-[10px] font-black text-slate-300 uppercase tracking-[0.6em] font-mono transition-colors group-hover:text-brand-500">SYS_TIME_SYNC</div>
+             <div className="text-[10px] font-black text-slate-300 uppercase tracking-[0.6em] font-mono transition-colors group-hover:text-brand-500">ĐỒNG_BỘ_THỜI_GIAN</div>
              <div className="flex items-baseline gap-2">
                 <span className="text-4xl font-heading font-black text-slate-950 tracking-tighter tabular-nums leading-none">
                   {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
@@ -60,7 +60,7 @@ const DashboardPage = ({
              </div>
              <div className="flex items-center gap-2 px-3 py-1 bg-emerald-500/5 border border-emerald-500/10 rounded-full">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[9px] font-black text-emerald-600 uppercase tracking-[0.2em] font-mono">CONNECTION_STABLE</span>
+                <span className="text-[9px] font-black text-emerald-600 uppercase tracking-[0.2em] font-mono">KẾT_NỐI_ỔN_ĐỊNH</span>
              </div>
           </div>
         </div>
@@ -145,27 +145,52 @@ const DashboardPage = ({
               </div>
             </div>
 
-            <div className="space-y-4 flex-1 overflow-y-auto pr-2 custom-scrollbar relative z-10 max-h-[380px]">
-              {events && events.length > 0 ? events.slice(0, 3).map((log) => (
-                <div key={log.id} className="p-4 bg-white/40 hover:bg-white/70 border border-white/60 rounded-2xl transition-all duration-300 group/item cursor-pointer">
-                  <div className="flex items-start justify-between mb-2">
-                    <span className="text-[8px] font-black px-2 py-1 rounded-md uppercase tracking-widest font-mono bg-slate-100 text-slate-500 border border-slate-200">
-                       {log.type || 'Activity'}
-                    </span>
-                    <span className="text-[9px] font-bold text-slate-400 font-mono">
-                      {log.createdAt?.toDate ? new Date(log.createdAt.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Vừa xong'}
-                    </span>
+            <div className="space-y-6 flex-1 overflow-y-auto pr-4 custom-scrollbar relative z-10 max-h-[420px]">
+              {events && events.length > 0 ? events.slice(0, 3).map((log, i) => (
+                <div key={log.id} className="relative pl-8 group/log">
+                  {/* Timeline Node */}
+                  <div className="absolute left-0 top-1 w-4 h-4 flex items-center justify-center">
+                    <div className="w-[2px] h-[calc(100%+24px)] bg-slate-100 absolute top-4 left-1/2 -translate-x-1/2 group-last/log:hidden" />
+                    <div className="w-2 h-2 rounded-full bg-white border-2 border-brand-500 z-10 group-hover/log:scale-150 transition-transform shadow-[0_0_10px_rgba(99,102,241,0.5)]" />
                   </div>
-                  <h4 className="text-xs font-bold text-slate-900 mb-2 line-clamp-1 group-hover/item:text-brand-600 transition-colors leading-relaxed">
-                    {log.message || log.details || log.content || 'Hoạt động hệ thống.'}
-                  </h4>
-                  <div className="flex items-center gap-3 px-4 py-2 bg-slate-950 text-white rounded-xl shadow-lg shadow-slate-950/10 self-start md:self-center">
-                    <img 
-                      src={userProfiles.find(u => u.userId === log.userId)?.photoURL || log.userPhoto || `https://api.dicebear.com/7.x/notionists/svg?seed=${log.userId || 'system'}`} 
-                      className="w-5 h-5 rounded-lg border border-white/20"
-                      alt=""
-                    />
-                    <span className="text-[10px] font-black uppercase tracking-widest">{log.userName || 'System'}</span>
+
+                  <div className="space-y-3 pb-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="text-[9px] font-black text-brand-600 bg-brand-50 px-2 py-0.5 rounded border border-brand-100 uppercase tracking-tighter font-mono">
+                           {log.type?.replace('_', ' ') || 'VẬN HÀNH'}
+                        </span>
+                        <span className="text-[10px] font-bold text-slate-400 font-mono tabular-nums opacity-60">
+                          {log.createdAt?.toDate ? new Date(log.createdAt.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : '--:--'}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 opacity-0 group-hover/log:opacity-100 transition-opacity">
+                        <div className="w-1 h-1 rounded-full bg-emerald-500" />
+                        <span className="text-[8px] font-black text-emerald-600 font-mono">ĐÃ ĐỒNG BỘ</span>
+                      </div>
+                    </div>
+
+                    <div className="p-4 bg-white/40 backdrop-blur-md border border-white/60 rounded-2xl group-hover/log:bg-white/80 group-hover/log:border-brand-500/30 transition-all duration-500 shadow-sm">
+                      <p className="text-xs font-bold text-slate-800 leading-relaxed mb-3">
+                        {log.message || log.details || log.content}
+                      </p>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                           <img 
+                             src={userProfiles.find(u => u.userId === log.userId)?.photoURL || log.userPhoto || `https://api.dicebear.com/7.x/notionists/svg?seed=${log.userId || 'system'}`} 
+                             className="w-5 h-5 rounded-lg border border-white shadow-sm ring-2 ring-slate-50"
+                             alt=""
+                           />
+                           <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest font-mono">
+                             {log.userName?.split(' ').pop() || 'HỆ THỐNG'}
+                           </span>
+                        </div>
+                        <div className="text-[8px] font-bold text-slate-300 font-mono tracking-tighter">
+                          HEX_{log.id?.slice(0, 8).toUpperCase()}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )) : (
@@ -180,9 +205,12 @@ const DashboardPage = ({
             
             <button 
               onClick={() => setActiveTab('logs')}
-              className="mt-8 w-full py-4 bg-white/50 border border-white/80 rounded-2xl text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] hover:bg-slate-950 hover:text-white transition-all duration-500 font-mono shadow-sm active:scale-[0.98]"
+              className="mt-6 relative group/btn w-full overflow-hidden rounded-2xl"
             >
-              XEM TOÀN BỘ NHẬT KÝ
+              <div className="absolute inset-0 bg-slate-950 translate-y-[101%] group-hover/btn:translate-y-0 transition-transform duration-500" />
+              <div className="relative py-4 border border-slate-200 group-hover/btn:border-slate-950 transition-colors text-[10px] font-black text-slate-400 group-hover/btn:text-white uppercase tracking-[0.4em] font-mono">
+                XEM TOÀN BỘ NHẬT KÝ
+              </div>
             </button>
           </section>
         </div>
