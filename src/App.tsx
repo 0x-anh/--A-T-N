@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from "motion/react";
 import { useTranslation } from 'react-i18next';
 import { Toaster, toast } from 'sonner';
@@ -64,6 +64,27 @@ export default function App() {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  // Watch for role changes to notify the current user
+  const prevRolesRef = useRef<string[]>([]);
+  useEffect(() => {
+    if (currentUserProfile?.roles) {
+      const currentRoles = [...currentUserProfile.roles].sort();
+      const prevRoles = [...prevRolesRef.current].sort();
+      
+      if (prevRoles.length > 0 && JSON.stringify(currentRoles) !== JSON.stringify(prevRoles)) {
+        // Find what was added
+        const added = currentRoles.find(r => !prevRoles.includes(r));
+        if (added) {
+          toast.info(`HỆ THỐNG: Bạn đã được cấp quyền ${t(`members.${added}`).toUpperCase()}.`, {
+            description: "Quyền hạn của bạn đã được cập nhật bởi quản trị viên.",
+            duration: 8000
+          });
+        }
+      }
+      prevRolesRef.current = currentUserProfile.roles;
+    }
+  }, [currentUserProfile?.roles, t]);
 
   const handleCreateProject = async () => {
     if (!newProjectName.trim() || !user) return;

@@ -286,15 +286,43 @@ export const useProjects = (userId: string | undefined, userProfiles: UserProfil
     }
   };
 
-  const handleUpdateUserRoles = async (targetUserId: string, newRoles: UserRole[]) => {
+  const handleUpdateUserRoles = async (targetUserId: string, currentRoles: UserRole[], clickedRole: UserRole) => {
     if (!userId || !isSystemAdmin) {
       toast.error("Yêu cầu quyền quản trị viên hệ thống.");
       return;
     }
+    
+    const targetProfile = userProfiles.find(u => u.userId === targetUserId);
+    const displayName = targetProfile?.displayName || "Nhân sự";
+    
     try {
+      const isRemoving = currentRoles.includes(clickedRole);
+      const newRoles = isRemoving 
+        ? currentRoles.filter(r => r !== clickedRole)
+        : [...currentRoles.filter(r => r !== clickedRole), clickedRole]; // Basic toggle logic
+      
+      if (newRoles.length === 0) {
+        toast.error("Nhân sự phải có ít nhất một vai trò.");
+        return;
+      }
+
       const userRef = doc(db, 'users', targetUserId);
       await updateDoc(userRef, { roles: newRoles });
-      toast.success("Vai trò nhân sự đã được cập nhật.");
+      
+      const roleLabel = t(`members.${clickedRole}`);
+      toast.success(`Đã ${isRemoving ? 'gỡ' : 'cấp'} vai trò ${roleLabel} cho ${displayName}.`);
+      
+      // Log the admin action
+      await addDoc(collection(db, 'activity_logs'), {
+        projectId: selectedProject?.id || 'GLOBAL',
+        projectName: selectedProject?.name || 'SYSTEM',
+        userId: userId,
+        userName: currentUserProfile?.displayName || 'Admin',
+        action: 'ROLE_UPDATED',
+        details: `Đã ${isRemoving ? 'gỡ' : 'cấp'} vai trò ${roleLabel} cho nhân sự ${displayName}.`,
+        createdAt: serverTimestamp()
+      });
+
       return true;
     } catch (e) {
       toast.error("Cập nhật vai trò thất bại.");
