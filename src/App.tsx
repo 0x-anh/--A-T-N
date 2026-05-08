@@ -27,10 +27,12 @@ import SettingsModal from './components/modals/SettingsModal';
 import DocsModal from './components/modals/DocsModal';
 import QuickAddModal from './components/kanban/QuickAddModal';
 
-import { db } from './lib/firebase';
+import { db, handleFirestoreError } from './lib/firebase';
+import { 
+  addDoc, collection, serverTimestamp, doc, setDoc, deleteDoc, 
+  getDocs, writeBatch, query, where, updateDoc 
+} from 'firebase/firestore';
 import type { BugPriority, UserRole } from './types';
-import { addDoc, collection, serverTimestamp, doc, setDoc, deleteDoc, getDocs, writeBatch, query, where } from 'firebase/firestore';
-import { handleFirestoreError } from './lib/firebase';
 
 export default function App() {
   const { t } = useTranslation();
@@ -65,37 +67,71 @@ export default function App() {
     return () => clearInterval(timer);
   }, []);
 
-  // Watch for role changes to notify the current user
-  const prevRolesRef = useRef<UserRole[]>([]);
+  // Watch for role changes to notify the current user (ADD only)
+  const prevRolesRef = useRef<UserRole[] | null>(null);
   useEffect(() => {
     if (currentUserProfile?.roles) {
       const currentRoles = [...currentUserProfile.roles].sort();
-      const prevRoles = [...prevRolesRef.current].sort();
       
-      console.log("[ZENITH_AUTH] Roles Check:", { current: currentRoles, prev: prevRoles });
+      if (prevRolesRef.current === null) {
+        console.log("[ZENITH_WATCHER] First load roles:", currentRoles);
+        prevRolesRef.current = currentRoles;
+        return;
+      }
 
-      if (prevRoles.length > 0 && JSON.stringify(currentRoles) !== JSON.stringify(prevRoles)) {
-        // Find what was added or removed
-        const added = currentRoles.find(r => !prevRoles.includes(r)) as UserRole | undefined;
-        const removed = prevRoles.find(r => !currentRoles.includes(r)) as UserRole | undefined;
+      const prevRoles = [...prevRolesRef.current].sort();
+      const currentStr = JSON.stringify(currentRoles);
+      const prevStr = JSON.stringify(prevRoles);
+      const hasChanged = currentStr !== prevStr;
+      
+      console.log("[ZENITH_WATCHER] Data Sync:", { 
+        current: currentRoles, 
+        prev: prevRoles,
+        hasChanged 
+      });
+
+      if (hasChanged) {
+        const addedRole = currentRoles.find(r => !prevRoles.includes(r));
         
-        console.log("[ZENITH_AUTH] Change detected:", { added, removed });
-
-        if (added) {
-          toast.info(`HỆ THỐNG: Bạn đã được cấp quyền ${t(`members.${added}`).toUpperCase()}.`, {
-            description: "Quyền hạn của bạn đã được cập nhật bởi quản trị viên.",
-            duration: 8000
-          });
-        } else if (removed) {
-          toast.warning(`HỆ THỐNG: Bạn đã bị gỡ quyền ${t(`members.${removed}`).toUpperCase()}.`, {
-            description: "Quyền hạn của bạn đã bị thay đổi bởi quản trị viên.",
-            duration: 8000
+        if (addedRole) {
+          console.log("[ZENITH_WATCHER] !!! TRIGGERING TOAST !!! Role:", addedRole);
+          toast.info(`HỆ THỐNG: Cấp quyền ${t(`members.${addedRole}`).toUpperCase()}`, {
+            description: "Vai trò của bạn đã được quản trị viên cập nhật thành công.",
+            duration: 5000,
+            position: 'top-right'
           });
         }
+        prevRolesRef.current = currentRoles;
       }
-      prevRolesRef.current = [...currentUserProfile.roles];
     }
-  }, [currentUserProfile?.roles, t]);
+  }, [currentUserProfile, t]); // Watch entire profile for better reactivity
+
+  // REALTIME PRESENCE: Update lastActive timestamp
+  useEffect(() => {
+    if (!user) return;
+    
+    const updatePresence = async () => {
+      try {
+        await updateDoc(doc(db, 'users', user.uid), {
+          lastActive: serverTimestamp()
+        });
+      } catch (e) {
+        console.error("Presence sync failed:", e);
+      }
+    };
+
+    // Update on mount
+    updatePresence();
+
+    // Update every 2 minutes if the page is active
+    const interval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        updatePresence();
+      }
+    }, 120000);
+
+    return () => clearInterval(interval);
+  }, [user]);
 
   const handleCreateProject = async () => {
     if (!newProjectName.trim() || !user) return;
@@ -239,10 +275,7 @@ export default function App() {
   };
 
   // Expose modal trigger for sub-components
-  useEffect(() => {
-    (window as any).triggerProjectModal = () => setShowProjectModal(true);
-    return () => { delete (window as any).triggerProjectModal; };
-  }, []);
+
 
   if (loading) {
     return (

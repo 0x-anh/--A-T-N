@@ -38,6 +38,7 @@ export interface UserProfile {
   email: string;
   photoURL: string;
   roles?: UserRole[];
+  lastActive?: any;
 }
 
 export const ROLE_CONFIG: Record<UserRole, { label: string, color: string }> = {

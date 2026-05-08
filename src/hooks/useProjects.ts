@@ -298,23 +298,20 @@ export const useProjects = (userId: string | undefined, userProfiles: UserProfil
     const displayName = targetProfile?.displayName || "Nhân sự";
     
     try {
-      const isRemoving = currentRoles.includes(clickedRole);
-      const newRoles = isRemoving 
-        ? currentRoles.filter(r => r !== clickedRole)
-        : [...currentRoles.filter(r => r !== clickedRole), clickedRole]; // Basic toggle logic
-      
-      if (newRoles.length === 0) {
-        toast.error("Nhân sự phải có ít nhất một vai trò.");
+      if (currentRoles.includes(clickedRole) && currentRoles.length === 1) {
+        toast.info("Nhân sự đã có vai trò này.");
         return;
       }
+      
+      const newRoles: UserRole[] = [clickedRole]; // Switch to the new role exclusively
+      
+      console.log(`[ZENITH_ADMIN] Switching roles for ${displayName}:`, { old: currentRoles, new: newRoles });
 
       const userRef = doc(db, 'users', targetUserId);
-      console.log("[ZENITH_ADMIN] Updating roles for:", targetUserId, "to:", newRoles);
       await updateDoc(userRef, { roles: newRoles });
       
       const roleLabel = t(`members.${clickedRole}`);
-      console.log("[ZENITH_ADMIN] Triggering toast for admin...");
-      toast.success(`Đã ${isRemoving ? 'gỡ' : 'cấp'} vai trò ${roleLabel} cho ${displayName}.`);
+      toast.success(`HỆ THỐNG: Đã chuyển vai trò sang ${roleLabel.toUpperCase()} cho ${displayName}.`);
       
       // Log the admin action
       await addDoc(collection(db, 'activity_logs'), {
@@ -323,13 +320,18 @@ export const useProjects = (userId: string | undefined, userProfiles: UserProfil
         userId: userId,
         userName: currentUserProfile?.displayName || 'Admin',
         action: 'ROLE_UPDATED',
-        details: `Đã ${isRemoving ? 'gỡ' : 'cấp'} vai trò ${roleLabel} cho nhân sự ${displayName}.`,
+        details: `Đã chuyển vai trò sang ${roleLabel} cho nhân sự ${displayName}.`,
         createdAt: serverTimestamp()
       });
 
       return true;
-    } catch (e) {
-      toast.error("Cập nhật vai trò thất bại.");
+    } catch (e: any) {
+      console.error("Role update error:", e);
+      if (targetUserId === userId) {
+        toast.error("Bạn không thể tự thay đổi vai trò của chính mình.");
+      } else {
+        toast.error(`Cập nhật vai trò thất bại: ${e.message || 'Lỗi phân quyền Firestore'}`);
+      }
       return false;
     }
   };

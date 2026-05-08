@@ -49,7 +49,13 @@ const MembersPage = ({
   const stats = {
     total: projectMembers.length,
     admins: projectMembers.filter(p => p.roles?.includes('editor')).length,
-    active: 100,
+    active: projectMembers.length > 0 
+      ? Math.round((projectMembers.filter(p => {
+          if (p.userId === userId) return true; // Me
+          const lastActiveDate = p.lastActive?.toDate?.() || (p.lastActive ? new Date(p.lastActive) : null);
+          return lastActiveDate && (currentTime.getTime() - lastActiveDate.getTime() < 300000);
+        }).length / projectMembers.length) * 100)
+      : 0,
     status: t('members.node_optimal')
   };
 
@@ -222,13 +228,27 @@ const MembersPage = ({
                        )}
                     </div>
                     
-                    <div className="flex flex-col items-end">
+                     <div className="flex flex-col items-end">
                        <span className="text-[10px] font-black text-slate-300 font-mono tracking-widest">NODE_{idx + 1 < 10 ? `0${idx + 1}` : idx + 1}</span>
-                       <div className="mt-1 flex items-center gap-1.5 px-2 py-0.5 bg-emerald-500/5 border border-emerald-500/10 rounded-full">
-                          <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
-                          <span className="text-[8px] font-black text-emerald-600 tracking-tighter uppercase font-mono">{t('members.active')}</span>
-                       </div>
-                    </div>
+                       {(() => {
+                         const lastActiveDate = profile.lastActive?.toDate?.() || (profile.lastActive ? new Date(profile.lastActive) : null);
+                         // If it's ME, I'm always online if I'm viewing this page.
+                         // For others, check the 5-minute threshold.
+                         const isOnline = isSelf || (lastActiveDate && (currentTime.getTime() - lastActiveDate.getTime() < 300000));
+                         
+                         return isOnline ? (
+                           <div className="mt-1 flex items-center gap-1.5 px-2 py-0.5 bg-emerald-500/5 border border-emerald-500/10 rounded-full">
+                             <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+                             <span className="text-[8px] font-black text-emerald-600 tracking-tighter uppercase font-mono">ONLINE</span>
+                           </div>
+                         ) : (
+                           <div className="mt-1 flex items-center gap-1.5 px-2 py-0.5 bg-slate-100 border border-slate-200 rounded-full">
+                             <div className="w-1 h-1 rounded-full bg-slate-300" />
+                             <span className="text-[8px] font-black text-slate-400 tracking-tighter uppercase font-mono">OFFLINE</span>
+                           </div>
+                         );
+                       })()}
+                     </div>
                  </div>
 
                  <div className="mb-8 relative z-10">
@@ -258,11 +278,11 @@ const MembersPage = ({
                              className={cn(
                                "flex-1 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all",
                                currentRole === roleOption 
-                                 ? "bg-white text-slate-900 shadow-xl ring-1 ring-slate-200" 
-                                 : "text-slate-400 hover:text-slate-600"
+                                 ? "bg-slate-900 text-white shadow-lg shadow-slate-200" 
+                                 : "text-slate-400 hover:bg-slate-50"
                              )}
                            >
-                             {roleOption.toUpperCase()}
+                             {roleOption}
                            </button>
                          ))}
                       </div>

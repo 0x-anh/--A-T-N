@@ -40,10 +40,17 @@ Hệ thống cung cấp các nhóm tính năng cốt lõi sau:
 - **Chi tiết lỗi**: Hỗ trợ ghi chú tiêu đề, mô tả chi tiết, mức độ ưu tiên, deadline và phân công người phụ trách.
 - **Tương tác**: Cho phép bình luận (Comment) và theo dõi lịch sử thay đổi của từng lỗi.
 
-### 👤 2.3. Quản lý người dùng & Dự án
+### 👤 2.3. Quản lý người dùng & Phân quyền Realtime
 - **Xác thực**: Đăng nhập bằng Google Auth qua Firebase.
-- **Phân quyền**: Hỗ trợ các vai trò khác nhau (Admin, Editor, Tester, Viewer) với quyền hạn thao tác riêng biệt.
-- **Đa dự án**: Một tài khoản có thể tham gia và quản lý nhiều dự án khác nhau.
+- **Hệ thống Vai trò (Roles)**: 
+  - **Editor**: Thực hiện nhiệm vụ, cập nhật tiến độ.
+  - **Tester**: Kiểm tra chất lượng, phê duyệt hoặc bác bỏ kết quả.
+  - **Viewer**: Theo dõi dữ liệu mà không có quyền chỉnh sửa.
+- **Thông báo Realtime**: Người dùng nhận được thông báo ngay lập tức khi được cấp quyền mới hoặc phân công nhiệm vụ mới mà không cần tải lại trang.
+
+### 🟢 2.4. Giám sát trạng thái hoạt động (Realtime Presence)
+- **Online/Offline Tracking**: Tự động nhận diện trạng thái hoạt động của từng nhân sự trong dự án.
+- **Độ phủ dự án**: Thống kê tỉ lệ nhân sự đang trực tuyến thời gian thực để đánh giá khả năng vận hành của Node dự án.
 
 ---
 
@@ -54,7 +61,7 @@ Dự án được phát triển theo mô hình **Single Page Application (SPA)**
 - **Frontend Framework**: [React 19](https://reactjs.org/) kết hợp [Next.js 15](https://nextjs.org/).
 - **Ngôn ngữ**: [TypeScript](https://www.typescriptlang.org/) đảm bảo tính chặt chẽ của mã nguồn.
 - **Giao diện**: [Tailwind CSS](https://tailwindcss.com/) & [Lucide React Icons](https://lucide.dev/).
-- **Hiệu ứng**: [Framer Motion](https://www.framer.com/motion/) tạo trải nghiệm mượt mà.
+- **Hiệu ứng**: [Framer Motion](https://www.framer.com/motion/) tạo trải nghiệm mượt mượt.
 - **Backend-as-a-Service**: [Firebase](https://firebase.google.com/) (Firestore cho DB, Auth cho người dùng).
 
 ---
@@ -78,15 +85,8 @@ src/
 ├── pages/          # Thành phần giao diện chính của từng phân hệ (Dashboard, Metrics...)
 ├── lib/            # Cấu hình lõi (Khởi tạo Firebase, các tệp Utility dùng chung)
 ├── types/          # Định nghĩa kiểu dữ liệu (TypeScript Interfaces & Types)
-└── services/       # (Tùy chọn) Các dịch vụ kết nối API và xử lý dữ liệu ngoại vi
+└── services/       # Các dịch vụ kết nối API và xử lý dữ liệu ngoại vi
 ```
-
-### 💡 Chi tiết các lớp kiến trúc:
-
-*   **Lớp Giao diện (Presentation Layer)**: Nằm tại `components/` và `pages/`. Mọi UI đều được xây dựng dựa trên các component nhỏ, đảm bảo tính tái sử dụng cao.
-*   **Lớp Logic (Logic Layer)**: Tập trung tại `hooks/`. Toàn bộ việc tương tác với Firebase (Real-time updates) và quản lý trạng thái người dùng được đóng gói trong các hook chuyên biệt.
-*   **Lớp Dữ liệu & Cấu hình (Data & Config Layer)**: Quản lý tại `lib/` và `types/`. Đảm bảo tính nhất quán của dữ liệu trên toàn hệ thống thông qua TypeScript.
-*   **Lớp Quốc tế hóa (Localization Layer)**: Quản lý tại `locales/`, cho phép thay đổi ngôn ngữ toàn bộ hệ thống mà không cần sửa đổi mã nguồn UI.
 
 ---
 
@@ -108,6 +108,7 @@ src/
 
 - 💎 **Giao diện Glassmorphism**: Thiết kế hiện đại, tinh tế với hiệu ứng kính mờ.
 - ⚡ **Real-time Sync**: Dữ liệu đồng bộ tức thì trên mọi thiết bị nhờ Firebase Firestore.
+- 🟢 **Presence System**: Giám sát trạng thái hoạt động của nhân sự thời gian thực.
 - 📱 **Responsive Design**: Hoạt động hoàn hảo trên cả Mobile và Desktop.
 - 🌐 **Bilingual Support**: Hỗ trợ đa ngôn ngữ Tiếng Anh & Tiếng Việt (i18n).
 

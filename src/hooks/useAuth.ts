@@ -91,7 +91,7 @@ export const useAuth = () => {
 
   const isAdmin = useMemo(() => {
     if (!user || !currentUserProfile) return false;
-    // Đã gỡ bỏ quyền Admin thông thường. Chỉ giữ lại email chủ hệ thống để bảo trì.
+    // Quyền Admin: Chỉ dành riêng cho Email chủ hệ thống để bảo trì.
     return currentUserProfile.email === 'jokerducanh@gmail.com';
   }, [user, currentUserProfile]);
 
