@@ -7,6 +7,8 @@ import { Toaster, toast } from 'sonner';
 import { useAuth } from './hooks/useAuth';
 import { useProjects } from './hooks/useProjects';
 import { useProjectData } from './hooks/useProjectData';
+import { useQuickAdd } from './hooks/useQuickAdd';
+import { useUserPresence } from './hooks/useUserPresence';
 
 // Layout Components
 import MainLayout from './components/layout/MainLayout';
@@ -21,11 +23,7 @@ import MembersPage from './pages/MembersPage';
 import KanbanBoard from './components/KanbanBoard';
 
 // Modals
-import ProjectModal from './components/modals/ProjectModal';
-import InviteModal from './components/modals/InviteModal';
-import SettingsModal from './components/modals/SettingsModal';
-import DocsModal from './components/modals/DocsModal';
-import QuickAddModal from './components/kanban/QuickAddModal';
+import ModalsContainer from './components/layout/ModalsContainer';
 
 import { db, handleFirestoreError } from './lib/firebase';
 import { 
@@ -44,7 +42,10 @@ export default function App() {
     handleAcceptInvitation,
     handleDeclineInvitation,
     handleRemoveMember,
-    handleUpdateUserRoles
+    handleUpdateUserRoles,
+    handleCreateProject: createProjectLogic,
+    handleUpdateProject: updateProjectLogic,
+    handleDeleteProject: deleteProjectLogic
   } = useProjects(user?.uid, userProfiles);
   
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -55,10 +56,14 @@ export default function App() {
   const [inviteUserEmail, setInviteUserEmail] = useState('');
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showDocsModal, setShowDocsModal] = useState(false);
-  const [showQuickAdd, setShowQuickAdd] = useState(false);
-  const [quickAddTitle, setQuickAddTitle] = useState('');
-  const [quickAddPriority, setQuickAddPriority] = useState<BugPriority>('low');
-  const [quickAddDueDate, setQuickAddDueDate] = useState('');
+
+  const {
+    showQuickAdd, setShowQuickAdd,
+    quickAddTitle, setQuickAddTitle,
+    quickAddPriority, setQuickAddPriority,
+    quickAddDueDate, setQuickAddDueDate,
+    handleQuickAdd
+  } = useQuickAdd(user, selectedProject);
 
   const { bugs, events, overdueTasks, urgentTasks, appStats } = useProjectData(user, selectedProject, userProfiles, currentTime, projects);
 
@@ -106,47 +111,14 @@ export default function App() {
     }
   }, [currentUserProfile, t]); // Watch entire profile for better reactivity
 
-  // REALTIME PRESENCE: Update lastActive timestamp
-  useEffect(() => {
-    if (!user) return;
-    
-    const updatePresence = async () => {
-      try {
-        await updateDoc(doc(db, 'users', user.uid), {
-          lastActive: serverTimestamp()
-        });
-      } catch (e) {
-        console.error("Presence sync failed:", e);
-      }
-    };
-
-    // Update on mount
-    updatePresence();
-
-    // Update every 2 minutes if the page is active
-    const interval = setInterval(() => {
-      if (document.visibilityState === 'visible') {
-        updatePresence();
-      }
-    }, 120000);
-
-    return () => clearInterval(interval);
-  }, [user]);
+  useUserPresence(user);
 
   const handleCreateProject = async () => {
-    if (!newProjectName.trim() || !user) return;
-    try {
-      await addDoc(collection(db, 'projects'), {
-        name: newProjectName,
-        description: t('projects.default_description'),
-        createdAt: serverTimestamp(),
-        ownerId: user.uid,
-        members: [user.uid]
-      });
+    const success = await createProjectLogic(newProjectName);
+    if (success) {
       setNewProjectName('');
       setShowProjectModal(false);
-      toast.success(t('toasts.project_created'));
-    } catch (error) { toast.error(t('toasts.project_create_failed')); }
+    }
   };
 
   const handleInviteMember = async () => {
@@ -158,121 +130,18 @@ export default function App() {
   };
 
   const handleUpdateProject = async () => {
-    if (!user || !selectedProject || !selectedProject.name.trim()) return;
-    try {
-      const projectRef = doc(db, 'projects', selectedProject.id);
-      await setDoc(projectRef, { name: selectedProject.name }, { merge: true });
-      toast.success(t('toasts.project_updated'));
-    } catch (error) { handleFirestoreError(error, 'update', 'projects'); }
-  };
-
-  const handleDeleteProject = async (projectToDelete: any) => {
-    if (!user || !projectToDelete) return;
-    const projectId = projectToDelete.id;
-    const projectName = projectToDelete.name;
-
-    const deleteTimeout = setTimeout(() => {
-      (async () => {
-        try {
-          // 1. Dọn dẹp dữ liệu liên quan (Bugs & Logs)
-          const bugsRef = collection(db, 'bugs');
-          const logsRef = collection(db, 'activity_logs');
-          
-          const [bugsSnapshot, logsSnapshot] = await Promise.all([
-            getDocs(query(bugsRef, where('projectId', '==', projectId))),
-            getDocs(query(logsRef, where('projectId', '==', projectId)))
-          ]);
-
-          const batch = writeBatch(db);
-          bugsSnapshot.forEach(doc => batch.delete(doc.ref));
-          logsSnapshot.forEach(doc => batch.delete(doc.ref));
-          
-          // 2. Xóa dự án chính
-          batch.delete(doc(db, 'projects', projectId));
-          
-          await batch.commit();
-          
-          toast.success(t('toasts.project_deleted', { name: projectName }));
-          if (selectedProject?.id === projectId) {
-            setSelectedProject(null);
-            setActiveTab('dashboard');
-          }
-        } catch (error) { 
-          console.error("Cleanup error:", error);
-          toast.error(t('toasts.project_delete_failed'));
-        }
-        delete (window as any)[`timeout_project_${projectId}`];
-      })();
-    }, 5000);
-
-    (window as any)[`timeout_project_${projectId}`] = deleteTimeout;
-
-    toast(t('toasts.project_deleting', { name: projectName }), {
-      duration: 5000,
-      action: {
-        label: t('common.undo'),
-        onClick: () => {
-          const tId = (window as any)[`timeout_project_${projectId}`];
-          if (tId) {
-            clearTimeout(tId);
-            delete (window as any)[`timeout_project_${projectId}`];
-            toast.info(t('toasts.project_restored', { name: projectName }));
-          }
-        }
-      }
-    });
-  };
-
-  const handleQuickAdd = async () => {
-    if (!quickAddTitle.trim() || !user) return;
-    if (!selectedProject) {
-      toast.error(t('toasts.quick_add_no_project'));
-      return;
-    }
-    
-    let docId = '';
-    try {
-      const docRef = await addDoc(collection(db, 'bugs'), {
-        projectId: selectedProject.id,
-        title: quickAddTitle.trim(),
-        description: t('kanban.quick_add_description'),
-        status: 'backlog',
-        priority: quickAddPriority,
-        creatorId: user.uid,
-        ownerId: user.uid,
-        members: [user.uid],
-        dueDate: quickAddDueDate || null,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      });
-      docId = docRef.id;
-      
-      setQuickAddTitle('');
-      setQuickAddDueDate('');
-      setShowQuickAdd(false);
-      toast.success(t('toasts.task_deployed'));
-    } catch (e: any) { 
-      handleFirestoreError(e, 'create', 'bugs');
-      toast.error(t('toasts.task_failed', { code: e.code }));
-      return;
-    }
-
-    try {
-      const logMessage = t('logs.task_deployed_log', { title: quickAddTitle.trim() });
-      await addDoc(collection(db, 'activity_logs'), {
-        projectId: selectedProject.id,
-        bugId: docId,
-        action: 'BUG_CREATED',
-        details: logMessage,
-        userId: user.uid,
-        userName: user.displayName || t('logs.system_user'),
-        userPhoto: user.photoURL || '',
-        createdAt: serverTimestamp()
-      });
-    } catch (e: any) { 
-      console.warn("Log error:", e.message);
+    if (selectedProject) {
+      await updateProjectLogic(selectedProject);
     }
   };
+
+  const handleDeleteProject = async (project: any) => {
+    if (project) {
+      await deleteProjectLogic(project.id, project.name);
+    }
+  };
+
+
 
   // Expose modal trigger for sub-components
 
@@ -384,53 +253,36 @@ export default function App() {
         </MainLayout>
       )}
 
-      {/* Global Modals */}
-      <ProjectModal 
-        show={showProjectModal} 
-        onClose={() => setShowProjectModal(false)}
+      <ModalsContainer 
+        user={user}
+        selectedProject={selectedProject}
+        setSelectedProject={setSelectedProject}
+        showProjectModal={showProjectModal}
+        setShowProjectModal={setShowProjectModal}
         newProjectName={newProjectName}
         setNewProjectName={setNewProjectName}
         handleCreateProject={handleCreateProject}
-      />
-
-      <InviteModal 
-        show={showInviteModal}
-        onClose={() => setShowInviteModal(false)}
+        showInviteModal={showInviteModal}
+        setShowInviteModal={setShowInviteModal}
         inviteUserEmail={inviteUserEmail}
         setInviteUserEmail={setInviteUserEmail}
         handleInviteMember={handleInviteMember}
+        showSettingsModal={showSettingsModal}
+        setShowSettingsModal={setShowSettingsModal}
+        handleUpdateProject={handleUpdateProject}
+        handleDeleteProject={handleDeleteProject}
+        showDocsModal={showDocsModal}
+        setShowDocsModal={setShowDocsModal}
+        showQuickAdd={showQuickAdd}
+        setShowQuickAdd={setShowQuickAdd}
+        quickAddTitle={quickAddTitle}
+        setQuickAddTitle={setQuickAddTitle}
+        quickAddPriority={quickAddPriority}
+        setQuickAddPriority={setQuickAddPriority}
+        quickAddDueDate={quickAddDueDate}
+        setQuickAddDueDate={setQuickAddDueDate}
+        handleQuickAdd={handleQuickAdd}
       />
-
-      {user && (
-        <SettingsModal 
-          show={showSettingsModal}
-          onClose={() => setShowSettingsModal(false)}
-          selectedProject={selectedProject}
-          setSelectedProject={setSelectedProject}
-          user={user}
-          handleUpdateProject={handleUpdateProject}
-          handleDeleteProject={() => handleDeleteProject(selectedProject)}
-        />
-      )}
-
-      <DocsModal 
-        show={showDocsModal}
-        onClose={() => setShowDocsModal(false)}
-      />
-
-      <QuickAddModal 
-        show={showQuickAdd} 
-        onClose={() => setShowQuickAdd(false)}
-        title={quickAddTitle}
-        setTitle={setQuickAddTitle}
-        priority={quickAddPriority}
-        setPriority={setQuickAddPriority}
-        dueDate={quickAddDueDate}
-        setDueDate={setQuickAddDueDate}
-        onSubmit={handleQuickAdd}
-      />
-
-      <Toaster position="top-right" />
     </div>
   );
 }

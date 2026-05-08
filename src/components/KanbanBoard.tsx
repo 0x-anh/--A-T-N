@@ -18,6 +18,7 @@ import { useTranslation } from 'react-i18next';
 // Import sub-components
 import KanbanHeader from './kanban/KanbanHeader';
 import KanbanColumn from './kanban/KanbanColumn';
+import BoardListView from './kanban/BoardListView';
 import TeamManagementModal from './kanban/TeamManagementModal';
 import BugDetailModal from './kanban/BugDetailModal';
 
@@ -496,152 +497,17 @@ const KanbanBoard = ({
               </DragDropProvider>
             </motion.div>
           ) : (
-            <motion.div 
-              key="list"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="h-full flex flex-col gap-6"
-            >
-              {/* Header Manifest - High Visibility HUD */}
-              <div className="flex items-center justify-between bg-slate-950/60 backdrop-blur-xl p-6 rounded-2xl border border-brand-500/30 shadow-2xl relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-brand-500/10 to-transparent" />
-                
-                <div className="flex items-center gap-6 relative z-10">
-                  <div className="w-14 h-14 bg-slate-900 border-2 border-brand-500 rounded-xl flex items-center justify-center shadow-[0_0_30px_rgba(99,102,241,0.3)]">
-                    <Terminal size={28} className="text-brand-400 drop-shadow-[0_0_10px_rgba(99,102,241,0.5)]" />
-                  </div>
-                  <div>
-                    <h2 className="text-lg font-black text-white uppercase tracking-[0.5em] leading-none mb-2 drop-shadow-md">
-                      STRATEGIC_DATA_STREAM
-                    </h2>
-                    <div className="flex items-center gap-3">
-                       <span className="text-[10px] font-black text-brand-400 uppercase tracking-widest font-mono">SYS_STATUS: ACTIVE</span>
-                       <div className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse shadow-[0_0_10px_rgba(99,102,241,0.8)]" />
-                       <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono">UPLINK_SECURE</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-10 font-mono relative z-10">
-                   <div className="text-right">
-                      <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">TOTAL_NODES</div>
-                      <div className="text-xl font-black text-white drop-shadow-md">{filteredBugs.length}</div>
-                   </div>
-                   <div className="h-12 w-[2px] bg-brand-500/30" />
-                   <div className="w-32">
-                      <div className="flex justify-between text-[8px] font-black text-slate-500 mb-1.5">
-                         <span>CPU_LOAD</span>
-                         <span className="text-brand-400">74%</span>
-                      </div>
-                      <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden border border-white/5">
-                         <div className="h-full bg-brand-500 shadow-[0_0_15px_rgba(99,102,241,0.6)]" style={{ width: '74%' }} />
-                      </div>
-                   </div>
-                </div>
-              </div>
-
-              {/* Manifest Content - High Contrast Cards */}
-              <div className="flex-1 overflow-y-auto pr-3 custom-scrollbar space-y-4">
-                {filteredBugs.map((bug, index) => (
-                  <motion.div
-                    key={bug.id}
-                    initial={{ opacity: 0, x: -30 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.02 }}
-                    className="group relative flex items-center gap-8 bg-slate-950/70 backdrop-blur-lg p-5 rounded-xl border border-white/10 hover:border-brand-500/50 transition-all duration-300"
-                  >
-                    {/* ID & Status Glow */}
-                    <div className="w-40 shrink-0 relative flex items-center gap-4 border-r border-white/5 pr-6">
-                       <div className={cn(
-                         "w-1.5 h-10 rounded-full shadow-2xl",
-                         bug.status === 'done' ? "bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.6)]" :
-                         bug.status === 'in-progress' ? "bg-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.6)]" :
-                         "bg-brand-500 shadow-[0_0_20px_rgba(99,102,241,0.6)]"
-                       )} />
-                       <div>
-                          <div className="text-[12px] font-black font-mono text-brand-400 tracking-[0.2em] group-hover:text-brand-300 transition-colors drop-shadow-sm">
-                            #{bug.id.substring(0, 8).toUpperCase()}
-                          </div>
-                          <div className="text-[8px] font-black text-slate-500 uppercase tracking-[0.3em] mt-1.5">NODE_IDENTIFIER</div>
-                       </div>
-                    </div>
-
-                    {/* Mission Title - Bold White with Overflow Fix */}
-                    <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setSelectedBugId(bug.id)}>
-                      <h3 className="text-[15px] font-black text-white group-hover:text-brand-400 transition-colors uppercase tracking-widest leading-none mb-2.5 drop-shadow-md truncate line-clamp-1 break-all">
-                        {bug.title}
-                      </h3>
-                      <div className="flex items-center gap-5">
-                         <div className="flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-slate-700" />
-                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">SEQ_{index + 100}</span>
-                         </div>
-                         <div className="w-[1px] h-3 bg-slate-800" />
-                         <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">SEC_DELTA_09</span>
-                      </div>
-                    </div>
-
-                    {/* Cyber Status Controller */}
-                    <div className="flex items-center bg-slate-900/80 p-1.5 rounded-xl border border-white/5 gap-1.5 shadow-2xl">
-                      {['backlog', 'in-progress', 'in-review', 'done'].map((st) => {
-                        const userRole = userProfiles.find(u => u.userId === userId)?.roles;
-                        const isAssignee = bug.assigneeId === userId || bug.members?.includes(userId);
-                        const isOwner = selectedProject?.ownerId === userId;
-                        const canChangeStatus = isAdmin || isOwner || (isAssignee && canUserMoveTo(userRole, bug.status, st as BugStatus));
-
-                        return (
-                          <button
-                            key={st}
-                            disabled={!canChangeStatus}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleUpdateBugDetails(bug.id, { status: st as BugStatus });
-                              logActivity(bug.id, 'STATUS_UPDATE', `CMD_EXEC: ${st.toUpperCase()}`);
-                              toast.success(`NODE_SYNCED: ${st.toUpperCase()}`);
-                            }}
-                            className={cn(
-                              "px-4 py-2.5 rounded-lg text-[9px] font-black uppercase tracking-[0.2em] transition-all duration-300",
-                              bug.status === st 
-                                ? (st === 'backlog' ? "bg-slate-700 text-white shadow-xl" :
-                                   st === 'in-progress' ? "bg-amber-500 text-white shadow-[0_0_20px_rgba(245,158,11,0.4)]" :
-                                   st === 'in-review' ? "bg-brand-500 text-white shadow-[0_0_20px_rgba(99,102,241,0.4)]" :
-                                   "bg-emerald-500 text-white shadow-[0_0_20px_rgba(16,185,129,0.4)]")
-                                : "text-slate-500 hover:text-white hover:bg-white/10",
-                              !canChangeStatus && "opacity-20 cursor-not-allowed"
-                            )}
-                          >
-                            {st === 'in-progress' ? 'WORK' : st === 'in-review' ? 'VIEW' : st === 'backlog' ? 'WAIT' : 'DONE'}
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    {/* Primary Operator */}
-                    <div className="w-56 flex items-center justify-end gap-5 border-l border-white/5 pl-8">
-                       <div className="text-right">
-                          <div className="text-[12px] font-black text-white uppercase tracking-widest group-hover:text-brand-400 transition-colors mb-1.5 drop-shadow-sm">
-                             {userProfiles.find(p => p.userId === bug.assigneeId && selectedProject?.members?.includes(p.userId))?.displayName || t('kanban.unassigned')}
-                          </div>
-                          <div className="inline-flex items-center gap-2 px-2 py-0.5 bg-emerald-500/10 rounded border border-emerald-500/20">
-                             <div className="w-1 h-1 rounded-full bg-emerald-500 shadow-[0_0_5px_rgba(16,185,129,0.8)]" />
-                             <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest font-mono">STATUS_ONLINE</span>
-                          </div>
-                       </div>
-                       <div className="w-12 h-12 rounded-xl bg-slate-900 border-2 border-slate-800 p-0.5 shadow-2xl group-hover:border-brand-500 transition-all overflow-hidden">
-                         {userProfiles.find(p => p.userId === bug.assigneeId && selectedProject?.members?.includes(p.userId))?.photoURL ? (
-                           <img src={userProfiles.find(p => p.userId === bug.assigneeId && selectedProject?.members?.includes(p.userId))?.photoURL} className="w-full h-full object-cover rounded-lg" alt="" />
-                         ) : (
-                           <div className="w-full h-full bg-slate-800 rounded-lg flex items-center justify-center">
-                              <Activity size={18} className="text-slate-600" />
-                           </div>
-                         )}
-                       </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
+            <BoardListView 
+              filteredBugs={filteredBugs}
+              setSelectedBugId={setSelectedBugId}
+              userProfiles={userProfiles}
+              userId={userId}
+              selectedProject={selectedProject}
+              isAdmin={isAdmin}
+              handleUpdateBugDetails={handleUpdateBugDetails}
+              logActivity={logActivity}
+              t={t}
+            />
           )}
         </AnimatePresence>
       </div>

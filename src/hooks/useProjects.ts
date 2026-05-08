@@ -336,6 +336,87 @@ export const useProjects = (userId: string | undefined, userProfiles: UserProfil
     }
   };
 
+  const handleCreateProject = async (newProjectName: string) => {
+    if (!newProjectName.trim() || !userId) return;
+    try {
+      await addDoc(collection(db, 'projects'), {
+        name: newProjectName.trim(),
+        description: t('projects.default_description'),
+        createdAt: serverTimestamp(),
+        ownerId: userId,
+        members: [userId]
+      });
+      toast.success(t('toasts.project_created'));
+      return true;
+    } catch (error) { 
+      toast.error(t('toasts.project_create_failed')); 
+      return false;
+    }
+  };
+
+  const handleUpdateProject = async (project: Project) => {
+    if (!userId || !project || !project.name.trim()) return;
+    try {
+      const projectRef = doc(db, 'projects', project.id);
+      await updateDoc(projectRef, { name: project.name });
+      toast.success(t('toasts.project_updated'));
+      return true;
+    } catch (error) { 
+      handleFirestoreError(error, 'update', 'projects'); 
+      return false;
+    }
+  };
+
+  const handleDeleteProject = async (projectId: string, projectName: string) => {
+    if (!userId) return;
+
+    const deleteTimeout = setTimeout(() => {
+      (async () => {
+        try {
+          // 1. Cleanup related data
+          const bugsRef = collection(db, 'bugs');
+          const logsRef = collection(db, 'activity_logs');
+          
+          const [bugsSnapshot, logsSnapshot] = await Promise.all([
+            getDocs(query(bugsRef, where('projectId', '==', projectId))),
+            getDocs(query(logsRef, where('projectId', '==', projectId)))
+          ]);
+
+          const batch = writeBatch(db);
+          bugsSnapshot.forEach(doc => batch.delete(doc.ref));
+          logsSnapshot.forEach(doc => batch.delete(doc.ref));
+          
+          // 2. Delete main project
+          batch.delete(doc(db, 'projects', projectId));
+          
+          await batch.commit();
+          toast.success(t('toasts.project_deleted', { name: projectName }));
+        } catch (error) { 
+          console.error("Cleanup error:", error);
+          toast.error(t('toasts.project_delete_failed'));
+        }
+        delete (window as any)[`timeout_project_${projectId}`];
+      })();
+    }, 5000);
+
+    (window as any)[`timeout_project_${projectId}`] = deleteTimeout;
+
+    toast(t('toasts.project_deleting', { name: projectName }), {
+      duration: 5000,
+      action: {
+        label: t('common.undo'),
+        onClick: () => {
+          const tId = (window as any)[`timeout_project_${projectId}`];
+          if (tId) {
+            clearTimeout(tId);
+            delete (window as any)[`timeout_project_${projectId}`];
+            toast.info(t('toasts.project_restored', { name: projectName }));
+          }
+        }
+      }
+    });
+  };
+
   return {
     projects,
     selectedProject,
@@ -346,6 +427,9 @@ export const useProjects = (userId: string | undefined, userProfiles: UserProfil
     handleAcceptInvitation,
     handleDeclineInvitation,
     handleRemoveMember,
-    handleUpdateUserRoles
+    handleUpdateUserRoles,
+    handleCreateProject,
+    handleUpdateProject,
+    handleDeleteProject
   };
 };

@@ -12,11 +12,11 @@ interface MainLayoutProps {
   handleLogout: () => void;
   selectedProject: Project | null;
   projects: Project[];
-  setSelectedProject: (project: Project) => void;
+  setSelectedProject: (project: Project | null) => void;
   setShowProjectModal: (show: boolean) => void;
   setShowInviteModal: (show: boolean) => void;
   setShowSettingsModal: (show: boolean) => void;
-  handleDeleteProject: (project: Project) => void;
+  handleDeleteProject: (project: any) => void;
   isAdmin: boolean;
   key?: string;
 }
