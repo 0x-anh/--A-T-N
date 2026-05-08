@@ -14,13 +14,14 @@ interface BugDetailModalProps {
   userProfiles: UserProfile[];
   userId: string;
   isAdmin: boolean;
-  handleUpdateBugDetails: (bugId: string, updates: Partial<Bug>) => Promise<void>;
-  handleDeleteBug: (bugId: string) => Promise<void>;
+  onUpdateBugDetails: (bugId: string, updates: Partial<Bug>) => Promise<void>;
+  onDeleteBug: (bugId: string) => Promise<void>;
   logActivity: (bugId: string, type: string, content: string) => Promise<void>;
   comments: any[];
   newComment: string;
   setNewComment: (val: string) => void;
-  handleAddComment: () => Promise<void>;
+  onAddComment: () => Promise<void>;
+  onDeleteComment: (commentId: string) => Promise<void>;
   bottomRef: React.RefObject<HTMLDivElement | null>;
   projectMemberIds: string[];
   isOwner: boolean;
@@ -32,12 +33,14 @@ const BugDetailModal = ({
   userProfiles, 
   userId, 
   isAdmin,
-  handleUpdateBugDetails,
-  handleDeleteBug,
+  onUpdateBugDetails,
+  onDeleteBug,
+  logActivity,
   comments,
   newComment,
   setNewComment,
-  handleAddComment,
+  onAddComment,
+  onDeleteComment,
   bottomRef,
   projectMemberIds,
   isOwner
@@ -63,7 +66,7 @@ const BugDetailModal = ({
   const handleSave = async () => {
     if (!selectedBug || !hasChanges) return;
     setIsSaving(true);
-    await handleUpdateBugDetails(selectedBug.id, { 
+    await onUpdateBugDetails(selectedBug.id, { 
       title: localTitle, 
       description: localDescription 
     });
@@ -179,7 +182,7 @@ const BugDetailModal = ({
                               key={key}
                               disabled={!(isAdmin || isOwner)}
                               onClick={() => {
-                                handleUpdateBugDetails(selectedBug.id, { priority: key });
+                                onUpdateBugDetails(selectedBug.id, { priority: key });
                                 setIsPriorityOpen(false);
                               }}
                               className={cn(
@@ -209,7 +212,7 @@ const BugDetailModal = ({
                     type="datetime-local"
                     value={selectedBug.dueDate || ''}
                     disabled={!(isAdmin || isOwner)}
-                    onChange={(e) => handleUpdateBugDetails(selectedBug.id, { dueDate: e.target.value })}
+                    onChange={(e) => onUpdateBugDetails(selectedBug.id, { dueDate: e.target.value })}
                     className="w-full bg-transparent text-[11px] font-black text-slate-950 outline-none cursor-pointer uppercase disabled:cursor-not-allowed appearance-none"
                  />
               </div>
@@ -230,7 +233,7 @@ const BugDetailModal = ({
                         <button 
                           onClick={() => {
                             const newMembers = (selectedBug.members || []).filter(id => id !== u.userId);
-                            handleUpdateBugDetails(selectedBug.id, { members: newMembers, assigneeId: newMembers[0] || '' });
+                            onUpdateBugDetails(selectedBug.id, { members: newMembers, assigneeId: newMembers[0] || '' });
                           }}
                           className="absolute -top-1 -right-1 w-4 h-4 bg-rose-600 text-white rounded-full flex items-center justify-center scale-0 group-hover:scale-100 transition-transform shadow-xl"
                         >
@@ -267,7 +270,7 @@ const BugDetailModal = ({
                                     key={u.userId}
                                     onClick={() => {
                                       const currentMembers = selectedBug.members || (selectedBug.assigneeId ? [selectedBug.assigneeId] : []);
-                                      handleUpdateBugDetails(selectedBug.id, { 
+                                      onUpdateBugDetails(selectedBug.id, { 
                                         members: [...currentMembers, u.userId],
                                         assigneeId: u.userId
                                       });
@@ -317,7 +320,7 @@ const BugDetailModal = ({
             <div className="mt-auto">
                {(isAdmin || canDeleteBug(currentUser?.roles)) && (
                   <button 
-                    onClick={() => handleDeleteBug(selectedBug.id)}
+                    onClick={() => onDeleteBug(selectedBug.id)}
                     className="w-full h-12 flex items-center justify-center gap-3 rounded-2xl bg-rose-100 text-rose-700 border-2 border-rose-300 hover:bg-rose-600 hover:text-white transition-all duration-500 shadow-lg shadow-rose-500/10 font-black text-[10px] uppercase tracking-widest"
                   >
                     <Trash2 size={16} />
@@ -433,8 +436,17 @@ const BugDetailModal = ({
                                      {c.createdAt?.toDate ? new Date(c.createdAt.toDate()).toLocaleTimeString() : 'SIGNAL_RECEIVING...'}
                                    </span>
                                 </div>
-                                <div className="p-5 bg-white/40 border-2 border-slate-200 rounded-2xl rounded-tl-none group-hover:bg-white/60 transition-all">
+                                <div className="p-5 bg-white/40 border-2 border-slate-200 rounded-2xl rounded-tl-none group-hover:bg-white/60 transition-all relative">
                                    <p className="text-xs text-slate-950 leading-relaxed font-black">{c.content}</p>
+                                   
+                                   {(c.userId === userId || isAdmin) && (
+                                     <button 
+                                       onClick={() => onDeleteComment(c.id)}
+                                       className="absolute top-2 right-2 p-2 text-slate-300 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-all"
+                                     >
+                                       <Trash2 size={12} />
+                                     </button>
+                                   )}
                                 </div>
                              </div>
                           </div>
@@ -458,7 +470,7 @@ const BugDetailModal = ({
                              const newMembers = isSelected 
                                ? currentMembers.filter(id => id !== u.userId)
                                : [...currentMembers, u.userId];
-                             handleUpdateBugDetails(selectedBug.id, { 
+                             onUpdateBugDetails(selectedBug.id, { 
                                members: newMembers,
                                assigneeId: newMembers[0] || ''
                              });
@@ -496,7 +508,7 @@ const BugDetailModal = ({
                     />
                   </div>
                   <button 
-                    onClick={handleAddComment} 
+                    onClick={onAddComment} 
                     disabled={!newComment.trim()}
                     className="h-24 w-24 bg-brand-600 text-white rounded-2xl flex flex-col items-center justify-center gap-2 hover:bg-brand-700 transition-all shadow-xl shadow-brand-600/30 disabled:opacity-20 group"
                   >

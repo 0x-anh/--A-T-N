@@ -120,7 +120,9 @@
     "init_failed": "Lỗi khởi tạo",
     "release_failed": "Lỗi giải phóng dữ liệu.",
     "sync_failed": "Lỗi đồng bộ dữ liệu",
-    "comment_failed": "Gửi phản hồi thất bại"
+    "comment_failed": "Gửi phản hồi thất bại",
+    "comment_deleted": "Đã xóa phản hồi khỏi luồng dữ liệu.",
+    "comment_delete_failed": "Lỗi khi xóa phản hồi."
   },
   "kanban": {
     "coordination_center": "TRUNG TÂM ĐIỀU PHỐI",
@@ -203,7 +205,8 @@
     "status_change": "Cập nhật lộ trình",
     "task_init": "Khởi tạo nhiệm vụ",
     "task_deleted": "Đã xóa nút dữ liệu",
-    "comment_added": "Thêm phản hồi"
+    "comment_added": "Thêm phản hồi",
+    "comment_deleted": "Xóa phản hồi"
   },
   "modals": {
     "create_project_title": "KHỞI TẠO NODE DỰ ÁN MỚI",

@@ -72,7 +72,9 @@
     "init_failed": "Initialization failed",
     "release_failed": "Data release failed.",
     "sync_failed": "Data synchronization failed",
-    "comment_failed": "Feedback submission failed"
+    "comment_failed": "Feedback submission failed",
+    "comment_deleted": "Feedback removed from data stream.",
+    "comment_delete_failed": "Error removing feedback."
   },
   "kanban": {
     "coordination_center": "COORDINATION CENTER",
@@ -203,7 +205,8 @@
     "status_change": "Updated roadmap",
     "task_init": "Initialized task",
     "task_deleted": "Deleted data node",
-    "comment_added": "Added feedback"
+    "comment_added": "Added feedback",
+    "comment_deleted": "Removed feedback"
   },
   "modals": {
     "create_project_title": "INITIALIZE NEW PROJECT NODE",

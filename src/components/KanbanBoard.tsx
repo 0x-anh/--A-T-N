@@ -344,6 +344,17 @@ const KanbanBoard = ({
     } catch (e) { toast.error(t('toasts.comment_failed')); }
   };
 
+  const handleDeleteComment = async (commentId: string) => {
+    if (!selectedBugId) return;
+    try {
+      await deleteDoc(doc(db, 'bugs', selectedBugId, 'comments', commentId));
+      logActivity(selectedBugId, 'COMMENT_DELETED', t('logs.comment_deleted'));
+      toast.info(t('toasts.comment_deleted'));
+    } catch (e) {
+      toast.error(t('toasts.comment_delete_failed'));
+    }
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 10 }} 
@@ -652,13 +663,14 @@ const KanbanBoard = ({
         userProfiles={userProfiles} 
         userId={userId} 
         isAdmin={isAdmin}
-        handleUpdateBugDetails={handleUpdateBugDetails}
-        handleDeleteBug={handleDeleteBug}
+        onUpdateBugDetails={handleUpdateBugDetails}
+        onDeleteBug={handleDeleteBug}
         logActivity={logActivity}
         comments={comments} 
         newComment={newComment} 
         setNewComment={setNewComment}
-        handleAddComment={handleAddComment}
+        onAddComment={handleAddComment}
+        onDeleteComment={handleDeleteComment}
         bottomRef={bottomRef}
         projectMemberIds={selectedProject?.members || []}
         isOwner={selectedProject?.ownerId === userId}
