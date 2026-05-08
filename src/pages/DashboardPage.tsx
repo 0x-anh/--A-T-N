@@ -4,7 +4,7 @@ import { Cpu, Activity, Zap, CheckCircle2, Plus, Users, ChevronRight } from 'luc
 import { StatsCard, QuickAction } from '../components/ui/Cards';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../lib/utils';
-import { Bug } from '../types';
+import { Bug, UserProfile, canCreateTask, canManageTeam } from '../types';
 
 interface DashboardPageProps {
   appStats: any;
@@ -13,6 +13,8 @@ interface DashboardPageProps {
   events: any[];
   overdueTasks: any[];
   userProfiles: any[];
+  currentUserProfile?: UserProfile;
+  isAdmin: boolean;
   projects: any[];
   pendingInvitations: any[];
   handleAcceptInvitation: (id: string) => void;
@@ -30,6 +32,8 @@ const DashboardPage = ({
   events,
   overdueTasks,
   userProfiles,
+  currentUserProfile,
+  isAdmin,
   projects,
   pendingInvitations,
   handleAcceptInvitation,
@@ -294,10 +298,19 @@ const DashboardPage = ({
             </div>
           </section>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <QuickAction title={t('kanban.deploy_task')} desc={t('kanban.description')} icon={<Plus />} onClick={() => setShowQuickAdd(true)} />
-            <QuickAction title={t('members.team_management')} desc={t('members.search_members')} icon={<Users />} onClick={() => setShowInviteModal(true)} />
-          </div>
+          {(canCreateTask(currentUserProfile?.roles, isAdmin) || canManageTeam(currentUserProfile?.roles, isAdmin, false)) && (
+            <div className={cn(
+              "grid gap-8",
+              (canCreateTask(currentUserProfile?.roles, isAdmin) && canManageTeam(currentUserProfile?.roles, isAdmin, false)) ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1"
+            )}>
+              {canCreateTask(currentUserProfile?.roles, isAdmin) && (
+                <QuickAction title={t('kanban.deploy_task')} desc={t('kanban.description')} icon={<Plus />} onClick={() => setShowQuickAdd(true)} />
+              )}
+              {canManageTeam(currentUserProfile?.roles, isAdmin, false) && (
+                <QuickAction title={t('members.team_management')} desc={t('members.search_members')} icon={<Users />} onClick={() => setShowInviteModal(true)} />
+              )}
+            </div>
+          )}
         </div>
 
         <div className="flex flex-col gap-8">

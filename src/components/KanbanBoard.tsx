@@ -7,7 +7,7 @@ import { DragDropContext, DropResult } from '@hello-pangea/dnd';
 import { db, handleFirestoreError } from '../lib/firebase';
 import { 
   Bug, BugStatus, BugPriority, STATUS_COLUMNS, 
-  UserProfile, Project, UserRole, canUserMoveTo 
+  UserProfile, Project, UserRole, canUserMoveTo, canCreateTask 
 } from '../types';
 import { toast } from 'sonner';
 import { Plus, Bug as BugIcon, Search, LayoutDashboard, ListFilter, Activity, Grid, List, Terminal, LayoutList, CheckCircle2 } from 'lucide-react';
@@ -388,16 +388,18 @@ const KanbanBoard = ({
                 <div className="h-8 w-[1px] bg-slate-200" />
 
                 {/* Main Add Button - High Fidelity Version */}
-                <button 
-                  onClick={() => setShowQuickAdd(true)}
-                  className="group relative h-10 px-6 bg-slate-950 text-white rounded-xl text-[10px] font-black overflow-hidden transition-all active:scale-95 shadow-xl shadow-slate-950/20"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-brand-600 to-violet-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  <div className="relative flex items-center gap-2 whitespace-nowrap tracking-[0.2em]">
-                    <Plus size={14} strokeWidth={3} className="group-hover:rotate-90 transition-transform duration-500" />
-                    {t('kanban.deploy_task')}
-                  </div>
-                </button>
+                {canCreateTask(userProfiles.find(u => u.userId === userId)?.roles, isAdmin) && (
+                  <button 
+                    onClick={() => setShowQuickAdd(true)}
+                    className="group relative h-10 px-6 bg-slate-950 text-white rounded-xl text-[10px] font-black overflow-hidden transition-all active:scale-95 shadow-xl shadow-slate-950/20"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-brand-600 to-violet-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    <div className="relative flex items-center gap-2 whitespace-nowrap tracking-[0.2em]">
+                      <Plus size={14} strokeWidth={3} className="group-hover:rotate-90 transition-transform duration-500" />
+                      {t('kanban.deploy_task')}
+                    </div>
+                  </button>
+                )}
 
                 <div className="h-8 w-[1px] bg-slate-200" />
 
@@ -567,28 +569,37 @@ const KanbanBoard = ({
 
                     {/* Cyber Status Controller */}
                     <div className="flex items-center bg-slate-900/80 p-1.5 rounded-xl border border-white/5 gap-1.5 shadow-2xl">
-                      {['backlog', 'in-progress', 'in-review', 'done'].map((st) => (
-                        <button
-                          key={st}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleUpdateBugDetails(bug.id, { status: st as BugStatus });
-                            logActivity(bug.id, 'STATUS_UPDATE', `CMD_EXEC: ${st.toUpperCase()}`);
-                            toast.success(`NODE_SYNCED: ${st.toUpperCase()}`);
-                          }}
-                          className={cn(
-                            "px-4 py-2.5 rounded-lg text-[9px] font-black uppercase tracking-[0.2em] transition-all duration-300",
-                            bug.status === st 
-                              ? (st === 'backlog' ? "bg-slate-700 text-white shadow-xl" :
-                                 st === 'in-progress' ? "bg-amber-500 text-white shadow-[0_0_20px_rgba(245,158,11,0.4)]" :
-                                 st === 'in-review' ? "bg-brand-500 text-white shadow-[0_0_20px_rgba(99,102,241,0.4)]" :
-                                 "bg-emerald-500 text-white shadow-[0_0_20px_rgba(16,185,129,0.4)]")
-                              : "text-slate-500 hover:text-white hover:bg-white/10"
-                          )}
-                        >
-                          {st === 'in-progress' ? 'WORK' : st === 'in-review' ? 'VIEW' : st === 'backlog' ? 'WAIT' : 'DONE'}
-                        </button>
-                      ))}
+                      {['backlog', 'in-progress', 'in-review', 'done'].map((st) => {
+                        const userRole = userProfiles.find(u => u.userId === userId)?.roles;
+                        const isAssignee = bug.assigneeId === userId || bug.members?.includes(userId);
+                        const isOwner = selectedProject?.ownerId === userId;
+                        const canChangeStatus = isAdmin || isOwner || (isAssignee && canUserMoveTo(userRole, bug.status, st as BugStatus));
+
+                        return (
+                          <button
+                            key={st}
+                            disabled={!canChangeStatus}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleUpdateBugDetails(bug.id, { status: st as BugStatus });
+                              logActivity(bug.id, 'STATUS_UPDATE', `CMD_EXEC: ${st.toUpperCase()}`);
+                              toast.success(`NODE_SYNCED: ${st.toUpperCase()}`);
+                            }}
+                            className={cn(
+                              "px-4 py-2.5 rounded-lg text-[9px] font-black uppercase tracking-[0.2em] transition-all duration-300",
+                              bug.status === st 
+                                ? (st === 'backlog' ? "bg-slate-700 text-white shadow-xl" :
+                                   st === 'in-progress' ? "bg-amber-500 text-white shadow-[0_0_20px_rgba(245,158,11,0.4)]" :
+                                   st === 'in-review' ? "bg-brand-500 text-white shadow-[0_0_20px_rgba(99,102,241,0.4)]" :
+                                   "bg-emerald-500 text-white shadow-[0_0_20px_rgba(16,185,129,0.4)]")
+                                : "text-slate-500 hover:text-white hover:bg-white/10",
+                              !canChangeStatus && "opacity-20 cursor-not-allowed"
+                            )}
+                          >
+                            {st === 'in-progress' ? 'WORK' : st === 'in-review' ? 'VIEW' : st === 'backlog' ? 'WAIT' : 'DONE'}
+                          </button>
+                        );
+                      })}
                     </div>
 
                     {/* Primary Operator */}

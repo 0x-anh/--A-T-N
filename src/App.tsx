@@ -34,7 +34,7 @@ import { handleFirestoreError } from './lib/firebase';
 
 export default function App() {
   const { t } = useTranslation();
-  const { user, loading, userProfiles, isAdmin, handleLogin, handleLogout } = useAuth();
+  const { user, loading, userProfiles, currentUserProfile, isAdmin, handleLogin, handleLogout } = useAuth();
   const { 
     projects, selectedProject, setSelectedProject, 
     pendingInvitations, sentInvitations,
@@ -257,6 +257,8 @@ export default function App() {
               events={events}
               overdueTasks={overdueTasks}
               userProfiles={userProfiles}
+              currentUserProfile={currentUserProfile || undefined}
+              isAdmin={isAdmin}
               projects={projects}
               pendingInvitations={pendingInvitations}
               handleAcceptInvitation={handleAcceptInvitation}

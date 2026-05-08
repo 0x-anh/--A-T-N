@@ -88,6 +88,19 @@ export const canDeleteBug = (userRoles: UserRole[] | undefined): boolean => {
   return false; // Chỉ Owner mới có quyền xóa (logic xử lý tại component)
 };
 
+export const canCreateTask = (userRoles: UserRole[] | undefined, isAdmin: boolean): boolean => {
+  if (isAdmin) return true;
+  if (!userRoles || userRoles.length === 0) return false;
+  // Chỉ Editor và Tester mới được tạo nhiệm vụ/lỗi mới. Viewer chỉ được xem.
+  return userRoles.includes('editor') || userRoles.includes('tester');
+};
+
+export const canManageTeam = (userRoles: UserRole[] | undefined, isAdmin: boolean, isOwner: boolean): boolean => {
+  if (isAdmin || isOwner) return true;
+  // Thường chỉ Admin/Owner mới được quản lý nhân sự. Editor không có quyền này.
+  return false;
+};
+
 export interface Bug {
   id: string;
   projectId: string;
