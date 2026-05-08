@@ -37,6 +37,7 @@ const KanbanBoard = ({
   selectedProject, userId, userProfiles, bugs, isAdmin, 
   setShowQuickAdd, currentTime, handleUpdateUserRoles, handleRemoveMember 
 }: KanbanBoardProps) => {
+  const DragDropProvider = DragDropContext as unknown as React.ComponentType<React.PropsWithChildren<{ onDragEnd: (result: DropResult) => void }>>;
   const [viewMode, setViewMode] = useState<'board' | 'list'>('board');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterPriority, setFilterPriority] = useState<BugPriority | 'all'>('all');
@@ -452,7 +453,7 @@ const KanbanBoard = ({
               exit={{ opacity: 0, x: -20 }}
               className="h-full"
             >
-              <DragDropContext onDragEnd={onDragEnd}>
+              <DragDropProvider onDragEnd={onDragEnd}>
                 <div className="flex h-full gap-6 overflow-x-auto no-scrollbar pb-2">
                   {(['backlog', 'in-progress', 'in-review', 'done'] as BugStatus[]).map(status => (
                     <KanbanColumn 
@@ -475,7 +476,7 @@ const KanbanBoard = ({
                     />
                   ))}
                 </div>
-              </DragDropContext>
+              </DragDropProvider>
             </motion.div>
           ) : (
             <motion.div 

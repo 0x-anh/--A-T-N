@@ -28,6 +28,7 @@ import DocsModal from './components/modals/DocsModal';
 import QuickAddModal from './components/kanban/QuickAddModal';
 
 import { db } from './lib/firebase';
+import type { BugPriority } from './types';
 import { addDoc, collection, serverTimestamp, doc, setDoc, deleteDoc, getDocs, writeBatch, query, where } from 'firebase/firestore';
 import { handleFirestoreError } from './lib/firebase';
 
@@ -54,7 +55,7 @@ export default function App() {
   const [showDocsModal, setShowDocsModal] = useState(false);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [quickAddTitle, setQuickAddTitle] = useState('');
-  const [quickAddPriority, setQuickAddPriority] = useState<'low' | 'high' | 'critical'>('low');
+  const [quickAddPriority, setQuickAddPriority] = useState<BugPriority>('low');
   const [quickAddDueDate, setQuickAddDueDate] = useState('');
 
   const { bugs, events, overdueTasks, urgentTasks, appStats } = useProjectData(user, selectedProject, userProfiles, currentTime, projects);

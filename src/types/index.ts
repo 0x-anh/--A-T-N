@@ -98,6 +98,7 @@ export interface Bug {
   createdAt: any;
   updatedAt?: any;
   creatorId: string;
+  ownerId?: string;
   assigneeId?: string;
   dueDate?: string;
   members?: string[];

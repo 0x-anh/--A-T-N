@@ -5,7 +5,7 @@ import MobileNav from './MobileNav';
 import { Project } from '../../types';
 
 interface MainLayoutProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   activeTab: string;
   setActiveTab: (tab: any) => void;
   user: any;

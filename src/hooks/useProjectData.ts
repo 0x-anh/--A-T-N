@@ -62,7 +62,7 @@ export const useProjectData = (user: any, selectedProject: Project | null, userP
   const urgentTasks = useMemo(() => {
     if (!user) return [];
     const profile = userProfiles.find(u => u.userId === user.uid);
-    const isAdminGlobal = profile?.roles?.includes('admin') || profile?.email === 'jokerducanh@gmail.com';
+    const isAdminGlobal = profile?.email === 'jokerducanh@gmail.com';
     
     // If admin, see all overdue, otherwise only assigned/owned across all projects
     if (isAdminGlobal) return overdueTasks;

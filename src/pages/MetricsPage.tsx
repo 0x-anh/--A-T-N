@@ -82,7 +82,7 @@ const MetricsPage = ({ bugs, projects, selectedProject, appStats, setActiveTab }
 
   // Bar Chart Data Calculation
   const chartData = useMemo(() => {
-    const days = [];
+    const days: { label: string; dateStr: string }[] = [];
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
       d.setHours(0, 0, 0, 0);

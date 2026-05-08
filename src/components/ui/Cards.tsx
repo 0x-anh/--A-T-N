@@ -7,14 +7,14 @@ export const StatsCard = ({ label, value, icon, trend }: { label: string, value:
   <div className="tech-corners bg-white/20 backdrop-blur-3xl p-6 rounded-2xl border border-white/60 shadow-[0_8px_32px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgba(99,102,241,0.08)] transition-all duration-700 group relative overflow-hidden">
     {/* Decorative Elements */}
     <div className="absolute top-0 right-0 p-8 opacity-[0.05] group-hover:opacity-[0.1] transition-all group-hover:scale-125 group-hover:rotate-12 duration-700">
-       {React.cloneElement(icon as React.ReactElement, { size: 100 })}
+       {React.cloneElement(icon as React.ReactElement<any>, { size: 100 })}
     </div>
     <div className="absolute top-0 left-0 w-8 h-[1px] bg-brand-500/30 group-hover:w-16 transition-all duration-700" />
     <div className="absolute top-0 left-0 w-[1px] h-8 bg-brand-500/30 group-hover:h-16 transition-all duration-700" />
 
     <div className="flex items-center gap-4 mb-6">
       <div className="w-11 h-11 rounded-xl bg-white/40 flex items-center justify-center text-slate-400 group-hover:bg-slate-950 group-hover:text-white transition-all duration-500 shadow-sm border border-white/60">
-        {React.cloneElement(icon as React.ReactElement, { size: 18, strokeWidth: 2.5 })}
+        {React.cloneElement(icon as React.ReactElement<any>, { size: 18, strokeWidth: 2.5 })}
       </div>
       <div className="flex flex-col">
         <span className="text-[10px] font-black text-brand-600 uppercase tracking-[0.4em] font-mono opacity-60">{label}</span>
@@ -47,11 +47,11 @@ export const QuickAction = ({ title, desc, icon, onClick }: { title: string, des
   >
     <div className="absolute top-0 right-0 w-32 h-32 bg-brand-500/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-1000 blur-3xl" />
     <div className="absolute bottom-0 right-0 p-4 opacity-[0.03] group-hover:opacity-[0.08] transition-all duration-700 group-hover:rotate-[-12deg]">
-       {React.cloneElement(icon as React.ReactElement, { size: 60 })}
+       {React.cloneElement(icon as React.ReactElement<any>, { size: 60 })}
     </div>
 
     <div className="w-14 h-14 bg-slate-950 text-white rounded-xl flex items-center justify-center mb-8 shadow-2xl shadow-slate-950/20 group-hover:bg-brand-600 group-hover:scale-110 transition-all duration-500 relative z-10">
-      {React.cloneElement(icon as React.ReactElement, { size: 22, strokeWidth: 2.5 })}
+      {React.cloneElement(icon as React.ReactElement<any>, { size: 22, strokeWidth: 2.5 })}
     </div>
     <div className="relative z-10">
       <h3 className="text-[13px] font-black text-slate-950 uppercase tracking-[0.2em] mb-2 font-heading">{title}</h3>

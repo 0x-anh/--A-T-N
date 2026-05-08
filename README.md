@@ -10,7 +10,7 @@
   </p>
 
   [![React](https://img.shields.io/badge/React-19.0-61DAFB?logo=react&logoColor=black)](https://reactjs.org/)
-  [![Vite](https://img.shields.io/badge/Vite-6.2-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
+  [![Next.js](https://img.shields.io/badge/Next.js-15.3-000000?logo=nextdotjs&logoColor=white)](https://nextjs.org/)
   [![Firebase](https://img.shields.io/badge/Firebase-11.4-FFCA28?logo=firebase&logoColor=black)](https://firebase.google.com/)
   [![TailwindCSS](https://img.shields.io/badge/Tailwind-4.0-38B2AC?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
   [![Framer Motion](https://img.shields.io/badge/Framer_Motion-12.0-ff0055?logo=framer&logoColor=white)](https://www.framer.com/motion/)
@@ -18,76 +18,98 @@
 
 ---
 
-## 📖 Tổng Quan Dự Án
+## 📖 1. Giới thiệu dự án
 
-**Zenith System Dashboard** là một nền tảng quản trị công việc và phân tích hạ tầng được xây dựng dựa trên kiến trúc **Component-Based**. Dự án tập trung vào việc tối ưu hóa quy trình vận hành nhóm, cung cấp cái nhìn trực quan về hiệu suất và đảm bảo tính đồng bộ dữ liệu tức thì thông qua nền tảng Cloud.
+**Zenith Dashboard** là hệ thống web hỗ trợ quản lý dự án và quy trình xử lý lỗi phần mềm theo mô hình **Kanban**. Ứng dụng được xây dựng nhằm phục vụ bài toán theo dõi vòng đời của lỗi phần mềm từ lúc phát hiện, tạo báo cáo lỗi, phân công người xử lý, cập nhật trạng thái, kiểm tra lại cho đến khi hoàn tất.
 
-### ✨ Tính Năng Cốt Lõi
-
-- 📊 **Trung tâm Điều hành (Dashboard)**: Giám sát chỉ số Telemetry, năng suất và lịch trình vận hành Delta.
-- 📋 **Bảng Kanban Modular**: Hệ thống quản lý công việc với cơ chế Kéo-Thả (Drag & Drop) mượt mà, phân loại ưu tiên thông minh.
-- 📈 **Phân Tích Tài Nguyên (Metrics)**: Trực quan hóa dữ liệu hiệu suất 7 ngày thông qua biểu đồ SVG động.
-- 📜 **Nhật Ký Hệ Thống (Logs)**: Live relay toàn bộ hoạt động của dự án với độ trễ cực thấp.
-- 👥 **Quản Lý Đội Ngũ**: Phân quyền nhân sự (Admin, Developer, QA) và quản lý danh bạ thành viên.
-- 🔒 **Bảo Mật Đa Tầng**: Hệ thống xác thực Google Auth và Security Rules chặt chẽ từ phía Server (Firebase).
+Hệ thống hướng đến việc hỗ trợ các nhóm phát triển phần mềm quy mô nhỏ đến trung bình, giúp chuẩn hóa quy trình xử lý lỗi, tăng khả năng phối hợp giữa các thành viên và nâng cao hiệu quả giám sát tiến độ công việc.
 
 ---
 
-## 🏗️ Kiến Trúc Hệ Thống (Modular Architecture)
+## ✨ 2. Tính năng chính
 
-Dự án được tái cấu trúc theo mô hình **Modular Next.js Style**, giúp tách biệt hoàn toàn Logic và Giao diện:
+Hệ thống cung cấp các nhóm tính năng cốt lõi sau:
+
+### 📊 2.1. Dashboard & Thống kê
+- **Tổng quan hệ thống**: Hiển thị nhanh các chỉ số quan trọng (tổng số lỗi, lỗi đang mở, lỗi đã xử lý, tỉ lệ hoàn thành).
+- **Phân tích biểu đồ**: Trực quan hóa dữ liệu lỗi theo thời gian (biểu đồ đường) và theo trạng thái (biểu đồ tròn).
+- **Cảnh báo lỗi quá hạn**: Tự động nhận diện và liệt kê các lỗi đã quá hạn xử lý (Deadline).
+
+### 📋 2.2. Quản lý lỗi (Issue Management)
+- **Bảng Kanban**: Kéo thả linh hoạt giữa các trạng thái: *Backlog*, *In Progress*, *In Review*, *Done*.
+- **Chi tiết lỗi**: Hỗ trợ ghi chú tiêu đề, mô tả chi tiết, mức độ ưu tiên, deadline và phân công người phụ trách.
+- **Tương tác**: Cho phép bình luận (Comment) và theo dõi lịch sử thay đổi của từng lỗi.
+
+### 👤 2.3. Quản lý người dùng & Dự án
+- **Xác thực**: Đăng nhập bằng Google Auth qua Firebase.
+- **Phân quyền**: Hỗ trợ các vai trò khác nhau (Admin, Editor, Tester, Viewer) với quyền hạn thao tác riêng biệt.
+- **Đa dự án**: Một tài khoản có thể tham gia và quản lý nhiều dự án khác nhau.
+
+---
+
+## 🏗️ 3. Kiến trúc kỹ thuật
+
+Dự án được phát triển theo mô hình **Single Page Application (SPA)** hiện đại:
+
+- **Frontend Framework**: [React 19](https://reactjs.org/) kết hợp [Next.js 15](https://nextjs.org/).
+- **Ngôn ngữ**: [TypeScript](https://www.typescriptlang.org/) đảm bảo tính chặt chẽ của mã nguồn.
+- **Giao diện**: [Tailwind CSS](https://tailwindcss.com/) & [Lucide React Icons](https://lucide.dev/).
+- **Hiệu ứng**: [Framer Motion](https://www.framer.com/motion/) tạo trải nghiệm mượt mà.
+- **Backend-as-a-Service**: [Firebase](https://firebase.google.com/) (Firestore cho DB, Auth cho người dùng).
+
+---
+
+## 🏗️ 4. Cấu trúc mã nguồn (Modular Architecture)
+
+Dự án được thiết kế theo tư duy **Modul hóa (Modular Design)**, giúp tách biệt hoàn toàn giữa giao diện (UI), logic nghiệp vụ (Business Logic) và cấu hình hệ thống. Điều này giúp mã nguồn dễ dàng bảo trì, mở rộng và kiểm thử.
+
+### 📂 Sơ đồ tổ chức thư mục:
 
 ```text
 src/
-├── components/     # Các thành phần giao diện tái sử dụng
-│   ├── kanban/     # Logic bảng điều khiển công việc
-│   ├── layout/     # Sidebar, Topbar, MainLayout
-│   ├── modals/     # Hệ thống cửa sổ chức năng popup
-│   └── ui/         # Các nguyên tử giao diện (Cards, Buttons)
-├── hooks/          # Logic nghiệp vụ (useAuth, useProjects, useProjectData)
-├── pages/          # Các trang chức năng chính của hệ thống
-├── lib/            # Cấu hình lõi (Firebase, Utils)
-├── types/          # Định nghĩa kiểu dữ liệu (TypeScript Interfaces)
-└── services/       # Các dịch vụ kết nối ngoại vi
+├── app/            # Next.js App Router (Routing, Layout toàn cục & Global Styles)
+├── components/     # Các thành phần giao diện (UI Components) tái sử dụng
+│   ├── kanban/     # Logic và giao diện riêng cho bảng điều hành công việc
+│   ├── layout/     # Các thành phần khung: Sidebar, Topbar, MainLayout
+│   ├── modals/     # Hệ thống cửa sổ chức năng (Project, Invite, Settings...)
+│   └── ui/         # Nguyên tử giao diện cơ bản: Buttons, Cards, Inputs...
+├── hooks/          # Custom Hooks (Xử lý logic Auth, Real-time Data, Projects)
+├── locales/        # Đa ngôn ngữ (i18n): Chứa các tệp bản dịch Tiếng Anh & Tiếng Việt
+├── pages/          # Thành phần giao diện chính của từng phân hệ (Dashboard, Metrics...)
+├── lib/            # Cấu hình lõi (Khởi tạo Firebase, các tệp Utility dùng chung)
+├── types/          # Định nghĩa kiểu dữ liệu (TypeScript Interfaces & Types)
+└── services/       # (Tùy chọn) Các dịch vụ kết nối API và xử lý dữ liệu ngoại vi
 ```
 
----
+### 💡 Chi tiết các lớp kiến trúc:
 
-## 🚀 Hướng Dẫn Cài Đặt
-
-### Yêu Cầu Hệ Thống
-- **Node.js**: v18.0.0 hoặc mới hơn
-- **Trình duyệt**: Chrome, Edge hoặc Safari (Hỗ trợ tốt nhất cho hiệu ứng Glassmorphism)
-
-### Các Bước Triển Khai
-
-1. **Clone dự án và cài đặt thư viện:**
-   ```bash
-   npm install
-   ```
-
-2. **Cấu hình môi trường:**
-   Tạo file `.env.local` từ mẫu `.env.example` và điền các thông số kết nối Firebase của bạn.
-
-3. **Chạy ứng dụng trong môi trường phát triển:**
-   ```bash
-   npm run dev
-   ```
-
-4. **Biên dịch bản chính thức (Production Build):**
-   ```bash
-   npm run build
-   ```
+*   **Lớp Giao diện (Presentation Layer)**: Nằm tại `components/` và `pages/`. Mọi UI đều được xây dựng dựa trên các component nhỏ, đảm bảo tính tái sử dụng cao.
+*   **Lớp Logic (Logic Layer)**: Tập trung tại `hooks/`. Toàn bộ việc tương tác với Firebase (Real-time updates) và quản lý trạng thái người dùng được đóng gói trong các hook chuyên biệt.
+*   **Lớp Dữ liệu & Cấu hình (Data & Config Layer)**: Quản lý tại `lib/` và `types/`. Đảm bảo tính nhất quán của dữ liệu trên toàn hệ thống thông qua TypeScript.
+*   **Lớp Quốc tế hóa (Localization Layer)**: Quản lý tại `locales/`, cho phép thay đổi ngôn ngữ toàn bộ hệ thống mà không cần sửa đổi mã nguồn UI.
 
 ---
 
-## 🛠️ Công Nghệ Sử Dụng
+## 🚀 5. Cài đặt và chạy dự án
 
-- **Frontend**: React 19, TypeScript
-- **Styling**: Tailwind CSS (Thiết kế Glassmorphism & Modern Minimalist)
-- **State Management**: React Hooks & Custom Hooks Architecture
-- **Backend-as-a-Service**: Firebase (Firestore, Authentication, Hosting)
-- **Animation**: Framer Motion (Xử lý các chuyển động vật lý và Micro-interactions)
+### 5.1. Yêu cầu môi trường
+- Node.js phiên bản 18 trở lên
+- NPM
+- Kết nối tới dự án Firebase
+
+### 5.2. Các bước thực hiện
+1. **Cài đặt thư viện**: `npm install`
+2. **Chạy môi trường phát triển**: `npm run dev`
+3. **Truy cập**: `http://localhost:3000`
+
+---
+
+## 🛠️ 6. Đặc điểm nổi bật
+
+- 💎 **Giao diện Glassmorphism**: Thiết kế hiện đại, tinh tế với hiệu ứng kính mờ.
+- ⚡ **Real-time Sync**: Dữ liệu đồng bộ tức thì trên mọi thiết bị nhờ Firebase Firestore.
+- 📱 **Responsive Design**: Hoạt động hoàn hảo trên cả Mobile và Desktop.
+- 🌐 **Bilingual Support**: Hỗ trợ đa ngôn ngữ Tiếng Anh & Tiếng Việt (i18n).
 
 ---
 

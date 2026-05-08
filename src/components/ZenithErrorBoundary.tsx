@@ -3,7 +3,7 @@ import i18next from 'i18next';
 import { AlertTriangle, Activity, RefreshCcw } from 'lucide-react';
 
 interface Props {
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 interface State {
