@@ -385,23 +385,27 @@ const KanbanBoard = ({
                   />
                 </div>
 
-                <div className="h-8 w-[1px] bg-slate-200" />
-
-                {/* Main Add Button - High Fidelity Version */}
-                {canCreateTask(userProfiles.find(u => u.userId === userId)?.roles, isAdmin) && (
-                  <button 
-                    onClick={() => setShowQuickAdd(true)}
-                    className="group relative h-10 px-6 bg-slate-950 text-white rounded-xl text-[10px] font-black overflow-hidden transition-all active:scale-95 shadow-xl shadow-slate-950/20"
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-r from-brand-600 to-violet-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                    <div className="relative flex items-center gap-2 whitespace-nowrap tracking-[0.2em]">
-                      <Plus size={14} strokeWidth={3} className="group-hover:rotate-90 transition-transform duration-500" />
-                      {t('kanban.deploy_task')}
-                    </div>
-                  </button>
+                {canCreateTask(userProfiles.find(u => u.userId === userId)?.roles, isAdmin) ? (
+                  <>
+                    <div className="h-8 w-[1px] bg-slate-200" />
+                    <button 
+                      onClick={() => setShowQuickAdd(true)}
+                      className="group relative h-10 px-6 bg-slate-950 text-white rounded-xl text-[10px] font-black overflow-hidden transition-all active:scale-95 shadow-xl shadow-slate-950/20"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-brand-600 to-violet-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                      <div className="relative flex items-center gap-2 whitespace-nowrap tracking-[0.2em]">
+                        <Plus size={14} strokeWidth={3} className="group-hover:rotate-90 transition-transform duration-500" />
+                        {t('kanban.deploy_task')}
+                      </div>
+                    </button>
+                    <div className="h-8 w-[1px] bg-slate-200" />
+                  </>
+                ) : (
+                  <div className="flex items-center gap-3 px-4 py-2 bg-emerald-500/5 border border-emerald-500/20 rounded-xl">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-[9px] font-black text-emerald-600 uppercase tracking-[0.2em] font-mono">RT_SYNC_OK</span>
+                  </div>
                 )}
-
-                <div className="h-8 w-[1px] bg-slate-200" />
 
                 {/* View Toggle */}
                 <div className="flex items-center bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
