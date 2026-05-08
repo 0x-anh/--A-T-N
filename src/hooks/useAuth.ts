@@ -54,7 +54,10 @@ export const useAuth = () => {
       return;
     }
     const unsubscribe = onSnapshot(collection(db, 'users'), (snapshot) => {
-      setUserProfiles(snapshot.docs.map(doc => doc.data() as UserProfile));
+      setUserProfiles(snapshot.docs.map(doc => ({ 
+        userId: doc.id, 
+        ...doc.data() 
+      } as UserProfile)));
       setLoading(false); // Stop loading once profiles are in
     }, (error) => {
       console.warn("User profile sync limited");

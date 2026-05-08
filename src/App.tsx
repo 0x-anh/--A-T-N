@@ -28,7 +28,7 @@ import DocsModal from './components/modals/DocsModal';
 import QuickAddModal from './components/kanban/QuickAddModal';
 
 import { db } from './lib/firebase';
-import type { BugPriority } from './types';
+import type { BugPriority, UserRole } from './types';
 import { addDoc, collection, serverTimestamp, doc, setDoc, deleteDoc, getDocs, writeBatch, query, where } from 'firebase/firestore';
 import { handleFirestoreError } from './lib/firebase';
 
@@ -66,23 +66,34 @@ export default function App() {
   }, []);
 
   // Watch for role changes to notify the current user
-  const prevRolesRef = useRef<string[]>([]);
+  const prevRolesRef = useRef<UserRole[]>([]);
   useEffect(() => {
     if (currentUserProfile?.roles) {
       const currentRoles = [...currentUserProfile.roles].sort();
       const prevRoles = [...prevRolesRef.current].sort();
       
+      console.log("[ZENITH_AUTH] Roles Check:", { current: currentRoles, prev: prevRoles });
+
       if (prevRoles.length > 0 && JSON.stringify(currentRoles) !== JSON.stringify(prevRoles)) {
-        // Find what was added
-        const added = currentRoles.find(r => !prevRoles.includes(r));
+        // Find what was added or removed
+        const added = currentRoles.find(r => !prevRoles.includes(r)) as UserRole | undefined;
+        const removed = prevRoles.find(r => !currentRoles.includes(r)) as UserRole | undefined;
+        
+        console.log("[ZENITH_AUTH] Change detected:", { added, removed });
+
         if (added) {
           toast.info(`HỆ THỐNG: Bạn đã được cấp quyền ${t(`members.${added}`).toUpperCase()}.`, {
             description: "Quyền hạn của bạn đã được cập nhật bởi quản trị viên.",
             duration: 8000
           });
+        } else if (removed) {
+          toast.warning(`HỆ THỐNG: Bạn đã bị gỡ quyền ${t(`members.${removed}`).toUpperCase()}.`, {
+            description: "Quyền hạn của bạn đã bị thay đổi bởi quản trị viên.",
+            duration: 8000
+          });
         }
       }
-      prevRolesRef.current = currentUserProfile.roles;
+      prevRolesRef.current = [...currentUserProfile.roles];
     }
   }, [currentUserProfile?.roles, t]);
 

@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { db, handleFirestoreError } from '../lib/firebase';
 import { collection, query, where, orderBy, onSnapshot, doc, updateDoc, arrayUnion, arrayRemove, addDoc, serverTimestamp, getDocs, writeBatch } from 'firebase/firestore';
 import { Project, UserProfile, UserRole } from '../types';
 import { toast } from 'sonner';
 
 export const useProjects = (userId: string | undefined, userProfiles: UserProfile[]) => {
+  const { t } = useTranslation();
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [pendingInvitations, setPendingInvitations] = useState<any[]>([]);
@@ -307,9 +309,11 @@ export const useProjects = (userId: string | undefined, userProfiles: UserProfil
       }
 
       const userRef = doc(db, 'users', targetUserId);
+      console.log("[ZENITH_ADMIN] Updating roles for:", targetUserId, "to:", newRoles);
       await updateDoc(userRef, { roles: newRoles });
       
       const roleLabel = t(`members.${clickedRole}`);
+      console.log("[ZENITH_ADMIN] Triggering toast for admin...");
       toast.success(`Đã ${isRemoving ? 'gỡ' : 'cấp'} vai trò ${roleLabel} cho ${displayName}.`);
       
       // Log the admin action

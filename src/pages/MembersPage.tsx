@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { UserPlus, Shield, Trash2, Crown, Mail, ChevronRight, Activity, Users, Zap, CheckCircle2, Cpu } from 'lucide-react';
-import { UserProfile, Project } from '../types';
+import { UserProfile, Project, UserRole } from '../types';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../lib/utils';
 
@@ -13,7 +13,7 @@ interface MembersPageProps {
   userId: string;
   setShowInviteModal: (val: boolean) => void;
   handleRemoveMember: (userId: string) => void;
-  handleUpdateUserRoles: (id: string, roles: string[]) => void;
+  handleUpdateUserRoles: (id: string, currentRoles: UserRole[], clickedRole: UserRole) => void;
   sentInvitations?: any[];
 }
 
@@ -254,7 +254,7 @@ const MembersPage = ({
                          {['editor', 'tester', 'viewer'].map((roleOption) => (
                            <button
                              key={roleOption}
-                             onClick={() => handleUpdateUserRoles(profile.userId, [roleOption])}
+                             onClick={() => handleUpdateUserRoles(profile.userId, profile.roles || [], roleOption as UserRole)}
                              className={cn(
                                "flex-1 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all",
                                currentRole === roleOption 
