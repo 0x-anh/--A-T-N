@@ -195,7 +195,7 @@ const DashboardPage = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
         <StatsCard label={t('metrics.completion_rate')} value={`${appStats.resolutionRate}%`} icon={<Cpu />} trend={t('sidebar.system_stable').split(' ')[1]} />
         <StatsCard label={t('logs.action')} value={appStats.open} icon={<Activity />} trend={t('members.active')} />
-        <StatsCard label={t('kanban.priority')} value={appStats.critical} icon={<Zap />} trend={t('kanban.overdue')} />
+        <StatsCard label={t('kanban.priority')} value={appStats.critical} icon={<Zap />} trend={t('kanban.priority_critical')} />
         <StatsCard label={t('kanban.done')} value={appStats.resolved} icon={<CheckCircle2 />} trend={t('common.success').toUpperCase()} />
       </div>
 
@@ -298,19 +298,16 @@ const DashboardPage = ({
             </div>
           </section>
 
-          {(canCreateTask(currentUserProfile?.roles, isAdmin) || canManageTeam(currentUserProfile?.roles, isAdmin, false)) && (
-            <div className={cn(
-              "grid gap-8",
-              (canCreateTask(currentUserProfile?.roles, isAdmin) && canManageTeam(currentUserProfile?.roles, isAdmin, false)) ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1"
-            )}>
-              {canCreateTask(currentUserProfile?.roles, isAdmin) && (
-                <QuickAction title={t('kanban.deploy_task')} desc={t('kanban.description')} icon={<Plus />} onClick={() => setShowQuickAdd(true)} />
-              )}
-              {canManageTeam(currentUserProfile?.roles, isAdmin, false) && (
-                <QuickAction title={t('members.team_management')} desc={t('members.search_members')} icon={<Users />} onClick={() => setShowInviteModal(true)} />
-              )}
-            </div>
-          )}
+          <div className={cn(
+            "grid gap-8",
+            canManageTeam(currentUserProfile?.roles, isAdmin, false) ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1"
+          )}>
+            <QuickAction title={t('dashboard.new_project')} desc={t('dashboard.create_project_desc')} icon={<Plus />} onClick={() => setShowProjectModal(true)} />
+            
+            {canManageTeam(currentUserProfile?.roles, isAdmin, false) && (
+              <QuickAction title={t('members.team_management')} desc={t('members.search_members')} icon={<Users />} onClick={() => setShowInviteModal(true)} />
+            )}
+          </div>
         </div>
 
         <div className="flex flex-col gap-8">

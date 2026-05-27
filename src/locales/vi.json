@@ -35,7 +35,8 @@
     "shared_projects": "DỰ ÁN THAM GIA",
     "no_projects": "Chưa có dự án nào. Hãy khởi tạo hệ thống ngay.",
     "project_owner": "Chủ sở hữu",
-    "created_at": "Khởi tạo lúc"
+    "created_at": "Khởi tạo lúc",
+    "create_project_desc": "Thiết lập không gian làm việc mới và tổ chức quy trình vận hành."
   },
   "members": {
     "team_management": "QUẢN TRỊ NHÂN SỰ",
@@ -226,6 +227,7 @@
   "common": {
     "undo": "HOÀN TÁC",
     "cancel": "HỦY BỎ",
+    "success": "THÀNH CÔNG",
     "save": "LƯU THAY ĐỔI",
     "delete": "XÓA",
     "edit": "CHỈNH SỬA",

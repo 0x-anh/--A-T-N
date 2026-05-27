@@ -130,7 +130,7 @@ const BugDetailModal = ({
                   <div className="space-y-12">
                      <div className="space-y-4">
                         <div className="flex items-center gap-3"><div className="w-8 h-[2px] bg-brand-700" /><span className="text-[9px] font-black text-brand-700 uppercase tracking-widest font-mono">MISSION_TITLE</span></div>
-                        <textarea rows={2} className="w-full text-3xl md:text-5xl font-heading font-black text-slate-950 outline-none border-none p-0 bg-transparent tracking-tighter leading-none resize-none placeholder:text-slate-950/50 disabled:cursor-not-allowed uppercase" placeholder={t('kanban.node_title_placeholder')} value={localTitle} disabled={!canModifyGeneral || isSaving} onChange={(e) => setLocalTitle(e.target.value)} />
+                        <textarea rows={2} className="w-full text-3xl md:text-5xl font-heading font-black text-slate-950 outline-none border-none py-2 bg-transparent tracking-tighter leading-normal resize-none placeholder:text-slate-950/50 disabled:cursor-not-allowed uppercase" placeholder={t('kanban.node_title_placeholder')} value={localTitle} disabled={!canModifyGeneral || isSaving} onChange={(e) => setLocalTitle(e.target.value)} />
                      </div>
 
                      <div className="space-y-4 relative group/desc">
@@ -140,7 +140,7 @@ const BugDetailModal = ({
                            </motion.button>
                         </div>
                         <div className="relative">
-                          <textarea placeholder={t('kanban.specs_placeholder')} className="w-full h-80 bg-white/30 border-2 border-slate-300 rounded-3xl p-8 text-base text-slate-950 placeholder:text-slate-950/50 outline-none leading-relaxed resize-none custom-scrollbar focus:border-brand-600 focus:bg-white/60 transition-all font-black disabled:opacity-60 disabled:cursor-not-allowed" value={localDescription} disabled={!canModifyGeneral || isSaving} onChange={(e) => setLocalDescription(e.target.value)} />
+                          <textarea placeholder={t('kanban.specs_placeholder')} className="w-full h-56 bg-white/30 border-2 border-slate-300 rounded-3xl p-8 text-base text-slate-950 placeholder:text-slate-950/50 outline-none leading-relaxed resize-none custom-scrollbar focus:border-brand-600 focus:bg-white/60 transition-all font-black disabled:opacity-60 disabled:cursor-not-allowed" value={localDescription} disabled={!canModifyGeneral || isSaving} onChange={(e) => setLocalDescription(e.target.value)} />
                           {hasChanges && <div className="absolute top-4 right-4 flex items-center gap-2 px-3 py-1 bg-amber-500/20 border border-amber-500/50 rounded-full"><div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" /><span className="text-[7px] font-black text-slate-950 uppercase tracking-widest">{t('kanban.unsaved_changes')}</span></div>}
                         </div>
                      </div>
